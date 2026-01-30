@@ -6,7 +6,14 @@ authors = [
     { name = "Mack Rusing", email = "mail@mackk.net" }
 ]
 requires-python = ">=3.14"
-dependencies = ["stage_ui_lib"]
+dependencies = [
+    "opencv-python>=4.13.0.90",
+    "pandas>=3.0.0",
+    "pygame-ce>=2.5.6",
+    "pygame-gui>=0.6.14",
+    "pyserial>=3.5",
+    "stage_ui_lib",
+]
 
 [tool.uv.sources]
 stage-ui-lib = { workspace = true }
