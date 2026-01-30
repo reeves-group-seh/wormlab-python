@@ -33,6 +33,11 @@ from pygame_gui.elements import (
 from queue import Queue, Empty
 from serial import Serial
 
+# local item imports
+from direction import Direction
+from serial_bridge import SerialBridge
+from serial_command import SerialCommand
+
 #
 # constants
 #
@@ -48,34 +53,12 @@ PANEL_NO_MARGINS: dict[str, int] = {
     "left": 0,
 }
 
-# constants representing directions as passed to arduino
-DIRECTION_LEFT: int = 0
-DIRECTION_RIGHT: int = 1
-DIRECTION_DOWN: int = 2  # away (up)
-DIRECTION_UP: int = 3  # towards (down)
-
 # ui theme for pygame_gui
 UI_THEME = {"#red_panel": {"colours": {"dark_bg": "#FF0000"}}}
 
 #
 # helper data classes & enums
 #
-
-
-class Direction(IntEnum):
-    """
-    Enum representing possible directions.
-    """
-
-    LEFT = DIRECTION_LEFT
-    RIGHT = DIRECTION_RIGHT
-    DOWN = DIRECTION_DOWN
-    UP = DIRECTION_UP
-
-    DEFAULT = LEFT
-    """
-    A default value for when this enum is needed but its value unused.
-    """
 
 
 class Response(Enum):
@@ -100,70 +83,6 @@ class Response(Enum):
                 return "N"
 
 
-@dataclass
-class Command:
-    """
-    Data class containing info about a single command to send to the arduino.
-    """
-
-    speed: float
-    """
-    The speed in steps per second of a movement command.
-    """
-
-    direction: Direction
-    """
-    The direction of a movement command.
-    """
-
-    move_duration: float
-    """
-    The duration in milliseconds of a movement command.
-    """
-
-    fire_duration: float
-    """
-    The duration in milliseconds of a fire command.
-    """
-
-    def max_duration(self) -> float:
-        """
-        The theorietical runtime of the command, or the max of the move and fire
-        durations.
-
-        :return: The max duration in seconds.
-        :rtype: float
-        """
-        return max(move_duration, fire_duration) / 1000.0
-
-    def packet(self) -> bytes:
-        """
-        Create a binary packet from this command.
-
-        :return: The binary packet.
-        :rtype: bytes
-        """
-
-        # # create a packet by manually concating bytes
-        # packet = struct.pack("f", -1.0)
-        # packet += struct.pack("f", self.speed)
-        # packet += struct.pack("f", float(self.direction))
-        # packet += struct.pack("f", self.move_duration)
-        # packet += struct.pack("f", self.fire_duration)
-
-        # create a packet of 5 float values
-        packet: bytes = struct.pack(
-            "fffff",
-            -1.0,  # header
-            self.speed,
-            float(self.direction),
-            self.move_duration,
-            self.fire_duration,
-        )
-
-        return packet
-
-
 #
 # config
 #
@@ -173,12 +92,6 @@ TESTING: bool = True
 
 # name of the csv datafile to create / write to
 DATA_FILE: str = f"data/{dt.now().strftime("%Y-%m-%dT%H%M%S")}-data.csv"
-
-# serial port to connect to arduino on
-SERIAL_PORT: str = "COM3"
-
-# baude rate to communicate with arduino at
-SERIAL_BAUDRATE: int = 115200
 
 # opencv video capture camera index
 CAMERA_INDEX: int = 3 if not TESTING else 0
@@ -240,149 +153,6 @@ DIRECTION_ARROW_MAP: dict[int, Direction] = {
     pygame.K_DOWN: Direction.DOWN,
 }
 
-
-#
-# arduino logic
-#
-
-
-class StageController:
-    """
-    Class dealing with communication to the arduino.
-    """
-
-    def __init__(self) -> None:
-        """
-        Open a serial connection to the arduino.
-        """
-
-        # empty serial connection
-        self.ser: Serial | None = None
-
-        # command queue
-        self.command_queue: Queue[Command] = queue.Queue()
-
-        # whether blocking (?) commands are executing
-        self.is_executing: bool = False
-
-        # start time of executing cmd
-        self.current_command_start_time: float | None = None
-
-        # time the executing cmd should take (s)
-        self.current_command_duration: float = 0.0
-
-        # try to create serial connection
-        try:
-            self.ser = serial.Serial(
-                port=SERIAL_PORT, baudrate=SERIAL_BAUDRATE, timeout=0.1
-            )
-        except Exception as e:
-            # print error on connection failure
-            print("Serial connection failed:", e)
-
-            # crash program if in prod
-            if not TESTING:
-                sys.exit(1)
-
-    # send packet via serial connection immediately
-    def send_command_immediate(self, command: Command) -> None:
-        """
-        Send a command to arduino immediately. This is a blocking operation.
-
-        :param command: The command to execute.
-        """
-
-        # check for connection
-        if not self.ser:
-            return
-
-        # write command packet to the serial port
-        self.ser.write(command.packet())
-
-        # update internal state to indicate a command is executing
-        self.is_executing = True
-        self.current_command_start_time = time.time()
-        self.current_command_duration = command.max_duration()
-
-    # enqueue a command. is this ever used properly?
-    def queue_command(
-        self,
-        speed: float,
-        direction: Direction,
-        move_duration: float,
-        fire_duration: float,
-    ) -> None:
-        """Queue a command for non-blocking execution"""
-
-        command: Command = Command(
-            speed,
-            direction,
-            move_duration,
-            fire_duration,
-        )
-
-        # add to the queue
-        self.command_queue.put(command)
-
-    # check and update internal state each frame
-    def update(self) -> None:
-        """Update command execution state - call this every frame"""
-
-        # if command is executing (with start time present) and command is
-        # complete (theoretical execution time has elapsed) set is_executing to
-        # False and current_command_start_time to None
-        if self.is_executing and self.current_command_start_time:
-            if (
-                time.time() - self.current_command_start_time
-                >= self.current_command_duration
-            ):
-                self.is_executing = False
-                self.current_command_start_time = None
-
-        # if not executing, try to execute a command in queue
-        if not self.is_executing:
-            try:
-                command = self.command_queue.get_nowait()
-                self.send_command_immediate(command)
-            except Empty:
-                pass
-
-    # repeatedly fire laser in a square grid pattern
-    def scan_grid(self, n: int, speed: float = 100.0, step_time: float = 10.0) -> None:
-        """Queue commands for grid scanning pattern"""
-
-        # loop over number of rows in grid
-        for row in range(n):
-            # loop over number of columns in grid
-            for col in range(n):
-                # enqueue move right if not first col in row
-                if col > 0:
-                    self.queue_command(speed, Direction.RIGHT, step_time, 0)
-                # fire laser at current point
-                self.queue_command(0, Direction.DEFAULT, 0, 1000)
-
-            # if row is not the last, move left back to first col, then
-            # down one to next row
-            if row < n - 1:
-                # move left until back to col 1
-                for _ in range(n - 1):
-                    self.queue_command(speed, Direction.LEFT, step_time, 0)
-                # move down (?) 1. everything was labeled down but int was 3, so
-                # i changed const to indicate up?
-                self.queue_command(speed, Direction.UP, step_time, 0)
-
-        # move up to top row. should this also move to left? also this was again
-        # 2 but labeled everywhere as up ?
-        for _ in range(n - 1):
-            self.queue_command(speed, Direction.DOWN, step_time, 0)
-
-    # return if is_executing or if queue is not empty.
-    def is_busy(self) -> bool:
-        """Check if controller is busy executing commands"""
-
-        return self.is_executing or not self.command_queue.empty()
-
-
 #
 # init
 #
@@ -397,7 +167,7 @@ pygame.display.set_caption(WINDOW_NAME)
 screen: Surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 # connect to stage controller
-stage: StageController = StageController()
+stage: SerialBridge = SerialBridge(silent_fail=True if TESTING else False)
 
 # setup ui manager
 manager: UIManager = pygame_gui.UIManager((WINDOW_WIDTH, WINDOW_HEIGHT), UI_THEME)
@@ -1416,7 +1186,7 @@ while running:
                     # fire
                     case pygame.K_f if not data_needed:
                         stage.send_command_immediate(
-                            Command(0.0, Direction.DEFAULT, 0.0, fire_duration)
+                            SerialCommand.new_fire_command(fire_duration)
                         )
                         now = time.time()
 
@@ -1517,7 +1287,9 @@ while running:
 
     # do movement
     if direction is not None:
-        stage.send_command_immediate(Command(speed, direction, move_duration, 0.0))
+        stage.send_command_immediate(
+            SerialCommand.new_move_command(speed, direction, move_duration)
+        )
         print(f"moving {direction}")
 
         # this is bad

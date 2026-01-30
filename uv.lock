@@ -144,6 +144,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pandas-stubs"
+version = "2.3.3.260113"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "types-pytz" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/92/5d/be23854a73fda69f1dbdda7bc10fbd6f930bd1fa87aaec389f00c901c1e8/pandas_stubs-2.3.3.260113.tar.gz", hash = "sha256:076e3724bcaa73de78932b012ec64b3010463d377fa63116f4e6850643d93800", size = 116131, upload-time = "2026-01-13T22:30:16.704Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/c6/df1fe324248424f77b89371116dab5243db7f052c32cc9fe7442ad9c5f75/pandas_stubs-2.3.3.260113-py3-none-any.whl", hash = "sha256:ec070b5c576e1badf12544ae50385872f0631fc35d99d00dc598c2954ec564d3", size = 168246, upload-time = "2026-01-13T22:30:15.244Z" },
+]
+
+[[package]]
 name = "pathspec"
 version = "1.0.4"
 source = { registry = "https://pypi.org/simple" }
@@ -259,7 +272,9 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "mypy" },
+    { name = "pandas-stubs" },
     { name = "ruff" },
+    { name = "types-pyserial" },
 ]
 
 [package.metadata]
@@ -274,7 +289,27 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "mypy", specifier = ">=1.19.1" },
+    { name = "pandas-stubs", specifier = ">=2.3.3.260113" },
     { name = "ruff", specifier = ">=0.14.14" },
+    { name = "types-pyserial", specifier = ">=3.5.0.20251001" },
+]
+
+[[package]]
+name = "types-pyserial"
+version = "3.5.0.20251001"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e2/d4/7afd97ee3e2b4cf5c70e559748f3583f646ff3dbc4a65b26fc51d2aff985/types_pyserial-3.5.0.20251001.tar.gz", hash = "sha256:627a1965c4b874f8b5851dc88c60896696dfd1af0491836c77a60a633dca0ad4", size = 19848, upload-time = "2025-10-01T03:04:17.669Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/78/4d/9437e214780de833165f52728709e8a3130015fe536d4fbb3139f7353b3f/types_pyserial-3.5.0.20251001-py3-none-any.whl", hash = "sha256:334f9f1b5c122dcc3ce6a6142e46450cc80b684032d6ad333362077f191dea23", size = 25331, upload-time = "2025-10-01T03:04:16.555Z" },
+]
+
+[[package]]
+name = "types-pytz"
+version = "2025.2.0.20251108"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/ff/c047ddc68c803b46470a357454ef76f4acd8c1088f5cc4891cdd909bfcf6/types_pytz-2025.2.0.20251108.tar.gz", hash = "sha256:fca87917836ae843f07129567b74c1929f1870610681b4c92cb86a3df5817bdb", size = 10961, upload-time = "2025-11-08T02:55:57.001Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e7/c1/56ef16bf5dcd255155cc736d276efa6ae0a5c26fd685e28f0412a4013c01/types_pytz-2025.2.0.20251108-py3-none-any.whl", hash = "sha256:0f1c9792cab4eb0e46c52f8845c8f77cf1e313cb3d68bf826aa867fe4717d91c", size = 10116, upload-time = "2025-11-08T02:55:56.194Z" },
 ]
 
 [[package]]
