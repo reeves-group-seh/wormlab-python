@@ -1,0 +1,17 @@
+[project]
+name = "stage-ui"
+version = "0.1.0"
+readme = "readme.md"
+authors = [
+    { name = "Mack Rusing", email = "mail@mackk.net" }
+]
+requires-python = ">=3.14"
+dependencies = ["stage_ui_lib"]
+
+[tool.uv.sources]
+stage-ui-lib = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+    "packages/stage-ui-lib",
+]
