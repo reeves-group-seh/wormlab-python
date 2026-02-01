@@ -5,20 +5,11 @@ import os.path
 import pandas
 import pygame
 import pygame_gui
-import queue
-import serial
-import struct
-import sys
 import time
 
-# these are imports meant to be used as-is
-from dataclasses import dataclass
-from datetime import datetime as dt
-from enum import Enum, IntEnum
-
-# these are imported to be used in type annotations, but when constructing
-# objects, fully qualified names are prefered for clarity
+# item imports
 from cv2 import VideoCapture
+from enum import Enum
 from pandas import DataFrame
 from pygame import Clock, Color, Surface, Font
 from pygame_gui import UIManager
@@ -30,20 +21,18 @@ from pygame_gui.elements import (
     UITextBox,
     UITextEntryLine,
 )
-from queue import Queue, Empty
-from serial import Serial
+
+# local module imports
+import constants
 
 # local item imports
-from direction import Direction
 from serial_bridge import SerialBridge
-from serial_command import SerialCommand
+from state import State
+
 
 #
 # constants
 #
-
-# time program started at
-PROG_START_TIME: float = time.time()
 
 # margins dictionary to remove all margins
 PANEL_NO_MARGINS: dict[str, int] = {
@@ -84,76 +73,6 @@ class Response(Enum):
 
 
 #
-# config
-#
-
-# whether the app should be run in "testing" mode
-TESTING: bool = True
-
-# name of the csv datafile to create / write to
-DATA_FILE: str = f"data/{dt.now().strftime("%Y-%m-%dT%H%M%S")}-data.csv"
-
-# opencv video capture camera index
-CAMERA_INDEX: int = 3 if not TESTING else 0
-
-# max fps to render at
-FPS: int = 60
-
-# value to increase speed by
-SPEED_STEP: float = 10.0
-
-# min, max, defautlt movement speeds
-MIN_SPEED: float = 10.0
-MAX_SPEED: float = 1000.0
-DEFAULT_SPEED: float = 100.0
-
-# min, max, default laser fire duration (ms)
-MIN_FIRE_DURATION: float = 1.0
-MAX_FIRE_DURATION: float = 10000.0
-DEFAULT_FIRE_DURATION: float = 200.0
-
-# min, max, default size of the square grid
-MIN_GRID_SIZE: int = 1
-MAX_GRID_SIZE: int = 20
-DEFAULT_GRID_SIZE: int = 3
-
-# min, max, default duration for move commands (ms)
-MIN_MOVE_DURATION: float = 1.0
-MAX_MOVE_DURATION: float = 5000.0
-DEFAULT_MOVE_DURATION: float = 100.0
-
-# name of the application
-WINDOW_NAME: str = "Stage Controller"
-
-# width of the window
-WINDOW_WIDTH: int = 1000
-
-# height of the window
-WINDOW_HEIGHT: int = 650
-
-# amount of padding between main panels
-WINDOW_SEP: int = 20
-
-# amount of padding between sub-panels
-WINDOW_PANEL_SEP: int = 10
-
-# mappings of key constants to directions
-DIRECTION_MAP: dict[int, Direction] = {
-    pygame.K_h: Direction.LEFT,
-    pygame.K_k: Direction.RIGHT,
-    pygame.K_u: Direction.UP,
-    pygame.K_j: Direction.DOWN,
-}
-
-# alternate arrow key contant mappings to directions. should these exist?
-DIRECTION_ARROW_MAP: dict[int, Direction] = {
-    pygame.K_LEFT: Direction.LEFT,
-    pygame.K_RIGHT: Direction.RIGHT,
-    pygame.K_UP: Direction.UP,
-    pygame.K_DOWN: Direction.DOWN,
-}
-
-#
 # init
 #
 
@@ -161,19 +80,23 @@ DIRECTION_ARROW_MAP: dict[int, Direction] = {
 pygame.init()
 
 # set window title
-pygame.display.set_caption(WINDOW_NAME)
+pygame.display.set_caption(constants.WINDOW_NAME)
 
 # create the display surface
-screen: Surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+screen: Surface = pygame.display.set_mode(
+    (constants.WINDOW_WIDTH, constants.WINDOW_HEIGHT)
+)
 
 # connect to stage controller
-stage: SerialBridge = SerialBridge(silent_fail=True if TESTING else False)
+stage: SerialBridge = SerialBridge()
 
 # setup ui manager
-manager: UIManager = pygame_gui.UIManager((WINDOW_WIDTH, WINDOW_HEIGHT), UI_THEME)
+manager: UIManager = pygame_gui.UIManager(
+    (constants.WINDOW_WIDTH, constants.WINDOW_HEIGHT), UI_THEME
+)
 
 # connect to camera feed
-feed: VideoCapture = cv2.VideoCapture(CAMERA_INDEX)
+feed: VideoCapture = cv2.VideoCapture(constants.CAMERA_INDEX)
 feed_w: int = int(feed.get(cv2.CAP_PROP_FRAME_WIDTH))
 feed_h: int = int(feed.get(cv2.CAP_PROP_FRAME_HEIGHT))
 feed_a: float = feed_w / feed_h
@@ -181,66 +104,18 @@ feed_a: float = feed_w / feed_h
 # default ui font
 font: Font = pygame.font.SysFont("Calibri", 20)
 
-#
-# state variables
-#
-
-# current speed (steps per second)
-speed: float = DEFAULT_SPEED
-
-# duration of move commands
-move_duration: float = DEFAULT_MOVE_DURATION
-
-# duration of fire commands
-fire_duration: float = DEFAULT_FIRE_DURATION
-
-# size of the square grid
-grid_size: int = DEFAULT_GRID_SIZE
-
-# if in "marker placement" mode. when True, mouse can be used to place marker on
-# camera grid
-place_marker: bool = False
-
-# the "normalized coords" of where mouse click placed a marker. should the tuple
-# values be floats or ints?
-pos_vid: tuple[float, float] | None = None
-
-# time when flash started or None when not flashing
-flash_start_time: float | None = None
-
-# time at last laser fire
-last_fire_time: float | None = None
-
-# fire duration (radius ?) at last laser fire
-last_fire_duration: float | None = None
-
-# room temp in degrees celsius
-room_temp: float | None = None
-
-# current strain of worm
-worm_strain: str | None = None
-
-# current index / id of worm being recorded
-worm_id: str | None = None
-
-# whether data has yet to be recorded since the last laser fire
-data_needed: bool = False
-
-# what direction movement is currently happening in
-direction: Direction | None = None
-
-# if program is running
-running: bool = True
+# current state
+state: State = State()
 
 #
 # ui components
 #
 
 # main panel at top of window with status info
-info_panel_w: int = WINDOW_WIDTH - (2 * WINDOW_SEP)
+info_panel_w: int = constants.WINDOW_WIDTH - (2 * constants.WINDOW_SEP)
 info_panel_h: int = 170
-info_panel_x: int = WINDOW_SEP
-info_panel_y: int = WINDOW_SEP
+info_panel_x: int = constants.WINDOW_SEP
+info_panel_y: int = constants.WINDOW_SEP
 info_panel: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(info_panel_x, info_panel_y, info_panel_w, info_panel_h),
     manager=manager,
@@ -248,10 +123,10 @@ info_panel: UIPanel = pygame_gui.elements.UIPanel(
 )
 
 # panel that flashes while laser is firing
-flash_panel_w: int = info_panel_h - (2 * WINDOW_PANEL_SEP)
-flash_panel_h: int = info_panel_h - (2 * WINDOW_PANEL_SEP)
-flash_panel_x: int = info_panel_w - flash_panel_w - WINDOW_PANEL_SEP
-flash_panel_y: int = WINDOW_PANEL_SEP
+flash_panel_w: int = info_panel_h - (2 * constants.WINDOW_PANEL_SEP)
+flash_panel_h: int = info_panel_h - (2 * constants.WINDOW_PANEL_SEP)
+flash_panel_x: int = info_panel_w - flash_panel_w - constants.WINDOW_PANEL_SEP
+flash_panel_y: int = constants.WINDOW_PANEL_SEP
 flash_panel: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(
         flash_panel_x, flash_panel_y, flash_panel_w, flash_panel_h
@@ -263,22 +138,20 @@ flash_panel: UIPanel = pygame_gui.elements.UIPanel(
 )
 
 
-def flash_panel_update() -> None:
-    global flash_start_time
-
-    if flash_start_time:
-        if time.time() - flash_start_time < 0.5:
+def flash_panel_update(state: State) -> None:
+    if state.flash_start_time:
+        if time.time() - state.flash_start_time < 0.5:
             flash_panel.change_object_id("#red_panel")
         else:
             flash_panel.change_object_id(None)
-            flash_start_time = None
+            state.flash_start_time = None
 
 
 # status text box with current state variables
 status_box_w: int = 200
-status_box_h: int = info_panel_h - (2 * WINDOW_PANEL_SEP)
-status_box_x: int = WINDOW_PANEL_SEP
-status_box_y: int = WINDOW_PANEL_SEP
+status_box_h: int = info_panel_h - (2 * constants.WINDOW_PANEL_SEP)
+status_box_x: int = constants.WINDOW_PANEL_SEP
+status_box_y: int = constants.WINDOW_PANEL_SEP
 status_box: UITextBox = pygame_gui.elements.UITextBox(
     html_text="",
     relative_rect=pygame.Rect(status_box_x, status_box_y, status_box_w, status_box_h),
@@ -304,10 +177,12 @@ def status_box_update() -> None:
 
 
 # data recording panel
-data_panel_w: int = info_panel_w - status_box_w - flash_panel_w - (4 * WINDOW_PANEL_SEP)
-data_panel_h: int = info_panel_h - (2 * WINDOW_PANEL_SEP)
-data_panel_x: int = status_box_w + (2 * WINDOW_PANEL_SEP)
-data_panel_y: int = WINDOW_PANEL_SEP
+data_panel_w: int = (
+    info_panel_w - status_box_w - flash_panel_w - (4 * constants.WINDOW_PANEL_SEP)
+)
+data_panel_h: int = info_panel_h - (2 * constants.WINDOW_PANEL_SEP)
+data_panel_x: int = status_box_w + (2 * constants.WINDOW_PANEL_SEP)
+data_panel_y: int = constants.WINDOW_PANEL_SEP
 data_panel: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(data_panel_x, data_panel_y, data_panel_w, data_panel_h),
     manager=manager,
@@ -364,14 +239,14 @@ def create_datafile() -> None:
             "response": [],
         }
     )
-    df.to_csv(DATA_FILE, index=False)
+    df.to_csv(constants.DATA_FILE, index=False)
 
 
 def data_buttons_handle_press(res: Response) -> None:
     global last_fire_time, data_needed, last_fire_duration
 
     # create datafile if it doesn't exist
-    if not os.path.isfile(DATA_FILE):
+    if not os.path.isfile(constants.DATA_FILE):
         create_datafile()
 
     # create dataframe from data
@@ -389,7 +264,7 @@ def data_buttons_handle_press(res: Response) -> None:
             "response": [str(res)],
         }
     )
-    df.to_csv(DATA_FILE, mode="a", index=False, header=False)
+    df.to_csv(constants.DATA_FILE, mode="a", index=False, header=False)
 
     # reset state
     data_needed = False
@@ -402,12 +277,12 @@ def data_buttons_handle_press(res: Response) -> None:
 
 # data button constants
 DATA_BUTTON_W: int = 75
-DATA_BUTTON_H: int = int((data_panel_h - (3 * WINDOW_PANEL_SEP)) / 2)
+DATA_BUTTON_H: int = int((data_panel_h - (3 * constants.WINDOW_PANEL_SEP)) / 2)
 
 data_p_button_w: int = DATA_BUTTON_W
 data_p_button_h: int = DATA_BUTTON_H
-data_p_button_x: int = data_panel_w - DATA_BUTTON_W - WINDOW_PANEL_SEP
-data_p_button_y: int = WINDOW_PANEL_SEP
+data_p_button_x: int = data_panel_w - DATA_BUTTON_W - constants.WINDOW_PANEL_SEP
+data_p_button_y: int = constants.WINDOW_PANEL_SEP
 data_p_button: UIButton = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect(
         data_p_button_x,
@@ -425,8 +300,8 @@ data_p_button.bind(
 
 data_n_button_w: int = DATA_BUTTON_W
 data_n_button_h: int = DATA_BUTTON_H
-data_n_button_x: int = data_panel_w - DATA_BUTTON_W - WINDOW_PANEL_SEP
-data_n_button_y: int = DATA_BUTTON_H + (2 * WINDOW_PANEL_SEP)
+data_n_button_x: int = data_panel_w - DATA_BUTTON_W - constants.WINDOW_PANEL_SEP
+data_n_button_y: int = DATA_BUTTON_H + (2 * constants.WINDOW_PANEL_SEP)
 data_n_button: UIButton = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect(
         data_n_button_x,
@@ -445,8 +320,10 @@ data_n_button.bind(
 
 data_f_button_w: int = DATA_BUTTON_W
 data_f_button_h: int = DATA_BUTTON_H
-data_f_button_x: int = data_panel_w - (2 * DATA_BUTTON_W) - (2 * WINDOW_PANEL_SEP)
-data_f_button_y: int = WINDOW_PANEL_SEP
+data_f_button_x: int = (
+    data_panel_w - (2 * DATA_BUTTON_W) - (2 * constants.WINDOW_PANEL_SEP)
+)
+data_f_button_y: int = constants.WINDOW_PANEL_SEP
 data_f_button: UIButton = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect(
         data_f_button_x,
@@ -464,8 +341,10 @@ data_f_button.bind(
 
 data_a_button_w: int = DATA_BUTTON_W
 data_a_button_h: int = DATA_BUTTON_H
-data_a_button_x: int = data_panel_w - (2 * DATA_BUTTON_W) - (2 * WINDOW_PANEL_SEP)
-data_a_button_y: int = DATA_BUTTON_H + (2 * WINDOW_PANEL_SEP)
+data_a_button_x: int = (
+    data_panel_w - (2 * DATA_BUTTON_W) - (2 * constants.WINDOW_PANEL_SEP)
+)
+data_a_button_y: int = DATA_BUTTON_H + (2 * constants.WINDOW_PANEL_SEP)
 data_a_button: UIButton = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect(
         data_a_button_x,
@@ -511,7 +390,7 @@ data_buttons_disable()
 DATA_INPUT_W: int = 125
 DATA_INPUT_H: int = 30
 DATA_INPUT_X: int = (
-    data_panel_w - (2 * DATA_BUTTON_W) - DATA_INPUT_W - (3 * WINDOW_PANEL_SEP)
+    data_panel_w - (2 * DATA_BUTTON_W) - DATA_INPUT_W - (3 * constants.WINDOW_PANEL_SEP)
 )
 DATA_LABEL_H: int = 20
 DATA_INPUTS_H: int = (2 * DATA_INPUT_H) + (2 * DATA_LABEL_H)
@@ -603,9 +482,9 @@ def data_strain_input_handle_finish(text: str) -> None:
 
 # main panel at left of window where main ui is held
 ui_panel_w: int = 400
-ui_panel_h: int = WINDOW_HEIGHT - info_panel_h - (3 * WINDOW_SEP)
-ui_panel_x: int = WINDOW_SEP
-ui_panel_y: int = info_panel_h + (2 * WINDOW_SEP)
+ui_panel_h: int = constants.WINDOW_HEIGHT - info_panel_h - (3 * constants.WINDOW_SEP)
+ui_panel_x: int = constants.WINDOW_SEP
+ui_panel_y: int = info_panel_h + (2 * constants.WINDOW_SEP)
 ui_panel: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(ui_panel_x, ui_panel_y, ui_panel_w, ui_panel_h),
     manager=manager,
@@ -613,10 +492,10 @@ ui_panel: UIPanel = pygame_gui.elements.UIPanel(
 )
 
 # sub-panel containing countdown at the bottom of ui_panel
-countdown_panel_w: int = ui_panel_w - (2 * WINDOW_PANEL_SEP)
+countdown_panel_w: int = ui_panel_w - (2 * constants.WINDOW_PANEL_SEP)
 countdown_panel_h: int = 80
-countdown_panel_x: int = WINDOW_PANEL_SEP
-countdown_panel_y: int = ui_panel_h - countdown_panel_h - WINDOW_PANEL_SEP
+countdown_panel_x: int = constants.WINDOW_PANEL_SEP
+countdown_panel_y: int = ui_panel_h - countdown_panel_h - constants.WINDOW_PANEL_SEP
 countdown_panel: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(
         countdown_panel_x, countdown_panel_y, countdown_panel_w, countdown_panel_h
@@ -655,11 +534,11 @@ def countdown_label_update() -> None:
 
 
 # button for activating "place marker" mode above the countdown in ui_panel
-marker_button_w: int = ui_panel_w - (2 * WINDOW_PANEL_SEP)
+marker_button_w: int = ui_panel_w - (2 * constants.WINDOW_PANEL_SEP)
 marker_button_h: int = 120
-marker_button_x: int = WINDOW_PANEL_SEP
+marker_button_x: int = constants.WINDOW_PANEL_SEP
 marker_button_y: int = (
-    ui_panel_h - countdown_panel_h - marker_button_h - (2 * WINDOW_PANEL_SEP)
+    ui_panel_h - countdown_panel_h - marker_button_h - (2 * constants.WINDOW_PANEL_SEP)
 )
 marker_button: UIButton = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect(
@@ -692,10 +571,10 @@ marker_button.bind(pygame_gui.UI_BUTTON_PRESSED, marker_button_handle_press)
 # ui panel containing numeric inputs on top left of ui_panel
 numeric_inputs_panel_w: int = 150
 numeric_inputs_panel_h: int = (
-    ui_panel_h - countdown_panel_h - marker_button_h - (4 * WINDOW_PANEL_SEP)
+    ui_panel_h - countdown_panel_h - marker_button_h - (4 * constants.WINDOW_PANEL_SEP)
 )
-numeric_inputs_panel_x: int = WINDOW_PANEL_SEP
-numeric_inputs_panel_y: int = WINDOW_PANEL_SEP
+numeric_inputs_panel_x: int = constants.WINDOW_PANEL_SEP
+numeric_inputs_panel_y: int = constants.WINDOW_PANEL_SEP
 numeric_inputs_panel: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(
         numeric_inputs_panel_x,
@@ -709,10 +588,10 @@ numeric_inputs_panel: UIPanel = pygame_gui.elements.UIPanel(
 )
 
 # label for fire duration inside numeric_inputs_panel
-fire_duration_label_w: int = numeric_inputs_panel_w - (2 * WINDOW_PANEL_SEP)
+fire_duration_label_w: int = numeric_inputs_panel_w - (2 * constants.WINDOW_PANEL_SEP)
 fire_duration_label_h: int = 30
-fire_duration_label_x: int = WINDOW_PANEL_SEP
-fire_duration_label_y: int = WINDOW_PANEL_SEP
+fire_duration_label_x: int = constants.WINDOW_PANEL_SEP
+fire_duration_label_y: int = constants.WINDOW_PANEL_SEP
 fire_duration_label = pygame_gui.elements.UILabel(
     relative_rect=pygame.Rect(
         fire_duration_label_x,
@@ -726,10 +605,10 @@ fire_duration_label = pygame_gui.elements.UILabel(
 )
 
 # input for fire duration inside numeric_inputs_panel
-fire_duration_input_w: int = numeric_inputs_panel_w - (2 * WINDOW_PANEL_SEP)
+fire_duration_input_w: int = numeric_inputs_panel_w - (2 * constants.WINDOW_PANEL_SEP)
 fire_duration_input_h: int = 30
-fire_duration_input_x: int = WINDOW_PANEL_SEP
-fire_duration_input_y: int = WINDOW_PANEL_SEP + 25
+fire_duration_input_x: int = constants.WINDOW_PANEL_SEP
+fire_duration_input_y: int = constants.WINDOW_PANEL_SEP + 25
 fire_duration_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
     relative_rect=pygame.Rect(
         fire_duration_input_x,
@@ -739,7 +618,7 @@ fire_duration_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
     ),
     manager=manager,
     container=numeric_inputs_panel,
-    initial_text=str(int(DEFAULT_FIRE_DURATION)),
+    initial_text=str(int(constants.DEFAULT_FIRE_DURATION)),
 )
 
 
@@ -759,7 +638,9 @@ def fire_duration_input_handle_finish(text: str) -> None:
     try:
         val = float(text)
         fire_duration = (
-            val if MIN_FIRE_DURATION <= val <= MAX_FIRE_DURATION else fire_duration
+            val
+            if constants.MIN_FIRE_DURATION <= val <= constants.MAX_FIRE_DURATION
+            else fire_duration
         )
     except:
         ...
@@ -769,10 +650,10 @@ def fire_duration_input_handle_finish(text: str) -> None:
 
 
 # label for grid size inside numeric_inputs_panel
-grid_size_label_w: int = numeric_inputs_panel_w - (2 * WINDOW_PANEL_SEP)
+grid_size_label_w: int = numeric_inputs_panel_w - (2 * constants.WINDOW_PANEL_SEP)
 grid_size_label_h: int = 30
-grid_size_label_x: int = WINDOW_PANEL_SEP
-grid_size_label_y: int = WINDOW_PANEL_SEP + 50
+grid_size_label_x: int = constants.WINDOW_PANEL_SEP
+grid_size_label_y: int = constants.WINDOW_PANEL_SEP + 50
 grid_size_label: UILabel = pygame_gui.elements.UILabel(
     relative_rect=pygame.Rect(
         grid_size_label_x, grid_size_label_y, grid_size_label_w, grid_size_label_h
@@ -783,17 +664,17 @@ grid_size_label: UILabel = pygame_gui.elements.UILabel(
 )
 
 # input for grid size inside numeric_inputs_panel
-grid_size_input_w: int = numeric_inputs_panel_w - (2 * WINDOW_PANEL_SEP)
+grid_size_input_w: int = numeric_inputs_panel_w - (2 * constants.WINDOW_PANEL_SEP)
 grid_size_input_h: int = 30
-grid_size_input_x: int = WINDOW_PANEL_SEP
-grid_size_input_y: int = WINDOW_PANEL_SEP + 75
+grid_size_input_x: int = constants.WINDOW_PANEL_SEP
+grid_size_input_y: int = constants.WINDOW_PANEL_SEP + 75
 grid_size_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
     relative_rect=pygame.Rect(
         grid_size_input_x, grid_size_input_y, grid_size_input_w, grid_size_input_h
     ),
     manager=manager,
     container=numeric_inputs_panel,
-    initial_text=str(DEFAULT_GRID_SIZE),
+    initial_text=str(constants.DEFAULT_GRID_SIZE),
 )
 
 
@@ -811,7 +692,11 @@ def grid_size_input_handle_finish(text: str) -> None:
     # parse and update state var
     try:
         val = int(text)
-        grid_size = val if MIN_GRID_SIZE <= val <= MAX_GRID_SIZE else grid_size
+        grid_size = (
+            val
+            if constants.MIN_GRID_SIZE <= val <= constants.MAX_GRID_SIZE
+            else grid_size
+        )
     except:
         ...
 
@@ -820,10 +705,10 @@ def grid_size_input_handle_finish(text: str) -> None:
 
 
 # label for move duration inside numeric_inputs_panel
-move_duration_label_w: int = numeric_inputs_panel_w - (2 * WINDOW_PANEL_SEP)
+move_duration_label_w: int = numeric_inputs_panel_w - (2 * constants.WINDOW_PANEL_SEP)
 move_duration_label_h: int = 30
-move_duration_label_x: int = WINDOW_PANEL_SEP
-move_duration_label_y: int = WINDOW_PANEL_SEP + 100
+move_duration_label_x: int = constants.WINDOW_PANEL_SEP
+move_duration_label_y: int = constants.WINDOW_PANEL_SEP + 100
 move_duration_label: UILabel = pygame_gui.elements.UILabel(
     relative_rect=pygame.Rect(
         move_duration_label_x,
@@ -837,10 +722,10 @@ move_duration_label: UILabel = pygame_gui.elements.UILabel(
 )
 
 # input for move duration inside numeric_inputs_panel
-move_duration_input_w: int = numeric_inputs_panel_w - (2 * WINDOW_PANEL_SEP)
+move_duration_input_w: int = numeric_inputs_panel_w - (2 * constants.WINDOW_PANEL_SEP)
 move_duration_input_h: int = 30
-move_duration_input_x: int = WINDOW_PANEL_SEP
-move_duration_input_y: int = WINDOW_PANEL_SEP + 125
+move_duration_input_x: int = constants.WINDOW_PANEL_SEP
+move_duration_input_y: int = constants.WINDOW_PANEL_SEP + 125
 move_duration_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
     relative_rect=pygame.Rect(
         move_duration_input_x,
@@ -850,7 +735,7 @@ move_duration_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
     ),
     manager=manager,
     container=numeric_inputs_panel,
-    initial_text=str(int(DEFAULT_MOVE_DURATION)),
+    initial_text=str(int(constants.DEFAULT_MOVE_DURATION)),
 )
 
 
@@ -864,7 +749,9 @@ def move_duration_input_handle_finish(text: str) -> None:
     try:
         val = float(text)
         move_duration = (
-            val if MIN_MOVE_DURATION <= val <= MAX_MOVE_DURATION else move_duration
+            val
+            if constants.MIN_MOVE_DURATION <= val <= constants.MAX_MOVE_DURATION
+            else move_duration
         )
     except:
         ...
@@ -874,12 +761,14 @@ def move_duration_input_handle_finish(text: str) -> None:
 
 
 # ui panel containing help info on top right of ui_panel
-help_panel_w: int = ui_panel_w - numeric_inputs_panel_w - (3 * WINDOW_PANEL_SEP)
-help_panel_h: int = (
-    ui_panel_h - countdown_panel_h - marker_button_h - (4 * WINDOW_PANEL_SEP)
+help_panel_w: int = (
+    ui_panel_w - numeric_inputs_panel_w - (3 * constants.WINDOW_PANEL_SEP)
 )
-help_panel_x: int = numeric_inputs_panel_w + (2 * WINDOW_PANEL_SEP)
-help_panel_y: int = WINDOW_PANEL_SEP
+help_panel_h: int = (
+    ui_panel_h - countdown_panel_h - marker_button_h - (4 * constants.WINDOW_PANEL_SEP)
+)
+help_panel_x: int = numeric_inputs_panel_w + (2 * constants.WINDOW_PANEL_SEP)
+help_panel_y: int = constants.WINDOW_PANEL_SEP
 help_panel: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(help_panel_x, help_panel_y, help_panel_w, help_panel_h),
     manager=manager,
@@ -908,10 +797,10 @@ key_labels_html: str = "<br>".join(
 )
 
 # text box containing key-definition pairs
-key_labels_box_w: int = help_panel_w - (2 * WINDOW_PANEL_SEP)
-key_labels_box_h: int = help_panel_h - (2 * WINDOW_PANEL_SEP)
-key_labels_box_x: int = WINDOW_PANEL_SEP
-key_labels_box_y: int = WINDOW_PANEL_SEP
+key_labels_box_w: int = help_panel_w - (2 * constants.WINDOW_PANEL_SEP)
+key_labels_box_h: int = help_panel_h - (2 * constants.WINDOW_PANEL_SEP)
+key_labels_box_x: int = constants.WINDOW_PANEL_SEP
+key_labels_box_y: int = constants.WINDOW_PANEL_SEP
 key_labels_box: UITextBox = pygame_gui.elements.UITextBox(
     html_text=key_labels_html,
     relative_rect=pygame.Rect(
@@ -922,10 +811,10 @@ key_labels_box: UITextBox = pygame_gui.elements.UITextBox(
 )
 
 # panel containing the video feed
-video_panel_w: int = WINDOW_WIDTH - ui_panel_w - (3 * WINDOW_SEP)
-video_panel_h: int = WINDOW_HEIGHT - info_panel_h - (3 * WINDOW_SEP)
-video_panel_x: int = ui_panel_w + (2 * WINDOW_SEP)
-video_panel_y: int = info_panel_h + (2 * WINDOW_SEP)
+video_panel_w: int = constants.WINDOW_WIDTH - ui_panel_w - (3 * constants.WINDOW_SEP)
+video_panel_h: int = constants.WINDOW_HEIGHT - info_panel_h - (3 * constants.WINDOW_SEP)
+video_panel_x: int = ui_panel_w + (2 * constants.WINDOW_SEP)
+video_panel_y: int = info_panel_h + (2 * constants.WINDOW_SEP)
 video_panel: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(
         video_panel_x, video_panel_y, video_panel_w, video_panel_h
@@ -1077,8 +966,8 @@ def video_frame_update() -> None:
 
 temp_window_w: int = 300
 temp_window_h: int = 150
-temp_window_x: int = int(WINDOW_WIDTH / 2) - int(temp_window_w / 2)
-temp_window_y: int = int(WINDOW_HEIGHT / 2) - int(temp_window_h / 2)
+temp_window_x: int = int(constants.WINDOW_WIDTH / 2) - int(temp_window_w / 2)
+temp_window_y: int = int(constants.WINDOW_HEIGHT / 2) - int(temp_window_h / 2)
 temp_window: UIPanel = pygame_gui.elements.UIPanel(
     relative_rect=pygame.Rect(
         temp_window_x, temp_window_y, temp_window_w, temp_window_h
@@ -1179,15 +1068,13 @@ while running:
                         running = False
                     # increase speed
                     case pygame.K_w:
-                        speed = min(speed + SPEED_STEP, MAX_SPEED)
+                        speed = min(speed + constants.SPEED_STEP, constants.MAX_SPEED)
                     # decrease speed
                     case pygame.K_s:
-                        speed = max(speed - SPEED_STEP, MIN_SPEED)
+                        speed = max(speed - constants.SPEED_STEP, constants.MIN_SPEED)
                     # fire
                     case pygame.K_f if not data_needed:
-                        stage.send_command_immediate(
-                            SerialCommand.new_fire_command(fire_duration)
-                        )
+                        stage.enqueue_fire_command(fire_duration)
                         now = time.time()
 
                         # update state
@@ -1201,7 +1088,7 @@ while running:
 
                     # scan grid
                     case pygame.K_m if not stage.is_busy():
-                        stage.scan_grid(grid_size, speed=speed, step_time=move_duration)
+                        stage.scan_grid(grid_size)
                         flash_start_time = time.time()
 
                     # skip data
@@ -1214,20 +1101,21 @@ while running:
                         data_buttons_disable()
 
                     # move
-                    case key if key in DIRECTION_MAP:
-                        direction = DIRECTION_MAP[key]
+                    case key if key in constants.SINGLE_MOVEMENT_MAP:
+                        direction = constants.SINGLE_MOVEMENT_MAP[key]
                     # move with arrows, should this be removed?
-                    case key if key in DIRECTION_ARROW_MAP:
-                        direction = DIRECTION_ARROW_MAP[key]
+                    case key if key in constants.CONTINUOUS_MOVEMENT_MAP:
+                        direction = constants.CONTINUOUS_MOVEMENT_MAP[key]
 
             # key un-press
             case pygame.KEYUP:
                 keyup_key: int = event.key
                 if (
-                    keyup_key in DIRECTION_MAP and direction is DIRECTION_MAP[keyup_key]
+                    keyup_key in constants.SINGLE_MOVEMENT_MAP
+                    and direction is constants.SINGLE_MOVEMENT_MAP[keyup_key]
                 ) or (
-                    keyup_key in DIRECTION_ARROW_MAP
-                    and direction is DIRECTION_ARROW_MAP[keyup_key]
+                    keyup_key in constants.CONTINUOUS_MOVEMENT_MAP
+                    and direction is constants.CONTINUOUS_MOVEMENT_MAP[keyup_key]
                 ):
                     direction = None
 
@@ -1287,9 +1175,7 @@ while running:
 
     # do movement
     if direction is not None:
-        stage.send_command_immediate(
-            SerialCommand.new_move_command(speed, direction, move_duration)
-        )
+        stage.enqueue_move_command(speed, direction, move_duration)
         print(f"moving {direction}")
 
         # this is bad
