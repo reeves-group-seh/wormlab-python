@@ -1,15 +1,12 @@
 # module imports
 import cv2
 import datetime
-import os.path
-import pandas
 import pygame
 import pygame_gui
 import time
 
 # item imports
 from cv2 import VideoCapture
-from pandas import DataFrame
 from pygame import Clock, Color, Surface, Font
 from pygame_gui import UIManager
 from pygame_gui.elements import (
