@@ -8,8 +8,46 @@ from dataclasses import dataclass
 from enum import IntEnum
 from serial import Serial
 
-# local module imports
-import constants
+
+#
+# constants
+#
+
+
+SERIAL_PORT: str = "COM3"
+"""
+Port to communicate with the arduino on.
+"""
+
+SERIAL_BAUDRATE: int = 115200
+"""
+Baudrate to communicate with the arduino at.
+"""
+
+SERIAL_CONNECTION_TIMEOUT: float = 0.1
+"""
+The timeout for the serial connection.
+"""
+
+DEFAULT_GRID_SCAN_SPEED: float = 100.0
+"""
+Default speed in steps per second of movement commands in a grid scan.
+"""
+
+DEFAULT_GRID_SCAN_MOVE_DURATION: float = 10.0
+"""
+Default duration in milliseconds of movement commands in a grid scan.
+"""
+
+DEFAULT_GRID_SCAN_FIRE_DURATION: float = 1000.0
+"""
+Default duration in milliseconds of fire commands in a grid scan.
+"""
+
+
+#
+# classes
+#
 
 
 @dataclass
@@ -51,9 +89,9 @@ class SerialBridge:
 
         # create serial connection, raising SerialException on failure
         self._ser = Serial(
-            port=constants.SERIAL_PORT,
-            baudrate=constants.SERIAL_BAUDRATE,
-            timeout=constants.SERIAL_CONNECTION_TIMEOUT,
+            port=SERIAL_PORT,
+            baudrate=SERIAL_BAUDRATE,
+            timeout=SERIAL_CONNECTION_TIMEOUT,
         )
 
         # create empty queue
@@ -192,9 +230,9 @@ class SerialBridge:
     def scan_grid(
         self,
         n: int,
-        speed: float = constants.DEFAULT_GRID_SCAN_SPEED,
-        move_duration: float = constants.DEFAULT_GRID_SCAN_MOVE_DURATION,
-        fire_duration: float = constants.DEFAULT_GRID_SCAN_FIRE_DURATION,
+        speed: float = 0.0,
+        move_duration: float = 0.0,
+        fire_duration: float = 0.0,
     ) -> None:
         """
         Move over an n by n grid, firing the laser in each position.
@@ -275,9 +313,9 @@ class DummySerialBridge(SerialBridge):
     def scan_grid(
         self,
         n: int,
-        speed: float = constants.DEFAULT_GRID_SCAN_SPEED,
-        move_duration: float = constants.DEFAULT_GRID_SCAN_MOVE_DURATION,
-        fire_duration: float = constants.DEFAULT_GRID_SCAN_FIRE_DURATION,
+        speed: float = DEFAULT_GRID_SCAN_SPEED,
+        move_duration: float = DEFAULT_GRID_SCAN_MOVE_DURATION,
+        fire_duration: float = DEFAULT_GRID_SCAN_FIRE_DURATION,
     ) -> None:
         pass
 
