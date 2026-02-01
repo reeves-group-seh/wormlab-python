@@ -5,13 +5,11 @@ import time
 # item imports
 from collections import deque
 from dataclasses import dataclass
+from enum import IntEnum
 from serial import Serial
 
 # local module imports
 import constants
-
-# local item imports
-from direction import Direction
 
 
 @dataclass
@@ -282,6 +280,22 @@ class DummySerialBridge(SerialBridge):
         fire_duration: float = constants.DEFAULT_GRID_SCAN_FIRE_DURATION,
     ) -> None:
         pass
+
+
+class Direction(IntEnum):
+    """
+    Enum representing possible directions for the stage to move.
+    """
+
+    LEFT = 0
+    RIGHT = 1
+    DOWN = 2  # away (up)
+    UP = 3  # towards
+
+    DEFAULT = LEFT
+    """
+    A default value for when this enum is needed but its value unused.
+    """
 
 
 @dataclass

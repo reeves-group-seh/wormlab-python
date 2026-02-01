@@ -5,11 +5,14 @@ from dataclasses import dataclass
 import constants
 
 # local item imports
-from direction import Direction
+from serial_bridge import Direction
 
 
 @dataclass
 class State:
+    """
+    Representation of all mutable application state.
+    """
 
     #
     # attributes

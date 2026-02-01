@@ -9,7 +9,6 @@ import time
 
 # item imports
 from cv2 import VideoCapture
-from enum import Enum
 from pandas import DataFrame
 from pygame import Clock, Color, Surface, Font
 from pygame_gui import UIManager
@@ -26,6 +25,8 @@ from pygame_gui.elements import (
 import constants
 
 # local item imports
+from data import DataHandler, Response
+from errors import InvalidStateError
 from serial_bridge import SerialBridge
 from state import State
 
@@ -45,32 +46,6 @@ PANEL_NO_MARGINS: dict[str, int] = {
 # ui theme for pygame_gui
 UI_THEME = {"#red_panel": {"colours": {"dark_bg": "#FF0000"}}}
 
-#
-# helper data classes & enums
-#
-
-
-class Response(Enum):
-    """
-    Enum representing all possible worm responses.
-    """
-
-    FULL = "F"
-    PARTIAL = "P"
-    ACKNOWLEDGE = "A"
-    NO_RESPONSE = "N"
-
-    def __str__(self) -> str:
-        match self:
-            case Response.FULL:
-                return "F"
-            case Response.PARTIAL:
-                return "P"
-            case Response.ACKNOWLEDGE:
-                return "A"
-            case Response.NO_RESPONSE:
-                return "N"
-
 
 #
 # init
@@ -89,6 +64,9 @@ screen: Surface = pygame.display.set_mode(
 
 # connect to stage controller
 stage: SerialBridge = SerialBridge()
+
+# create data handler
+data: DataHandler = DataHandler(constants.DATA_FILE)
 
 # setup ui manager
 manager: UIManager = pygame_gui.UIManager(
@@ -160,12 +138,12 @@ status_box: UITextBox = pygame_gui.elements.UITextBox(
 )
 
 
-def status_box_update() -> None:
+def status_box_update(state: State) -> None:
     # name, value pairs
     data: list[tuple[str, str]] = [
-        ("Speed", f"{speed:.2f} sps"),
-        ("Marker X", f"{pos_vid[0]:.2f}" if pos_vid else "None"),
-        ("Marker Y", f"{pos_vid[1]:.2f}" if pos_vid else "None"),
+        ("Speed", f"{state.speed:.2f} sps"),
+        ("Marker X", f"{state.pos_vid[0]:.2f}" if state.pos_vid else "None"),
+        ("Marker Y", f"{state.pos_vid[1]:.2f}" if state.pos_vid else "None"),
         ("Stage Controller", "Busy" if stage.is_busy() else "Idle"),
     ]
 
@@ -204,21 +182,28 @@ data_status_box: UITextBox = pygame_gui.elements.UITextBox(
 )
 
 
-def data_status_box_update() -> None:
+def data_status_box_update(state: State) -> None:
     # name, value pairs
     data: list[tuple[str, str]] = [
         (
             "Time",
             (
-                f"{time.strftime("%Y-%m-%d %H:%M", time.localtime(last_fire_time))}"
-                if last_fire_time
+                f"{time.strftime('%Y-%m-%d %H:%M', time.localtime(state.last_fire_time))}"
+                if state.last_fire_time
                 else "None"
             ),
         ),
-        ("Temp", f"{room_temp:.1f}" if room_temp is not None else "None"),
-        ("Strain", worm_strain if worm_strain else "None"),
-        ("ID", worm_id if worm_id else "None"),
-        ("Radius", f"{last_fire_duration:.2f} ms" if last_fire_duration else "None"),
+        ("Temp", f"{state.room_temp:.1f}" if state.room_temp is not None else "None"),
+        ("Strain", state.worm_strain if state.worm_strain else "None"),
+        ("ID", state.worm_id if state.worm_id else "None"),
+        (
+            "Radius",
+            (
+                f"{state.last_fire_duration:.2f} ms"
+                if state.last_fire_duration
+                else "None"
+            ),
+        ),
     ]
 
     # constructed html from key-definition pairs
@@ -228,48 +213,31 @@ def data_status_box_update() -> None:
     data_status_box.set_text(html)
 
 
-def create_datafile() -> None:
-    df: DataFrame = pandas.DataFrame(
-        {
-            "fire_time": [],
-            "room_temp": [],
-            "worm_strain": [],
-            "worm_id": [],
-            "fire_length": [],
-            "response": [],
-        }
+def data_buttons_handle_press(state: State, res: Response) -> None:
+    # check for invariants
+    if (
+        state.last_fire_time is None
+        or state.last_fire_duration is None
+        or state.worm_strain is None
+        or state.worm_id is None
+        or state.room_temp is None
+    ):
+        raise InvalidStateError("Impossible State")
+
+    # add data entry
+    data.add_entry(
+        datetime.datetime.fromtimestamp(state.last_fire_time),
+        state.last_fire_duration,
+        state.worm_strain,
+        state.worm_id,
+        res,
+        state.room_temp,
     )
-    df.to_csv(constants.DATA_FILE, index=False)
-
-
-def data_buttons_handle_press(res: Response) -> None:
-    global last_fire_time, data_needed, last_fire_duration
-
-    # create datafile if it doesn't exist
-    if not os.path.isfile(constants.DATA_FILE):
-        create_datafile()
-
-    # create dataframe from data
-    df: DataFrame = pandas.DataFrame(
-        {
-            "fire_time": [
-                datetime.datetime.fromtimestamp(
-                    last_fire_time if last_fire_time else 0.0, tz=datetime.timezone.utc
-                )
-            ],
-            "room_temp": [room_temp],
-            "worm_strain": [worm_strain],
-            "worm_id": [worm_id],
-            "fire_length": [fire_duration],
-            "response": [str(res)],
-        }
-    )
-    df.to_csv(constants.DATA_FILE, mode="a", index=False, header=False)
 
     # reset state
-    data_needed = False
-    last_fire_time = None
-    last_fire_duration = None
+    state.data_needed = False
+    state.last_fire_time = None
+    state.last_fire_duration = None
 
     # disable buttons
     data_buttons_disable()
@@ -295,7 +263,8 @@ data_p_button: UIButton = pygame_gui.elements.UIButton(
     container=data_panel,
 )
 data_p_button.bind(
-    pygame_gui.UI_BUTTON_PRESSED, lambda: data_buttons_handle_press(Response.PARTIAL)
+    pygame_gui.UI_BUTTON_PRESSED,
+    lambda: data_buttons_handle_press(state, Response.PARTIAL),
 )
 
 data_n_button_w: int = DATA_BUTTON_W
@@ -315,7 +284,7 @@ data_n_button: UIButton = pygame_gui.elements.UIButton(
 )
 data_n_button.bind(
     pygame_gui.UI_BUTTON_PRESSED,
-    lambda: data_buttons_handle_press(Response.NO_RESPONSE),
+    lambda: data_buttons_handle_press(state, Response.NO_RESPONSE),
 )
 
 data_f_button_w: int = DATA_BUTTON_W
@@ -336,7 +305,8 @@ data_f_button: UIButton = pygame_gui.elements.UIButton(
     container=data_panel,
 )
 data_f_button.bind(
-    pygame_gui.UI_BUTTON_PRESSED, lambda: data_buttons_handle_press(Response.FULL)
+    pygame_gui.UI_BUTTON_PRESSED,
+    lambda: data_buttons_handle_press(state, Response.FULL),
 )
 
 data_a_button_w: int = DATA_BUTTON_W
@@ -358,7 +328,7 @@ data_a_button: UIButton = pygame_gui.elements.UIButton(
 )
 data_a_button.bind(
     pygame_gui.UI_BUTTON_PRESSED,
-    lambda: data_buttons_handle_press(Response.ACKNOWLEDGE),
+    lambda: data_buttons_handle_press(state, Response.ACKNOWLEDGE),
 )
 
 
@@ -429,13 +399,9 @@ data_id_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
 )
 
 
-def data_id_input_handle_finish(text: str) -> None:
-
-    # bring state variables into scope to modify
-    global worm_id
-
+def data_id_input_handle_finish(state: State, text: str) -> None:
     # sanitize and update state var
-    worm_id = text.strip()
+    state.worm_id = text.strip()
 
 
 data_strain_label_w: int = DATA_INPUT_W
@@ -471,13 +437,9 @@ data_strain_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
 )
 
 
-def data_strain_input_handle_finish(text: str) -> None:
-
-    # bring state variables into scope to modify
-    global worm_strain
-
+def data_strain_input_handle_finish(state: State, text: str) -> None:
     # update state var
-    worm_strain = text.strip()
+    state.worm_strain = text.strip()
 
 
 # main panel at left of window where main ui is held
@@ -527,7 +489,7 @@ def countdown_label_update() -> None:
     """
 
     # calculate the remaining time of the 15 second countdown label
-    remaining_time: int = 15 - (int(time.time() - PROG_START_TIME) % 16)
+    remaining_time: int = 15 - (int(time.time() - constants.PROG_START_TIME) % 16)
 
     # update the countdown label's text
     countdown_label.set_text(f"Countdown: {remaining_time}s")
@@ -550,18 +512,14 @@ marker_button: UIButton = pygame_gui.elements.UIButton(
 )
 
 
-def marker_button_handle_press() -> None:
+def marker_button_handle_press(state: State) -> None:
     """
     When marker_button is pressed, put the application into "place marker" mode
     and disable the button.
     """
 
-    # bring state variables into scope to modify. i don't love this strategy,
-    # but for now it works
-    global place_marker
-
     # update state
-    place_marker = True
+    state.place_marker = True
     marker_button.disable()  # type: ignore[no-untyped-call]
 
 
@@ -622,7 +580,7 @@ fire_duration_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
 )
 
 
-def fire_duration_input_handle_finish(text: str) -> None:
+def fire_duration_input_handle_finish(state: State, text: str) -> None:
     """
     When fire_duration_input is complete, update the fire_duration state
     variable.
@@ -630,23 +588,19 @@ def fire_duration_input_handle_finish(text: str) -> None:
     :param text: The user entered text.
     """
 
-    # bring state variables into scope to modify. i don't love this strategy,
-    # but for now it works
-    global fire_duration
-
     # parse and update state var
     try:
         val = float(text)
-        fire_duration = (
+        state.fire_duration = (
             val
             if constants.MIN_FIRE_DURATION <= val <= constants.MAX_FIRE_DURATION
-            else fire_duration
+            else state.fire_duration
         )
-    except:
+    except Exception:
         ...
 
     # update text input
-    fire_duration_input.set_text(str(int(fire_duration)))
+    fire_duration_input.set_text(str(int(state.fire_duration)))
 
 
 # label for grid size inside numeric_inputs_panel
@@ -678,30 +632,26 @@ grid_size_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
 )
 
 
-def grid_size_input_handle_finish(text: str) -> None:
+def grid_size_input_handle_finish(state: State, text: str) -> None:
     """
     When grid_size_input is complete, update the grid_size state variable.
 
     :param text: The user entered text.
     """
 
-    # bring state variables into scope to modify. i don't love this strategy,
-    # but for now it works
-    global grid_size
-
     # parse and update state var
     try:
         val = int(text)
-        grid_size = (
+        state.grid_size = (
             val
             if constants.MIN_GRID_SIZE <= val <= constants.MAX_GRID_SIZE
-            else grid_size
+            else state.grid_size
         )
-    except:
+    except Exception:
         ...
 
     # update text input
-    grid_size_input.set_text(str(grid_size))
+    grid_size_input.set_text(str(state.grid_size))
 
 
 # label for move duration inside numeric_inputs_panel
@@ -739,25 +689,20 @@ move_duration_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
 )
 
 
-def move_duration_input_handle_finish(text: str) -> None:
-
-    # bring state variables into scope to modify. i don't love this strategy,
-    # but for now it works
-    global move_duration
-
+def move_duration_input_handle_finish(state: State, text: str) -> None:
     # parse and update state var
     try:
         val = float(text)
-        move_duration = (
+        state.move_duration = (
             val
             if constants.MIN_MOVE_DURATION <= val <= constants.MAX_MOVE_DURATION
-            else move_duration
+            else state.move_duration
         )
-    except:
+    except Exception:
         ...
 
     # update text input
-    move_duration_input.set_text(str(int(move_duration)))
+    move_duration_input.set_text(str(int(state.move_duration)))
 
 
 # ui panel containing help info on top right of ui_panel
@@ -852,11 +797,7 @@ def video_frame_collidepoint(x: int, y: int) -> bool:
     )
 
 
-def video_frame_place_marker(x: int, y: int) -> None:
-    # bring state variables into scope to modify. i don't love this strategy,
-    # but for now it works
-    global pos_vid, place_marker
-
+def video_frame_place_marker(state: State, x: int, y: int) -> None:
     # convert absolute x and y values to "normalized coords". should these be
     # converted to ints?
     relative_x: float = (
@@ -867,9 +808,9 @@ def video_frame_place_marker(x: int, y: int) -> None:
     ) * 500
 
     # update state
-    pos_vid = (relative_x, relative_y)
+    state.pos_vid = (relative_x, relative_y)
     marker_button.enable()  # type: ignore[no-untyped-call]
-    place_marker = False
+    state.place_marker = False
 
 
 def video_frame_update() -> None:
@@ -926,12 +867,12 @@ def video_frame_update() -> None:
     frame_surface.blit(pixel_label, (frame_surface_w - 80, frame_surface_h - 20))
 
     # draw marker
-    if pos_vid:
+    if state.pos_vid:
         # red circle with radius 5
         pygame.draw.circle(
             surface=frame_surface,
             color=pygame.Color(255, 0, 0),
-            center=pos_vid,
+            center=state.pos_vid,
             radius=5,
             width=2,
         )
@@ -939,7 +880,7 @@ def video_frame_update() -> None:
         pygame.draw.circle(
             surface=frame_surface,
             color=pygame.Color(0, 255, 0),
-            center=pos_vid,
+            center=state.pos_vid,
             radius=25,
             width=1,
         )
@@ -947,7 +888,7 @@ def video_frame_update() -> None:
         pygame.draw.circle(
             surface=frame_surface,
             color=pygame.Color(0, 0, 255),
-            center=pos_vid,
+            center=state.pos_vid,
             radius=45,
             width=1,
         )
@@ -955,7 +896,7 @@ def video_frame_update() -> None:
         pygame.draw.circle(
             surface=frame_surface,
             color=pygame.Color(255, 255, 0),
-            center=pos_vid,
+            center=state.pos_vid,
             radius=65,
             width=1,
         )
@@ -1010,19 +951,15 @@ temp_window_input: UITextEntryLine = pygame_gui.elements.UITextEntryLine(
 )
 
 
-def temp_window_input_handle_finish(text: str) -> None:
-
-    # bring state variables into scope to modify
-    global room_temp
-
+def temp_window_input_handle_finish(state: State, text: str) -> None:
     # parse and update state var
     try:
         val = float(text)
         if val == 0:
             raise Exception()
-        room_temp = val
-    except:
-        room_temp = None
+        state.room_temp = val
+    except Exception:
+        state.room_temp = None
         return
 
     # diable and hide temp window
@@ -1038,14 +975,13 @@ def temp_window_input_handle_finish(text: str) -> None:
 # clock
 clock: Clock = pygame.Clock()
 
-while running:
-
+while state.running:
     #
     # temporal values
     #
 
     # time in seconds since last frame
-    time_delta: float = clock.tick(FPS) / 1000.0
+    time_delta: float = clock.tick(constants.FPS) / 1000.0
 
     #
     # event-based updates
@@ -1054,10 +990,9 @@ while running:
     for event in pygame.event.get():
         # handle events manually
         match event.type:
-
             # quit app
             case pygame.QUIT:
-                running = False
+                state.running = False
 
             # keypress
             case pygame.KEYDOWN:
@@ -1065,59 +1000,63 @@ while running:
                 match keydown_key:
                     # quit
                     case pygame.K_ESCAPE:
-                        running = False
+                        state.running = False
                     # increase speed
                     case pygame.K_w:
-                        speed = min(speed + constants.SPEED_STEP, constants.MAX_SPEED)
+                        state.speed = min(
+                            state.speed + constants.SPEED_STEP, constants.MAX_SPEED
+                        )
                     # decrease speed
                     case pygame.K_s:
-                        speed = max(speed - constants.SPEED_STEP, constants.MIN_SPEED)
+                        state.speed = max(
+                            state.speed - constants.SPEED_STEP, constants.MIN_SPEED
+                        )
                     # fire
-                    case pygame.K_f if not data_needed:
-                        stage.enqueue_fire_command(fire_duration)
+                    case pygame.K_f if not state.data_needed:
+                        stage.enqueue_fire_command(state.fire_duration)
                         now = time.time()
 
                         # update state
-                        data_needed = True
-                        flash_start_time = now
-                        last_fire_time = now
-                        last_fire_duration = fire_duration
+                        state.data_needed = True
+                        state.flash_start_time = now
+                        state.last_fire_time = now
+                        state.last_fire_duration = state.fire_duration
 
                         # enable buttons
                         data_buttons_enable()
 
                     # scan grid
                     case pygame.K_m if not stage.is_busy():
-                        stage.scan_grid(grid_size)
-                        flash_start_time = time.time()
+                        stage.scan_grid(state.grid_size)
+                        state.flash_start_time = time.time()
 
                     # skip data
                     case pygame.K_p:
-                        data_needed = False
-                        last_fire_time = None
-                        last_fire_duration = None
+                        state.data_needed = False
+                        state.last_fire_time = None
+                        state.last_fire_duration = None
 
                         # disable buttons
                         data_buttons_disable()
 
                     # move
                     case key if key in constants.SINGLE_MOVEMENT_MAP:
-                        direction = constants.SINGLE_MOVEMENT_MAP[key]
+                        state.direction = constants.SINGLE_MOVEMENT_MAP[key]
                     # move with arrows, should this be removed?
                     case key if key in constants.CONTINUOUS_MOVEMENT_MAP:
-                        direction = constants.CONTINUOUS_MOVEMENT_MAP[key]
+                        state.direction = constants.CONTINUOUS_MOVEMENT_MAP[key]
 
             # key un-press
             case pygame.KEYUP:
                 keyup_key: int = event.key
                 if (
                     keyup_key in constants.SINGLE_MOVEMENT_MAP
-                    and direction is constants.SINGLE_MOVEMENT_MAP[keyup_key]
+                    and state.direction is constants.SINGLE_MOVEMENT_MAP[keyup_key]
                 ) or (
                     keyup_key in constants.CONTINUOUS_MOVEMENT_MAP
-                    and direction is constants.CONTINUOUS_MOVEMENT_MAP[keyup_key]
+                    and state.direction is constants.CONTINUOUS_MOVEMENT_MAP[keyup_key]
                 ):
-                    direction = None
+                    state.direction = None
 
             # mouse click
             case pygame.MOUSEBUTTONDOWN:
@@ -1126,8 +1065,8 @@ while running:
                 over_video_frame = video_frame_collidepoint(event_pos[0], event_pos[1])
                 match event_button:
                     # left mouse button, in place_marker mode, and over video
-                    case 1 if place_marker and over_video_frame:
-                        video_frame_place_marker(event_pos[0], event_pos[1])
+                    case 1 if state.place_marker and over_video_frame:
+                        video_frame_place_marker(state, event_pos[0], event_pos[1])
 
             # text entry complete (enter is pressed when selected)
             case pygame_gui.UI_TEXT_ENTRY_FINISHED:
@@ -1135,17 +1074,17 @@ while running:
                 event_text: str = event.text
                 match event_ui_element:
                     case e if e is data_id_input:
-                        data_id_input_handle_finish(event_text)
+                        data_id_input_handle_finish(state, event_text)
                     case e if e is data_strain_input:
-                        data_strain_input_handle_finish(event_text)
+                        data_strain_input_handle_finish(state, event_text)
                     case e if e is fire_duration_input:
-                        fire_duration_input_handle_finish(event_text)
+                        fire_duration_input_handle_finish(state, event_text)
                     case e if e is grid_size_input:
-                        grid_size_input_handle_finish(event_text)
+                        grid_size_input_handle_finish(state, event_text)
                     case e if e is move_duration_input:
-                        move_duration_input_handle_finish(event_text)
+                        move_duration_input_handle_finish(state, event_text)
                     case e if e is temp_window_input:
-                        temp_window_input_handle_finish(event_text)
+                        temp_window_input_handle_finish(state, event_text)
 
         # let manager process event
         manager.process_events(event)
@@ -1165,18 +1104,18 @@ while running:
     video_frame_update()
 
     # update status box text
-    status_box_update()
+    status_box_update(state)
 
     # update data recording status box text
-    data_status_box_update()
+    data_status_box_update(state)
 
     # update flash box
-    flash_panel_update()
+    flash_panel_update(state)
 
     # do movement
-    if direction is not None:
-        stage.enqueue_move_command(speed, direction, move_duration)
-        print(f"moving {direction}")
+    if state.direction is not None:
+        stage.enqueue_move_command(state.speed, state.direction, state.move_duration)
+        print(f"moving {state.direction}")
 
         # this is bad
         time.sleep(0.1)

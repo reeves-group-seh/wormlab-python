@@ -4,9 +4,10 @@ import time
 
 # item imports
 from datetime import datetime
+from pathlib import Path
 
 # local item imports
-from direction import Direction
+from serial_bridge import Direction
 
 
 TESTING: bool = True
@@ -19,7 +20,7 @@ WINDOW_NAME: str = "Stage Controller"
 Application name.
 """
 
-DATA_FILE: str = f"data/{datetime.now().strftime("%Y-%m-%d_%H%M%S")}.csv"
+DATA_FILE: Path = Path("data") / f"{datetime.now().strftime('%Y-%m-%d_%H%M%S')}.csv"
 """
 Name of the CSV datafile to create & write to.
 """
