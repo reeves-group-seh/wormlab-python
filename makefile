@@ -1,0 +1,21 @@
+# config
+PY_MAIN = src/stage_ui/main.py
+PY_FILES = src/**/*.py
+
+.PHONY: all pre-comit run tc lint format
+.SECONDARY:
+
+all: run
+pre-commit: format lint tc
+
+run:
+	uv run $(PY_MAIN)
+
+tc:
+	uv run mypy --strict $(PY_FILES)
+
+lint:
+	uv run ruff check $(PY_FILES)
+
+format:
+	uv run ruff format $(PY_FILES)
