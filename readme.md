@@ -12,7 +12,7 @@ After installing, run the app with the following command:
 uv run src/stage_ui/main.py
 ```
 
-The first run may take some extra time as packages are installed, but subsequent run should be faster.
+The first run may take some extra time as packages are installed, but subsequent runs should be faster.
 
 ## Project Philosophy
 
