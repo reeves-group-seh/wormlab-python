@@ -1,510 +1,647 @@
+"""
+Module that handles communication with the arduino.
+"""
+
 # module imports
 import struct
 import time
 
 # item imports
-from collections import deque
-from dataclasses import dataclass
-from enum import IntEnum
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from enum import Enum
+from queue import Queue
 from serial import Serial
+from threading import Thread
 
 
-#
-# constants
-#
-
-
-SERIAL_PORT: str = "COM3"
-"""
-Port to communicate with the arduino on.
-"""
-
-SERIAL_BAUDRATE: int = 115200
-"""
-Baudrate to communicate with the arduino at.
-"""
-
-SERIAL_CONNECTION_TIMEOUT: float = 0.1
-"""
-The timeout for the serial connection.
-"""
-
-DEFAULT_GRID_SCAN_SPEED: float = 100.0
-"""
-Default speed in steps per second of movement commands in a grid scan.
-"""
-
-DEFAULT_GRID_SCAN_MOVE_DURATION: float = 10.0
-"""
-Default duration in milliseconds of movement commands in a grid scan.
-"""
-
-DEFAULT_GRID_SCAN_FIRE_DURATION: float = 1000.0
-"""
-Default duration in milliseconds of fire commands in a grid scan.
-"""
-
-
-#
-# classes
-#
-
-
-@dataclass
+@dataclass(kw_only=True)
 class SerialBridge:
     """
-    Class dealing with communication to the arduino.
+    Bridge that orchestrates communication to the ardunio.
     """
 
-    #
-    # attributes
-    #
-
-    _ser: Serial
+    _worker: _SerialWorker
     """
-    Serial connection to arduino.
+    Helper that handles the worker thread and writes binary packets to the
+    arduino.
     """
 
-    _command_queue: deque[_SerialCommand]
+    _action: _SerialAction
     """
-    Queue of commands to write to the arduino.
-    """
-
-    _current_command: _SerialCommandExecution | None
-    """
-    The currently executing command.
+    The current high-level action being preformed.
     """
 
-    #
-    # constructors
-    #
-
-    def __init__(self) -> None:
+    @staticmethod
+    def new(
+        port: str,
+        baudrate: int,
+        timeout: float,
+        sleep_factor: float,
+    ) -> SerialBridge:
         """
-        Open a serial connection to the arduino.
+        Create a new `SerialBridge` with the given serial configuration.
 
-        :raises SerialException:
-            If the connection to the serial port cannot be opened.
+        :param port:
+            The port to connect to the arduino on.
+
+        :param baudrate:
+            The rate in which to communicate with the arduino.
+
+        :param timeout:
+            The time in seconds to timeout the connection to the arduino.
+
+        :param sleep_factor:
+            A factor determining how long to wait between writes to the arduino.
+            A value of 1.0 indicates the program will wait for exactly the
+            theroretical execution time of a command before sending another.
+            A value of 2.0 indicates the program will wait for double this
+            theroretical execution time, 0.5 will wait half, etc. To be safe,
+            this value should be set to a value > 1.0.
         """
-
-        # create serial connection, raising SerialException on failure
-        self._ser = Serial(
-            port=SERIAL_PORT,
-            baudrate=SERIAL_BAUDRATE,
-            timeout=SERIAL_CONNECTION_TIMEOUT,
+        return SerialBridge(
+            _worker=_SerialWorker.new(port, baudrate, timeout, sleep_factor),
+            _action=_SerialActionIdle(),
         )
 
-        # create empty queue
-        self._command_queue = deque([])
-
-        # specify current command as None
-        self._current_command = None
-
-    #
-    # getter / basic state methods
-    #
-
-    def is_busy(self) -> bool:
+    def stop(self) -> None:
         """
-        Whether a command is currently executing.
-
-        :rtype: bool
-        :return:
-            `True` if a command is executing and `False` otherwise.
+        Make the stage go idle. The arduino will complete the last action before
+        stopping (i.e. this command is not immediate).
         """
+        self._action = _SerialActionIdle()
 
-        return self._current_command is not None
-
-    def close(self) -> None:
-        """
-        Close the serial connection. The object is no longer valid after this
-        method is called.
-        """
-
-        self._ser.close()
-
-    #
-    # immediate write methods
-    #
-
-    def _write_command(self, command: _SerialCommand) -> None:
-        """
-        Send a command to the serial connection immediatly. This will overwrite
-        `_current_command` without checking to ensure it is `None`.
-
-        :type command: SerialCommand
-        :param command:
-            The command to write.
-        """
-
-        # write command packet & update state to match
-        self._ser.write(command.to_packet())
-        self._current_command = _SerialCommandExecution(command)
-
-    #
-    # queue methods
-    #
-
-    def _enqueue_command(self, command: _SerialCommand) -> None:
-        """
-        Enqueue a command to be executed on a first-in-first-out basis.
-
-        :type command: SerialCommand
-        :param command:
-            The command to eventually write.
-        """
-
-        self._command_queue.append(command)
-
-    def enqueue_move_command(
-        self, speed: float, direction: Direction, duration: float
+    def move_left(
+        self,
+        speed: float,
+        duration: float,
     ) -> None:
         """
-        Enqueue a move command to be executed on a first-in-first-out basis.
+        Move the stage left continuously. This is not stopped until a call to
+        the `stop` method is made.
 
-        :type speed: float
         :param speed:
-            The speed in steps per second.
+            The speed in steps per second to move at.
 
-        :type direction: Direction
-        :param direction:
-            The direction to move the stage.
-
-        :type duration: float
         :param duration:
-            The duration in milliseconds for the stage to move.
+            The duration in milliseconds to move.
         """
-
-        self._enqueue_command(
-            _SerialCommand.new_move_command(speed, direction, duration)
+        self._action = _SerialActionMove(
+            speed=speed,
+            direction=_Direction.LEFT,
+            duration=duration,
         )
 
-    def enqueue_fire_command(self, duration: float) -> None:
+    def move_right(
+        self,
+        speed: float,
+        duration: float,
+    ) -> None:
         """
-        Enqueue a fire command to be executed on a first-in-first-out basis.
+        Move the stage right continuously. This is not stopped until a call to
+        the `stop` method is made.
 
-        :type duration: float
+        :param speed:
+            The speed in steps per second to move at.
+
         :param duration:
-            The duration in milliseconds to fire the laser.
+            The duration in milliseconds to move.
         """
+        self._action = _SerialActionMove(
+            speed=speed,
+            direction=_Direction.RIGHT,
+            duration=duration,
+        )
 
-        self._enqueue_command(_SerialCommand.new_fire_command(duration))
-
-    def _dequeue_command(self) -> _SerialCommand | None:
+    def move_up(
+        self,
+        speed: float,
+        duration: float,
+    ) -> None:
         """
-        Remove and return the next item from the command queue.
+        Move the stage up continuously. This is not stopped until a call to the
+        `stop` method is made.
 
-        :rtype: SerialCommand | None
-        :return:
-            The next command in the queue or `None` if the queue is empty.
+        :param speed:
+            The speed in steps per second to move at.
+
+        :param duration:
+            The duration in milliseconds to move.
         """
+        self._action = _SerialActionMove(
+            speed=speed,
+            direction=_Direction.UP,
+            duration=duration,
+        )
 
-        try:
-            return self._command_queue.popleft()
-        except IndexError:
-            return None
-
-    #
-    # render loop method
-    #
-
-    def update(self) -> None:
+    def move_down(
+        self,
+        speed: float,
+        duration: float,
+    ) -> None:
         """
-        Update the command execution state. This should be called in a loop
-        (the frame render loop) to keep executing commands in the queue.
+        Move the stage down continuously. This is not stopped until a call to
+        the `stop` method is made.
+
+        :param speed:
+            The speed in steps per second to move at.
+
+        :param duration:
+            The duration in milliseconds to move.
         """
+        self._action = _SerialActionMove(
+            speed=speed,
+            direction=_Direction.DOWN,
+            duration=duration,
+        )
 
-        # remove currenly executing command if complete
-        if (
-            self._current_command is not None
-            and self._current_command.execution_time_elapsed()
-        ):
-            self._current_command = None
+    def step_left(
+        self,
+        speed: float,
+        duration: float,
+    ) -> None:
+        """
+        Move left a single step.
 
-        # if not executing, write the next command in queue
-        if self._current_command is None:
-            cmd: _SerialCommand | None = self._dequeue_command()
-            if cmd is not None:
-                self._write_command(cmd)
+        :param speed:
+            The speed in steps per second to move at.
 
-    def scan_grid(
+        :param duration:
+            The duration in milliseconds to move.
+        """
+        self._action = _SerialActionStep(
+            speed=speed,
+            direction=_Direction.LEFT,
+            duration=duration,
+        )
+
+    def step_right(
+        self,
+        speed: float,
+        duration: float,
+    ) -> None:
+        """
+        Move right a single step.
+
+        :param speed:
+            The speed in steps per second to move at.
+
+        :param duration:
+            The duration in milliseconds to move.
+        """
+        self._action = _SerialActionStep(
+            speed=speed,
+            direction=_Direction.RIGHT,
+            duration=duration,
+        )
+
+    def step_up(
+        self,
+        speed: float,
+        duration: float,
+    ) -> None:
+        """
+        Move up a single step.
+
+        :param speed:
+            The speed in steps per second to move at.
+
+        :param duration:
+            The duration in milliseconds to move.
+        """
+        self._action = _SerialActionStep(
+            speed=speed,
+            direction=_Direction.UP,
+            duration=duration,
+        )
+
+    def step_down(
+        self,
+        speed: float,
+        duration: float,
+    ) -> None:
+        """
+        Move down a single step.
+
+        :param speed:
+            The speed in steps per second to move at.
+
+        :param duration:
+            The duration in milliseconds to move.
+        """
+        self._action = _SerialActionStep(
+            speed=speed,
+            direction=_Direction.DOWN,
+            duration=duration,
+        )
+
+    def fire(
+        self,
+        duration: float,
+    ) -> None:
+        """
+        Fire the laser.
+
+        :param duration:
+            The time in milliseconds to fire the laser.
+        """
+        self._action = _SerialActionFire(duration=duration)
+
+    def grid(
         self,
         n: int,
-        speed: float = 0.0,
-        move_duration: float = 0.0,
-        fire_duration: float = 0.0,
+        speed: float,
+        move_duration: float,
+        fire_duration: float,
     ) -> None:
         """
-        Move over an n by n grid, firing the laser in each position.
+        Execute the step-and-shoot functionality.
 
-        :type n: int
         :param n:
-            The size of the square grid.
+            Size of the NxN grid.
 
-        :type speed: float
         :param speed:
-            The speed at which movement commands should be preformed
-            in steps per second. This value along with the `move_duration`
-            determine the distance between firings.
+            Speed to move in steps per second.
 
-        :type move_duration: float
         :param move_duration:
-            The movement duration in milliseconds between two adjacent
-            positions. This value, along with the `speed`, determine the
-            distance between firings.
+            Duration to to move for in milliseconds between fires.
 
-        :type fire_duration: float
         :param fire_duration:
-            The duration in milliseconds to fire the laser.
+            Duration to fire the laser for.
         """
+        self._action = _SerialActionGrid(
+            n=n,
+            speed=speed,
+            move_duration=move_duration,
+            fire_duration=fire_duration,
+        )
 
-        # start at top left, scan left to right, move left back to first column,
-        # then down to the next row and repeat
-        for row in range(n):
-            # move right across columns of row
-            for col in range(n):
-                # fire at current position
-                self.enqueue_fire_command(fire_duration)
-
-                # move right if not last column
-                if col < n - 1:
-                    self.enqueue_move_command(speed, Direction.RIGHT, move_duration)
-
-            # move left back to first col of row
-            for col in range(n - 1):
-                # move left
-                self.enqueue_move_command(speed, Direction.LEFT, move_duration)
-
-            # move down if not last row
-            if row < n - 1:
-                self.enqueue_move_command(speed, Direction.UP, move_duration)
-
-        # move up to start after scanning
-        for row in range(n - 1):
-            self.enqueue_move_command(speed, Direction.DOWN, move_duration)
-
-
-class DummySerialBridge(SerialBridge):
-    """
-    Placeholder `SerialBridge` that does nothing. Good for testing the UI
-    without a serial connection.
-    """
-
-    def __init__(self) -> None:
-        pass
-
-    def is_busy(self) -> bool:
-        return False
-
-    def close(self) -> None:
-        pass
-
-    def enqueue_move_command(
-        self, speed: float, direction: Direction, duration: float
-    ) -> None:
-        pass
-
-    def enqueue_fire_command(self, duration: float) -> None:
-        pass
-
-    def update(self) -> None:
-        pass
-
-    def scan_grid(
+    def update(
         self,
-        n: int,
-        speed: float = DEFAULT_GRID_SCAN_SPEED,
-        move_duration: float = DEFAULT_GRID_SCAN_MOVE_DURATION,
-        fire_duration: float = DEFAULT_GRID_SCAN_FIRE_DURATION,
     ) -> None:
+        """
+        Continue to communicate with the arduino. This should be called on every
+        frame.
+        """
+        # only update if worker is not executing
+        if not self._worker.queue_empty():
+            return
+
+        # send command(s) based on action
+        match self._action:
+            case _SerialActionIdle():
+                pass
+            case _SerialActionMove():
+                self._action.run(self._worker)
+            case _SerialActionStep() | _SerialActionFire() | _SerialActionGrid():
+                self._action.run(self._worker)
+                self._action = _SerialActionIdle()
+
+
+class _Direction(Enum):
+    """
+    Direction of stage movement. The value of each variant is the value sent to
+    the arduino.
+    """
+
+    # directions
+    LEFT = 0.0
+    RIGHT = 1.0
+    DOWN = 2.0  # away (up)
+    UP = 3.0  # towards
+
+    # default
+    DEFAULT = LEFT
+
+
+class _SerialAction(ABC):
+    """
+    Abstract class describing all high-level actions that the serial bridge can
+    execute.
+    """
+
+    @abstractmethod
+    def run(self, worker: _SerialWorker) -> None:
+        """
+        Execute the action by enqueuing commands to the given worker.
+        """
+        raise NotImplementedError
+
+
+@dataclass(kw_only=True, frozen=True)
+class _SerialActionIdle(_SerialAction):
+    """
+    An action representing doing nothing and sending no commands to the worker.
+    """
+
+    def run(self, _: _SerialWorker) -> None:
         pass
 
 
-class Direction(IntEnum):
+@dataclass(kw_only=True, frozen=True)
+class _SerialActionMove(_SerialAction):
     """
-    Enum representing possible directions for the stage to move.
+    An action representing a continuous movement.
     """
-
-    LEFT = 0
-    RIGHT = 1
-    DOWN = 2  # away (up)
-    UP = 3  # towards
-
-    DEFAULT = LEFT
-    """
-    A default value for when this enum is needed but its value unused.
-    """
-
-
-@dataclass
-class _SerialCommandExecution:
-    """
-    Data class containing info about the execution of a command.
-    """
-
-    #
-    # attributes
-    #
-
-    start_time: float
-    """
-    Timestamp (from `time.time()`) of when the command was written to the serial
-    port.
-    """
-
-    command: _SerialCommand
-    """
-    Command being executed.
-    """
-
-    #
-    # constructors
-    #
-
-    def __init__(self, command: _SerialCommand) -> None:
-        """
-        Initialize the command with the current time.
-
-        :type command: SerialCommand
-        :param command:
-            The command being executed.
-        """
-
-        self.start_time = time.time()
-        self.command = command
-
-    #
-    # instance methods
-    #
-
-    def execution_time_elapsed(self) -> bool:
-        """
-        Whether the command's theoretical execution time has elapsed since when
-        the command was first executed.
-
-        :rtype: bool
-        :return:
-            Returns `True` if the execution time has elapsed and `False`
-            otherwise.
-        """
-
-        return (time.time() - self.start_time) >= self.command.max_duration()
-
-
-@dataclass
-class _SerialCommand:
-    """
-    Data class containing info about a single command to send to the arduino.
-    """
-
-    #
-    # data
-    #
 
     speed: float
     """
-    The speed in steps per second of a movement command.
+    Speed to move in steps per second.
     """
 
-    direction: Direction
+    direction: _Direction
     """
-    The direction of a movement command.
+    Direction to move.
+    """
+
+    duration: float
+    """
+    Duration to move for in milliseconds.
+    """
+
+    def run(self, worker: _SerialWorker) -> None:
+        worker.enqueue_move(self.speed, self.direction, self.duration)
+
+
+@dataclass(kw_only=True, frozen=True)
+class _SerialActionStep(_SerialAction):
+    """
+    An action representing a single movement.
+    """
+
+    speed: float
+    """
+    Speed to move in steps per second.
+    """
+
+    direction: _Direction
+    """
+    Direction to move.
+    """
+
+    duration: float
+    """
+    Duration to move for in milliseconds.
+    """
+
+    def run(self, worker: _SerialWorker) -> None:
+        worker.enqueue_move(self.speed, self.direction, self.duration)
+
+
+@dataclass(kw_only=True, frozen=True)
+class _SerialActionFire(_SerialAction):
+    """
+    An action representing a fire of the laser.
+    """
+
+    duration: float
+    """
+    Duration to fire for in milliseconds.
+    """
+
+    def run(self, worker: _SerialWorker) -> None:
+        worker.enqueue_fire(self.duration)
+
+
+@dataclass(kw_only=True, frozen=True)
+class _SerialActionGrid(_SerialAction):
+    """
+    An action representing the step-and-shoot functionality.
+    """
+
+    n: int
+    """
+    Size of the NxN grid.
+    """
+
+    speed: float
+    """
+    The speed to move in steps per second.
     """
 
     move_duration: float
     """
-    The duration in milliseconds of a movement command.
+    The duration to to move for in milliseconds between fires.
     """
 
     fire_duration: float
     """
-    The duration in milliseconds of a fire command.
+    The duration to fire the laser for.
     """
 
-    #
-    # constructor methods
-    #
+    def run(self, worker: _SerialWorker) -> None:
+        # loop over number of rows in grid
+        for row in range(self.n):
+            # loop over number of columns in grid
+            for col in range(self.n):
+                # enqueue move right if not first col in row
+                if col > 0:
+                    worker.enqueue_move(
+                        self.speed,
+                        _Direction.RIGHT,
+                        self.move_duration,
+                    )
+                # fire laser at current point
+                worker.enqueue_fire(self.fire_duration)
+
+            # if row is not the last, move left back to first col, then
+            # down one to next row
+            if row < self.n - 1:
+                # move left until back to col 1
+                for _ in range(self.n - 1):
+                    worker.enqueue_move(
+                        self.speed,
+                        _Direction.LEFT,
+                        self.move_duration,
+                    )
+                # move down (?) 1. everything was labeled down but int
+                # was 3, so i changed const to indicate up?
+                worker.enqueue_move(self.speed, _Direction.UP, self.move_duration)
+
+        # move up to top row. should this also move to left? also this
+        # was again 2 but labeled everywhere as up?
+        for _ in range(self.n - 1):
+            worker.enqueue_move(
+                self.speed,
+                _Direction.DOWN,
+                self.move_duration,
+            )
+
+
+@dataclass(kw_only=True)
+class _SerialWorker:
+    """
+    Worker that deals with creating a thread for serial communication and
+    sending binary packets to it.
+    """
+
+    _port: str
+    """
+    Port to communicate to the arduino on.
+    """
+
+    _baudrate: int
+    """
+    The rate in which to communicate with the arduino.
+    """
+
+    _timeout: float
+    """
+    The time in seconds to timeout the connection to the arduino.
+    """
+
+    _sleep_factor: float
+    """
+    A factor determining how long to wait between writes to the arduino. A value
+    of 1.0 indicates the program will wait for exactly the theroretical
+    execution time of a command before sending another. A value of 2.0 indicates
+    the program will wait for double this theroretical execution time, 0.5 will
+    wait half, etc. To be safe, this value should be set to a value > 1.0.
+    """
+
+    _queue: Queue[_SerialCommand | None]
+    """
+    Queue of commands for the arduino to execute.
+    """
+
+    _thread: Thread = field(init=False)
+    """
+    The worker thread dealing with writing to the serial port.
+    """
+
+    def __post_init__(self) -> None:
+        self._thread = Thread(target=self._thread_loop, daemon=True)
+        self._thread.start()
+
+    @staticmethod
+    def new(
+        port: str,
+        baudrate: int,
+        timeout: float,
+        sleep_factor: float,
+    ) -> _SerialWorker:
+        """
+        Create a new worker with the given config.
+        """
+        return _SerialWorker(
+            _port=port,
+            _baudrate=baudrate,
+            _timeout=timeout,
+            _sleep_factor=sleep_factor,
+            _queue=Queue(),
+        )
+
+    def queue_empty(self) -> bool:
+        """
+        Check whether the command queue is empty.
+        """
+        return self._queue.empty()
+
+    def enqueue_fire(self, duration: float) -> None:
+        """
+        Add a fire command to the queue.
+        """
+        self._queue.put(_SerialCommand.new_fire_command(duration))
+
+    def enqueue_move(
+        self,
+        speed: float,
+        direction: _Direction,
+        duration: float,
+    ) -> None:
+        """
+        Add a move command to the queue.
+        """
+        self._queue.put(_SerialCommand.new_move_command(speed, direction, duration))
+
+    def _thread_loop(self) -> None:
+        """
+        Loop for the thread to run continuously.
+        """
+        with Serial(
+            port=self._port,
+            baudrate=self._baudrate,
+            timeout=self._timeout,
+        ) as ser:
+            while True:
+                command = self._queue.get()
+                if command is None:
+                    break
+                ser.write(command.to_packet())
+                time.sleep((command.max_duration() / 1000.0) * self._sleep_factor)
+
+
+@dataclass(kw_only=True)
+class _SerialCommand:
+    """
+    A command sent to the arduino as a binary packet.
+    """
+
+    speed: float
+    """
+    Speed to move in steps per second.
+    """
+
+    direction: _Direction
+    """
+    Direction to move.
+    """
+
+    move_duration: float
+    """
+    Duration to move for in milliseconds.
+    """
+
+    fire_duration: float
+    """
+    Duration to fire for in milliseconds.
+    """
 
     @staticmethod
     def new_move_command(
-        speed: float, direction: Direction, duration: float
+        speed: float,
+        direction: _Direction,
+        duration: float,
     ) -> _SerialCommand:
         """
-        Create a new SerialCommand that moves the stage.
-
-        :type speed: float
-        :param speed:
-            The speed in steps per second.
-
-        :type direction: Direction
-        :param direction:
-            The direction to move the stage.
-
-        :type duration: float
-        :param duration:
-            The duration in milliseconds for the stage to move.
-
-        :rtype: SerialCommand
-        :return:
-            A new "movement" command.
+        Create a new command that moves the stage.
         """
         return _SerialCommand(
             speed=speed,
             direction=direction,
             move_duration=duration,
-            fire_duration=0,
+            fire_duration=0.0,
         )
 
     @staticmethod
     def new_fire_command(duration: float) -> _SerialCommand:
         """
-        Create a new SerialCommand that fires the laser.
-
-        :type duration: float
-        :param duration:
-            The duration in milliseconds to fire the laser.
-
-        :rtype: SerialCommand
-        :return:
-            A new "fire" command.
+        Create a new command that fires the laser.
         """
         return _SerialCommand(
             speed=0.0,
-            direction=Direction.DEFAULT,
+            direction=_Direction.DEFAULT,
             move_duration=0.0,
             fire_duration=duration,
         )
 
-    #
-    # instance methods
-    #
-
     def max_duration(self) -> float:
         """
-        The theorietical runtime of the command in seconds, or the max of the
-        move and fire durations.
-
-        :rtype: float
-        :return:
-            The max duration in seconds.
+        The theorietical runtime of the command in seconds (the max of the move
+        and fire durations).
         """
-        return max(self.move_duration, self.fire_duration) / 1000.0
+        return max(self.move_duration, self.fire_duration)
 
     def to_packet(self) -> bytes:
         """
         Create a binary packet from this command.
-
-        :rtype: bytes
-        :return:
-            The binary packet.
         """
-
         # create a packet of 5 float values
         packet: bytes = struct.pack(
             "fffff",
-            -1.0,  # header
+            -1.0,  # header ?
             self.speed,
-            float(self.direction),
+            self.direction.value,
             self.move_duration,
             self.fire_duration,
         )
