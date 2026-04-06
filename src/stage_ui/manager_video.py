@@ -9,24 +9,8 @@ from pygame import Color, Font, Surface
 from pygame_gui.elements import UIImage
 
 
-#
-# constants
-#
-
-
-DEFAULT_CAMERA_INDEX: int = 3
-"""
-OpenCV video capture camera index.
-"""
-
-
-#
-# classes
-#
-
-
-@dataclass
-class VideoHandler:
+@dataclass(kw_only=True)
+class VideoManager:
     """
     Class for handling frame capture and other video-related logic.
     """
@@ -36,64 +20,63 @@ class VideoHandler:
     Video capture feed from the camera.
     """
 
-    _feed_width: int
+    _width: int
     """
     The feed's width.
     """
 
-    _feed_height: int
+    _height: int
     """
     The feed's height.
     """
 
-    _feed_aspect_ratio: float
+    _aspect_ratio: float
     """
     The feed's aspect ratio (width / height).
     """
-
-    #
-    # constructor
-    #
-
-    def __init__(self, camera_index: int = DEFAULT_CAMERA_INDEX) -> None:
-        """
-        Initialize a new VideoHandler with the given camera index.
-
-        :type camera_index: int
-        :param camera_index:
-            The OpenCV camera index for video capture.
-        """
-
-        # update internal values
-        self._feed = VideoCapture(camera_index)
-        self._feed_width = int(self._feed.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self._feed_height = int(self._feed.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self._feed_aspect_ratio = self._feed_width / self._feed_height
-
-    #
-    # basic properties
-    #
 
     @property
     def width(self) -> int:
         """
         The feed's width.
         """
-        return self._feed_width
+        return self._width
 
     @property
     def height(self) -> int:
         """
         The feed's height.
         """
-        return self._feed_height
+        return self._height
 
     @property
     def aspect_ratio(self) -> float:
         """
         The feed's aspect ratio (width/height).
         """
-        return self._feed_aspect_ratio
+        return self._aspect_ratio
+
+    @staticmethod
+    def new(camera_index: int) -> VideoManager:
+        """
+        Initialize a new `VideoManager` with the given camera index.
+
+        :param camera_index:
+            The OpenCV camera index for video capture.
+        """
+
+        # create values
+        feed = VideoCapture(camera_index)
+        width = int(feed.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(feed.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        aspect_ratio = width / height
+
+        return VideoManager(
+            _feed=feed,
+            _width=width,
+            _height=height,
+            _aspect_ratio=aspect_ratio,
+        )
 
     #
     # render loop method
