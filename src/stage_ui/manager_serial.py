@@ -16,7 +16,7 @@ from threading import Thread
 
 
 @dataclass(kw_only=True)
-class SerialBridge:
+class SerialManager:
     """
     Bridge that orchestrates communication to the ardunio.
     """
@@ -32,13 +32,31 @@ class SerialBridge:
     The current high-level action being preformed.
     """
 
+    _default_grid_speed: float
+    """
+    The default speed for movement commands when using step-and-shoot.
+    """
+
+    _default_grid_move_duration: float
+    """
+    The default duration of move commands when using step-and-shoot.
+    """
+
+    _default_grid_fire_duration: float
+    """
+    The default duration of fire commands when using step-and-shoot.
+    """
+
     @staticmethod
     def new(
         port: str,
         baudrate: int,
         timeout: float,
         sleep_factor: float,
-    ) -> SerialBridge:
+        default_grid_speed: float,
+        default_grid_move_duration: float,
+        default_grid_fire_duration: float,
+    ) -> SerialManager:
         """
         Create a new `SerialBridge` with the given serial configuration.
 
@@ -58,10 +76,22 @@ class SerialBridge:
             A value of 2.0 indicates the program will wait for double this
             theroretical execution time, 0.5 will wait half, etc. To be safe,
             this value should be set to a value > 1.0.
+
+        :param default_grid_speed:
+            The default speed for movement commands when using step-and-shoot.
+
+        :param default_grid_move_duration:
+            The default duration of move commands when using step-and-shoot.
+
+        :param default_grid_fire_duration:
+            The default duration of fire commands when using step-and-shoot.
         """
-        return SerialBridge(
+        return SerialManager(
             _worker=_SerialWorker.new(port, baudrate, timeout, sleep_factor),
             _action=_SerialActionIdle(),
+            _default_grid_speed=default_grid_speed,
+            _default_grid_move_duration=default_grid_move_duration,
+            _default_grid_fire_duration=default_grid_fire_duration,
         )
 
     def stop(self) -> None:
@@ -250,9 +280,9 @@ class SerialBridge:
     def grid(
         self,
         n: int,
-        speed: float,
-        move_duration: float,
-        fire_duration: float,
+        speed: float | None = None,
+        move_duration: float | None = None,
+        fire_duration: float | None = None,
     ) -> None:
         """
         Execute the step-and-shoot functionality.
@@ -269,6 +299,18 @@ class SerialBridge:
         :param fire_duration:
             Duration to fire the laser for.
         """
+        speed = speed if speed is not None else self._default_grid_speed
+        move_duration = (
+            move_duration
+            if move_duration is not None
+            else self._default_grid_move_duration
+        )
+        fire_duration = (
+            fire_duration
+            if fire_duration is not None
+            else self._default_grid_fire_duration
+        )
+
         self._action = _SerialActionGrid(
             n=n,
             speed=speed,
