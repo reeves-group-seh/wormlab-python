@@ -37,15 +37,19 @@ class App:
     """
 
     @staticmethod
-    def new(testing: bool, camera_index: int, data_dir: Path) -> App:
+    def new(
+        testing: bool,
+        data_dir: Path,
+        camera_index: int | None,
+    ) -> App:
         # init pygame
         pygame.init()
 
         # init config
         cfg = AppConfig.new(
             testing=testing,
-            camera_index=camera_index,
             data_dir=data_dir,
+            camera_index=camera_index,
         )
 
         # init state
