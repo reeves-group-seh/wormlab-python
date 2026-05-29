@@ -17,3 +17,8 @@ The first run may take some extra time as packages are installed, but subsequent
 ## Project Philosophy
 
 ...
+
+## To-Do
+
+- Ensure resources are properly closed.
+  - `VideoCapture`
