@@ -6,10 +6,11 @@
 
 This project is meant to be managed and run by [uv](https://docs.astral.sh/uv/). Before getting started make sure to install uv using the [installation instructions](https://docs.astral.sh/uv/getting-started/installation/) on the project's website.
 
-After installing, run the app with the following command:
+After installing, fetch the application's dependencies and run the app with the following two commands:
 
 ```
-uv run src/stage_ui/main.py
+uv sync
+uv run stage-ui
 ```
 
 The first run may take some extra time as packages are installed, but subsequent runs should be faster.
@@ -17,8 +18,3 @@ The first run may take some extra time as packages are installed, but subsequent
 ## Project Philosophy
 
 ...
-
-## To-Do
-
-- Ensure resources are properly closed.
-  - `VideoCapture`
