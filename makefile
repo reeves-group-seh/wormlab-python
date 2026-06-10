@@ -1,5 +1,4 @@
 # config
-PY_MAIN = src/stage_ui/main.py
 PY_FILES = src/**/*.py
 
 .PHONY: all pre-comit run tc lint format
@@ -9,7 +8,7 @@ all: run
 pre-commit: format lint tc
 
 run:
-	uv run $(PY_MAIN)
+	uv run sync && uv run stage-ui
 
 tc:
 	uv run mypy --strict $(PY_FILES)
