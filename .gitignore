@@ -12,3 +12,6 @@ wheels/
 # tool-generated files
 .mypy_cache
 .ruff_cache
+
+# temp files
+*.tmp*
