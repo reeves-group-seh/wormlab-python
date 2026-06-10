@@ -8,7 +8,7 @@ from pandas import DataFrame
 from pathlib import Path
 
 # local item imports
-from app_types import FilterNumber, RadiusColor, WormResponse
+from stage_ui.types import FilterNumber, RadiusColor, WormResponse
 
 
 @dataclass(kw_only=True)

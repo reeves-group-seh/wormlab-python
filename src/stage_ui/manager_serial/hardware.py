@@ -1,7 +1,3 @@
-"""
-Module that handles communication with the arduino.
-"""
-
 # module imports
 import struct
 import time
@@ -16,7 +12,7 @@ from threading import Thread
 
 
 @dataclass(kw_only=True)
-class SerialManager:
+class HardwareSerialManager:
     """
     Bridge that orchestrates communication to the ardunio.
     """
@@ -56,7 +52,7 @@ class SerialManager:
         default_grid_speed: float,
         default_grid_move_duration: float,
         default_grid_fire_duration: float,
-    ) -> SerialManager:
+    ) -> HardwareSerialManager:
         """
         Create a new `SerialBridge` with the given serial configuration.
 
@@ -86,7 +82,7 @@ class SerialManager:
         :param default_grid_fire_duration:
             The default duration of fire commands when using step-and-shoot.
         """
-        return SerialManager(
+        return HardwareSerialManager(
             _worker=_SerialWorker.new(port, baudrate, timeout, sleep_factor),
             _action=_SerialActionIdle(),
             _default_grid_speed=default_grid_speed,
