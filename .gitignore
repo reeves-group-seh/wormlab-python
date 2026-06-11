@@ -15,3 +15,6 @@ wheels/
 
 # temp files
 *.tmp*
+
+# old implementations
+src/stage_legacy
