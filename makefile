@@ -11,7 +11,7 @@ run:
 	uv run sync && uv run stage-ui
 
 tc:
-	uv run mypy --strict $(PY_FILES)
+	uv run mypy --strict -p stage_ui
 
 lint:
 	uv run ruff check $(PY_FILES)
