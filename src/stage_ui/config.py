@@ -50,7 +50,7 @@ class Config:
         Max number of frames per second to render at.
         """
 
-        self.CAMERA_INDEX: int = camera_index if camera_index else 3
+        self.CAMERA_INDEX: int = camera_index if camera_index is not None else 3
         """
         OpenCV video capture camera index.
         """

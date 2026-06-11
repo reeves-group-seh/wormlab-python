@@ -13,7 +13,7 @@ class CV2CameraManager:
     """
 
     def __init__(self) -> None:
-        self._feed: VideoCapture | None
+        self._feed: VideoCapture | None = None
 
     def open(self, index: int) -> None:
         """

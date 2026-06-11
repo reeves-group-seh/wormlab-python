@@ -20,6 +20,7 @@ class ScreenManager:
 
         # set current to start
         self.current = self.screens[ScreenId.START]
+        self.current.on_enter()
 
     def switch(self, name: ScreenId) -> None:
         """

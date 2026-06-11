@@ -7,14 +7,20 @@ from pygame import Clock, Surface
 # local item imports
 from stage_ui.config import Config
 from stage_ui.context import Context
-from stage_ui.manager_camera import MockCameraManager
+from stage_ui.manager_camera import CameraManager
 from stage_ui.manager_data import DataManager
 from stage_ui.manager_screen import ScreenManager
-from stage_ui.manager_serial import MockSerialManager
+from stage_ui.manager_serial import SerialManager
 
 
 class App:
-    def __init__(self, cfg: Config) -> None:
+    def __init__(
+        self,
+        cfg: Config,
+        camera_man: CameraManager,
+        data_man: DataManager,
+        serial_man: SerialManager,
+    ) -> None:
         # startup pygame
         pygame.init()
         pygame.display.set_caption(cfg.APP_NAME)
@@ -22,9 +28,9 @@ class App:
         # init values
         self.ctx: Context = Context(
             cfg=cfg,
-            camera_man=MockCameraManager(),
-            data_man=DataManager.new(cfg.DATA_FILE),
-            serial_man=MockSerialManager(),
+            camera_man=camera_man,
+            data_man=data_man,
+            serial_man=serial_man,
         )
         self.window_surf: Surface = pygame.display.set_mode(
             (cfg.WINDOW_W, cfg.WINDOW_H)
@@ -35,6 +41,7 @@ class App:
         self.dt: float = float("inf")
 
     def run(self) -> None:
+        # render loop
         while self.running:
             # update time delta
             self.dt = self.clock.tick(self.ctx.cfg.FPS) / 1000.0
