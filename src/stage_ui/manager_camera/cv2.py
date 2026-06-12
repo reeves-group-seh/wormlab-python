@@ -1,8 +1,6 @@
-# module imports
+# pip
 import cv2
 import numpy as np
-
-# item imports
 from cv2 import VideoCapture
 
 

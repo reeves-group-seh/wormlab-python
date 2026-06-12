@@ -1,13 +1,13 @@
-# module imports
+# std
 import dataclasses
-
-# item imports
 from dataclasses import dataclass
 from datetime import datetime
-from pandas import DataFrame
 from pathlib import Path
 
-# local item imports
+# pip
+from pandas import DataFrame
+
+# local
 from stage_ui.types import FilterNumber, RadiusColor, WormResponse
 
 

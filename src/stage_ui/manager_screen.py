@@ -1,10 +1,9 @@
-# item imports
+# pip
 from pygame import Event, Surface
 
-# local item imports
+# local
 from stage_ui.context import Context
-from stage_ui.screens import Screen, ScreenId
-from stage_ui.screens import HomeScreen, StartScreen
+from stage_ui.screens import HomeScreen, Screen, ScreenId, StartScreen
 
 
 class ScreenManager:

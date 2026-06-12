@@ -1,6 +1,3 @@
-# config
-PY_FILES = src/**/*.py
-
 .PHONY: all pre-comit run tc lint format
 .SECONDARY:
 
@@ -11,10 +8,10 @@ run:
 	uv run sync && uv run stage-ui
 
 tc:
-	uv run mypy --strict -p stage_ui
+	uv run mypy -p stage_ui
 
 lint:
-	uv run ruff check $(PY_FILES)
+	uv run ruff check
 
 format:
-	uv run ruff format $(PY_FILES)
+	uv run ruff format

@@ -1,19 +1,17 @@
-# module imports
-import numpy as np
-
-# item imports
+# std
 from typing import Protocol
 
-# local item imports
+# pip
+import numpy as np
+
+# local
 from stage_ui.manager_camera.cv2 import CV2CameraManager
 from stage_ui.manager_camera.mock import MockCameraManager
 
 # public api
 __all__ = [
-    # top level
-    "CameraManager",
-    # re-exports
     "CV2CameraManager",
+    "CameraManager",
     "MockCameraManager",
 ]
 

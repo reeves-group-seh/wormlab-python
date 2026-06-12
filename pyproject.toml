@@ -31,3 +31,14 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/stage_ui"]
+
+[tool.mypy]
+mypy_path = "src"
+strict = true
+
+[tool.ruff]
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "RUF", "N", "SIM"]
+ignore = ["E501", "SIM102", "N802", "N806"]

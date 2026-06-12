@@ -1,14 +1,14 @@
-# module imports
+# std
 import struct
 import time
-
-# item imports
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
 from queue import Queue
-from serial import Serial
 from threading import Thread
+
+# pip
+from serial import Serial
 
 
 @dataclass(kw_only=True)

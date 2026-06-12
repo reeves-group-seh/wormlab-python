@@ -1,17 +1,15 @@
-# item imports
+# std
 from typing import Protocol
 
-# local item imports
+# local
 from stage_ui.manager_serial.hardware import HardwareSerialManager
 from stage_ui.manager_serial.mock import MockSerialManager
 
 # public api
 __all__ = [
-    # top level
-    "SerialManager",
-    # re-exports
     "HardwareSerialManager",
     "MockSerialManager",
+    "SerialManager",
 ]
 
 

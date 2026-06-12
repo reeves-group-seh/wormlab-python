@@ -1,6 +1,5 @@
-# module imports
+# pip
 import numpy as np
-
 
 # constants
 WIDTH = 720

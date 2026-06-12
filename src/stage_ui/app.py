@@ -1,10 +1,8 @@
-# module imports
+# pip
 import pygame
-
-# item imports
 from pygame import Clock, Surface
 
-# local item imports
+# local
 from stage_ui.config import Config
 from stage_ui.context import Context
 from stage_ui.manager_camera import CameraManager

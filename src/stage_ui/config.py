@@ -1,13 +1,13 @@
-# module imports
+# std
 import datetime as dt
-import pygame
-
-# item imports
 from pathlib import Path
+
+# pip
+import pygame
 from pygame import Color
 from pygame_gui import PackageResource
 
-# local item imports
+# local
 from stage_ui.types import FilterNumber, KeyMapAction, RadiusColor
 
 
