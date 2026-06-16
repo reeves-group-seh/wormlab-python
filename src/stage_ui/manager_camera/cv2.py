@@ -11,12 +11,14 @@ class CV2CameraManager:
     """
 
     def __init__(self) -> None:
+        self._index: int | None = None
         self._feed: VideoCapture | None = None
 
     def open(self, index: int) -> None:
         """
         Open the camera with the given index.
         """
+        self._index = index
         self._feed = VideoCapture(index)
 
     def close(self) -> None:
@@ -25,6 +27,7 @@ class CV2CameraManager:
         """
         if self._feed:
             self._feed.release()
+            self._index = None
             self._feed = None
 
     def read_frame(self) -> np.ndarray | None:
@@ -37,6 +40,9 @@ class CV2CameraManager:
         # read frame from device
         res, frame = self._feed.read()
         return frame if res else None
+
+    def index(self) -> int | None:
+        return self._index
 
     def width(self) -> int:
         """
