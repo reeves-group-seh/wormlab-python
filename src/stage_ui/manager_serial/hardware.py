@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from queue import Queue
 from threading import Thread
+from typing import override
 
 # pip
 from serial import Serial
@@ -372,7 +373,8 @@ class _SerialActionIdle(_SerialAction):
     An action representing doing nothing and sending no commands to the worker.
     """
 
-    def run(self, _: _SerialWorker) -> None:
+    @override
+    def run(self, worker: _SerialWorker) -> None:
         pass
 
 
@@ -397,6 +399,7 @@ class _SerialActionMove(_SerialAction):
     Duration to move for in milliseconds.
     """
 
+    @override
     def run(self, worker: _SerialWorker) -> None:
         worker.enqueue_move(self.speed, self.direction, self.duration)
 
@@ -422,6 +425,7 @@ class _SerialActionStep(_SerialAction):
     Duration to move for in milliseconds.
     """
 
+    @override
     def run(self, worker: _SerialWorker) -> None:
         worker.enqueue_move(self.speed, self.direction, self.duration)
 
@@ -437,6 +441,7 @@ class _SerialActionFire(_SerialAction):
     Duration to fire for in milliseconds.
     """
 
+    @override
     def run(self, worker: _SerialWorker) -> None:
         worker.enqueue_fire(self.duration)
 
@@ -467,6 +472,7 @@ class _SerialActionGrid(_SerialAction):
     The duration to fire the laser for.
     """
 
+    @override
     def run(self, worker: _SerialWorker) -> None:
         # loop over number of rows in grid
         for row in range(self.n):
