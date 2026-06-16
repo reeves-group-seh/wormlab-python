@@ -8,7 +8,8 @@ run:
 	uv run sync && uv run stage-ui
 
 tc:
-	uv run mypy -p stage_ui
+	-uv run ty check
+	-uv run mypy -p stage_ui
 
 lint:
 	uv run ruff check
