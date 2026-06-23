@@ -9,275 +9,172 @@ from threading import Thread
 from typing import override
 
 # pip
-from serial import Serial
+import serial
+import serial.tools.list_ports
+
+# relative
+from .base import ArduinoManager
 
 
-@dataclass(kw_only=True)
-class HardwareSerialManager:
-    """
-    Bridge that orchestrates communication to the ardunio.
-    """
-
-    _worker: _SerialWorker
-    """
-    Helper that handles the worker thread and writes binary packets to the
-    arduino.
-    """
-
-    _action: _SerialAction
-    """
-    The current high-level action being preformed.
-    """
-
-    _default_grid_speed: float
-    """
-    The default speed for movement commands when using step-and-shoot.
-    """
-
-    _default_grid_move_duration: float
-    """
-    The default duration of move commands when using step-and-shoot.
-    """
-
-    _default_grid_fire_duration: float
-    """
-    The default duration of fire commands when using step-and-shoot.
-    """
-
-    @staticmethod
-    def new(
-        port: str,
+class PySerialArduinoManager(ArduinoManager):
+    def __init__(
+        self,
         baudrate: int,
         timeout: float,
         sleep_factor: float,
         default_grid_speed: float,
         default_grid_move_duration: float,
         default_grid_fire_duration: float,
-    ) -> HardwareSerialManager:
+    ) -> None:
+        self._worker: _SerialWorker | None = None
         """
-        Create a new `SerialBridge` with the given serial configuration.
-
-        :param port:
-            The port to connect to the arduino on.
-
-        :param baudrate:
-            The rate in which to communicate with the arduino.
-
-        :param timeout:
-            The time in seconds to timeout the connection to the arduino.
-
-        :param sleep_factor:
-            A factor determining how long to wait between writes to the arduino.
-            A value of 1.0 indicates the program will wait for exactly the
-            theroretical execution time of a command before sending another.
-            A value of 2.0 indicates the program will wait for double this
-            theroretical execution time, 0.5 will wait half, etc. To be safe,
-            this value should be set to a value > 1.0.
-
-        :param default_grid_speed:
-            The default speed for movement commands when using step-and-shoot.
-
-        :param default_grid_move_duration:
-            The default duration of move commands when using step-and-shoot.
-
-        :param default_grid_fire_duration:
-            The default duration of fire commands when using step-and-shoot.
+        Helper that handles the worker thread and writes binary packets to the
+        arduino.
         """
-        return HardwareSerialManager(
-            _worker=_SerialWorker.new(port, baudrate, timeout, sleep_factor),
-            _action=_SerialActionIdle(),
-            _default_grid_speed=default_grid_speed,
-            _default_grid_move_duration=default_grid_move_duration,
-            _default_grid_fire_duration=default_grid_fire_duration,
+
+        self._action: _SerialAction = _SerialActionIdle()
+        """
+        The current high-level action being preformed.
+        """
+
+        self._baudrate = baudrate
+        """
+        The rate in which to communicate with the arduino.
+        """
+
+        self._timeout = timeout
+        """
+        The time in seconds to timeout the connection to the arduino.
+        """
+
+        self._sleep_factor = sleep_factor
+        """
+        A factor determining how long to wait between writes to the arduino. A
+        value of 1.0 indicates the program will wait for exactly the
+        theroretical execution time of a command before sending another. A value
+        of 2.0 indicates the program will wait for double this theroretical
+        execution time, 0.5 will wait half, etc. To be safe, this value should
+        be set to a value > 1.0.
+        """
+
+        self._default_grid_speed = default_grid_speed
+        """
+        The default speed for movement commands when using step-and-shoot.
+        """
+
+        self._default_grid_move_duration = default_grid_move_duration
+        """
+        The default duration of move commands when using step-and-shoot.
+        """
+
+        self._default_grid_fire_duration = default_grid_fire_duration
+        """
+        The default duration of fire commands when using step-and-shoot.
+        """
+
+    @override
+    def open(self, port: str) -> None:
+        """
+        Open the serial connection at the given port.
+        """
+        self._worker = _SerialWorker.new(
+            port,
+            self._baudrate,
+            self._timeout,
+            self._sleep_factor,
         )
 
-    def stop(self) -> None:
+    @override
+    def close(self) -> None:
         """
-        Make the stage go idle. The arduino will complete the last action before
-        stopping (i.e. this command is not immediate).
+        Close the serial connection, if one exists, otherwise a no-op.
         """
+        # no-op if closed
+        if self._worker is None:
+            return
+
+        # kill worker
+        self._worker.kill()
+        self._worker = None
         self._action = _SerialActionIdle()
 
-    def move_left(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
-        """
-        Move the stage left continuously. This is not stopped until a call to
-        the `stop` method is made.
+    @override
+    def stop(self) -> None:
+        self._action = _SerialActionIdle()
 
-        :param speed:
-            The speed in steps per second to move at.
-
-        :param duration:
-            The duration in milliseconds to move.
-        """
+    @override
+    def move_left(self, speed: float, duration: float) -> None:
         self._action = _SerialActionMove(
             speed=speed,
             direction=_Direction.LEFT,
             duration=duration,
         )
 
-    def move_right(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
-        """
-        Move the stage right continuously. This is not stopped until a call to
-        the `stop` method is made.
-
-        :param speed:
-            The speed in steps per second to move at.
-
-        :param duration:
-            The duration in milliseconds to move.
-        """
+    @override
+    def move_right(self, speed: float, duration: float) -> None:
         self._action = _SerialActionMove(
             speed=speed,
             direction=_Direction.RIGHT,
             duration=duration,
         )
 
-    def move_up(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
-        """
-        Move the stage up continuously. This is not stopped until a call to the
-        `stop` method is made.
-
-        :param speed:
-            The speed in steps per second to move at.
-
-        :param duration:
-            The duration in milliseconds to move.
-        """
+    @override
+    def move_up(self, speed: float, duration: float) -> None:
         self._action = _SerialActionMove(
             speed=speed,
             direction=_Direction.UP,
             duration=duration,
         )
 
-    def move_down(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
-        """
-        Move the stage down continuously. This is not stopped until a call to
-        the `stop` method is made.
-
-        :param speed:
-            The speed in steps per second to move at.
-
-        :param duration:
-            The duration in milliseconds to move.
-        """
+    @override
+    def move_down(self, speed: float, duration: float) -> None:
         self._action = _SerialActionMove(
             speed=speed,
             direction=_Direction.DOWN,
             duration=duration,
         )
 
-    def step_left(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
-        """
-        Move left a single step.
-
-        :param speed:
-            The speed in steps per second to move at.
-
-        :param duration:
-            The duration in milliseconds to move.
-        """
+    @override
+    def step_left(self, speed: float, duration: float) -> None:
         self._action = _SerialActionStep(
             speed=speed,
             direction=_Direction.LEFT,
             duration=duration,
         )
 
-    def step_right(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
-        """
-        Move right a single step.
-
-        :param speed:
-            The speed in steps per second to move at.
-
-        :param duration:
-            The duration in milliseconds to move.
-        """
+    @override
+    def step_right(self, speed: float, duration: float) -> None:
         self._action = _SerialActionStep(
             speed=speed,
             direction=_Direction.RIGHT,
             duration=duration,
         )
 
-    def step_up(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
-        """
-        Move up a single step.
-
-        :param speed:
-            The speed in steps per second to move at.
-
-        :param duration:
-            The duration in milliseconds to move.
-        """
+    @override
+    def step_up(self, speed: float, duration: float) -> None:
         self._action = _SerialActionStep(
             speed=speed,
             direction=_Direction.UP,
             duration=duration,
         )
 
-    def step_down(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
-        """
-        Move down a single step.
-
-        :param speed:
-            The speed in steps per second to move at.
-
-        :param duration:
-            The duration in milliseconds to move.
-        """
+    @override
+    def step_down(self, speed: float, duration: float) -> None:
         self._action = _SerialActionStep(
             speed=speed,
             direction=_Direction.DOWN,
             duration=duration,
         )
 
-    def fire(
-        self,
-        duration: float,
-    ) -> None:
-        """
-        Fire the laser.
-
-        :param duration:
-            The time in milliseconds to fire the laser.
-        """
+    @override
+    def fire(self, duration: float) -> None:
         self._action = _SerialActionFire(duration=duration)
 
+    @override
     def grid(
         self,
         n: int,
-        speed: float | None = None,
+        move_speed: float | None = None,
         move_duration: float | None = None,
         fire_duration: float | None = None,
     ) -> None:
@@ -296,7 +193,7 @@ class HardwareSerialManager:
         :param fire_duration:
             Duration to fire the laser for.
         """
-        speed = speed if speed is not None else self._default_grid_speed
+        move_speed = move_speed if move_speed is not None else self._default_grid_speed
         move_duration = (
             move_duration
             if move_duration is not None
@@ -310,20 +207,19 @@ class HardwareSerialManager:
 
         self._action = _SerialActionGrid(
             n=n,
-            speed=speed,
+            move_speed=move_speed,
             move_duration=move_duration,
             fire_duration=fire_duration,
         )
 
-    def update(
-        self,
-    ) -> None:
+    @override
+    def update(self) -> None:
         """
         Continue to communicate with the arduino. This should be called on every
         frame.
         """
         # only update if worker is not executing
-        if not self._worker.queue_empty():
+        if self._worker is None or not self._worker.queue_empty():
             return
 
         # send command(s) based on action
@@ -335,6 +231,10 @@ class HardwareSerialManager:
             case _SerialActionStep() | _SerialActionFire() | _SerialActionGrid():
                 self._action.run(self._worker)
                 self._action = _SerialActionIdle()
+
+    @override
+    def ports(self) -> list[str]:
+        return [port.device for port in serial.tools.list_ports.comports()]
 
 
 class _Direction(Enum):
@@ -457,7 +357,7 @@ class _SerialActionGrid(_SerialAction):
     Size of the NxN grid.
     """
 
-    speed: float
+    move_speed: float
     """
     The speed to move in steps per second.
     """
@@ -481,7 +381,7 @@ class _SerialActionGrid(_SerialAction):
                 # enqueue move right if not first col in row
                 if col > 0:
                     worker.enqueue_move(
-                        self.speed,
+                        self.move_speed,
                         _Direction.RIGHT,
                         self.move_duration,
                     )
@@ -494,19 +394,19 @@ class _SerialActionGrid(_SerialAction):
                 # move left until back to col 1
                 for _ in range(self.n - 1):
                     worker.enqueue_move(
-                        self.speed,
+                        self.move_speed,
                         _Direction.LEFT,
                         self.move_duration,
                     )
                 # move down (?) 1. everything was labeled down but int
                 # was 3, so i changed const to indicate up?
-                worker.enqueue_move(self.speed, _Direction.UP, self.move_duration)
+                worker.enqueue_move(self.move_speed, _Direction.UP, self.move_duration)
 
         # move up to top row. should this also move to left? also this
         # was again 2 but labeled everywhere as up?
         for _ in range(self.n - 1):
             worker.enqueue_move(
-                self.speed,
+                self.move_speed,
                 _Direction.DOWN,
                 self.move_duration,
             )
@@ -598,11 +498,18 @@ class _SerialWorker:
         """
         self._queue.put(_SerialCommand.new_move_command(speed, direction, duration))
 
+    def kill(self) -> None:
+        """
+        Send a signal to close serial connection and kill the created thread.
+        """
+        self._queue.put(None)
+        self._thread.join()
+
     def _thread_loop(self) -> None:
         """
         Loop for the thread to run continuously.
         """
-        with Serial(
+        with serial.Serial(
             port=self._port,
             baudrate=self._baudrate,
             timeout=self._timeout,
@@ -621,12 +528,12 @@ class _SerialCommand:
     A command sent to the arduino as a binary packet.
     """
 
-    speed: float
+    move_speed: float
     """
     Speed to move in steps per second.
     """
 
-    direction: _Direction
+    move_direction: _Direction
     """
     Direction to move.
     """
@@ -651,8 +558,8 @@ class _SerialCommand:
         Create a new command that moves the stage.
         """
         return _SerialCommand(
-            speed=speed,
-            direction=direction,
+            move_speed=speed,
+            move_direction=direction,
             move_duration=duration,
             fire_duration=0.0,
         )
@@ -663,8 +570,8 @@ class _SerialCommand:
         Create a new command that fires the laser.
         """
         return _SerialCommand(
-            speed=0.0,
-            direction=_Direction.DEFAULT,
+            move_speed=0.0,
+            move_direction=_Direction.DEFAULT,
             move_duration=0.0,
             fire_duration=duration,
         )
@@ -684,8 +591,8 @@ class _SerialCommand:
         packet: bytes = struct.pack(
             "fffff",
             -1.0,  # header ?
-            self.speed,
-            self.direction.value,
+            self.move_speed,
+            self.move_direction.value,
             self.move_duration,
             self.fire_duration,
         )

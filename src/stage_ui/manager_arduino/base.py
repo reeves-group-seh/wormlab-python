@@ -1,25 +1,32 @@
 # std
-from typing import Protocol
-
-# local
-from stage_ui.manager_serial.hardware import HardwareSerialManager
-from stage_ui.manager_serial.mock import MockSerialManager
-
-# public api
-__all__ = [
-    "HardwareSerialManager",
-    "MockSerialManager",
-    "SerialManager",
-]
+from abc import ABC, abstractmethod
 
 
-class SerialManager(Protocol):
+class ArduinoManager(ABC):
+    """
+    Bridge that handles communication to the ardunio.
+    """
+
+    @abstractmethod
+    def open(self, port: str) -> None:
+        """
+        Open the serial connection at the given port.
+        """
+
+    @abstractmethod
+    def close(self) -> None:
+        """
+        Close the serial connection, if one exists, otherwise a no-op.
+        """
+
+    @abstractmethod
     def stop(self) -> None:
         """
         Make the stage go idle. The arduino will complete the last action before
         stopping (i.e. this command is not immediate).
         """
 
+    @abstractmethod
     def move_left(self, speed: float, duration: float) -> None:
         """
         Move the stage left continuously. This is not stopped until a call to
@@ -32,6 +39,7 @@ class SerialManager(Protocol):
             The duration in milliseconds to move.
         """
 
+    @abstractmethod
     def move_right(self, speed: float, duration: float) -> None:
         """
         Move the stage right continuously. This is not stopped until a call to
@@ -44,6 +52,7 @@ class SerialManager(Protocol):
             The duration in milliseconds to move.
         """
 
+    @abstractmethod
     def move_up(self, speed: float, duration: float) -> None:
         """
         Move the stage up continuously. This is not stopped until a call to the
@@ -56,6 +65,7 @@ class SerialManager(Protocol):
             The duration in milliseconds to move.
         """
 
+    @abstractmethod
     def move_down(self, speed: float, duration: float) -> None:
         """
         Move the stage down continuously. This is not stopped until a call to
@@ -68,6 +78,7 @@ class SerialManager(Protocol):
             The duration in milliseconds to move.
         """
 
+    @abstractmethod
     def step_left(self, speed: float, duration: float) -> None:
         """
         Move left a single step.
@@ -79,11 +90,8 @@ class SerialManager(Protocol):
             The duration in milliseconds to move.
         """
 
-    def step_right(
-        self,
-        speed: float,
-        duration: float,
-    ) -> None:
+    @abstractmethod
+    def step_right(self, speed: float, duration: float) -> None:
         """
         Move right a single step.
 
@@ -94,6 +102,7 @@ class SerialManager(Protocol):
             The duration in milliseconds to move.
         """
 
+    @abstractmethod
     def step_up(self, speed: float, duration: float) -> None:
         """
         Move up a single step.
@@ -105,6 +114,7 @@ class SerialManager(Protocol):
             The duration in milliseconds to move.
         """
 
+    @abstractmethod
     def step_down(self, speed: float, duration: float) -> None:
         """
         Move down a single step.
@@ -116,6 +126,7 @@ class SerialManager(Protocol):
             The duration in milliseconds to move.
         """
 
+    @abstractmethod
     def fire(self, duration: float) -> None:
         """
         Fire the laser.
@@ -124,10 +135,11 @@ class SerialManager(Protocol):
             The time in milliseconds to fire the laser.
         """
 
+    @abstractmethod
     def grid(
         self,
         n: int,
-        speed: float,
+        move_speed: float,
         move_duration: float,
         fire_duration: float,
     ) -> None:
@@ -137,7 +149,7 @@ class SerialManager(Protocol):
         :param n:
             Size of the NxN grid.
 
-        :param speed:
+        :param move_speed:
             Speed to move in steps per second.
 
         :param move_duration:
@@ -147,8 +159,15 @@ class SerialManager(Protocol):
             Duration to fire the laser for.
         """
 
+    @abstractmethod
     def update(self) -> None:
         """
         Continue to communicate with the arduino. This should be called on every
         frame.
+        """
+
+    @abstractmethod
+    def ports(self) -> list[str]:
+        """
+        Get a listing of all available serial ports.
         """

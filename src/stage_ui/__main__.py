@@ -4,6 +4,7 @@ from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
 
+from stage_ui.manager_arduino import PySerialArduinoManager
 from stage_ui.manager_camera import MockCameraManager
 
 
@@ -34,28 +35,28 @@ def main() -> None:
         help="backend for the camera",
         dest="camera_backend",
     )
-    # parser.add_argument(
-    #     "--serial-backend",
-    #     default="pyserial",
-    #     choices=["pyserial", "mock"],
-    #     help="backend for communication with the arduino",
-    #     dest="serial_backend",
-    # )
+    parser.add_argument(
+        "--arduino-backend",
+        default="pyserial",
+        choices=["pyserial", "mock"],
+        help="backend for serial communication with the arduino",
+        dest="arduino_backend",
+    )
 
     # parse arguments
     args = parser.parse_args()
     data_dir: Path | None = args.data_dir
     camera_index: int | None = args.camera_index
     camera_backend: str = args.camera_backend
-    # serial_backend: str = args.serial_backend
+    arduino_backend: str = args.arduino_backend
 
     # local imports after reading arguments
 
     from stage_ui.app import App
     from stage_ui.config import Config
+    from stage_ui.manager_arduino import MockArduinoManager
     from stage_ui.manager_camera import CV2CameraManager
     from stage_ui.manager_data import DataManager
-    from stage_ui.manager_serial import MockSerialManager
 
     # print startup info
     ascii_art = (files("stage_ui.resources") / "title.txt").read_text()
@@ -70,12 +71,23 @@ def main() -> None:
     # create & run app
     camera_man = MockCameraManager() if camera_backend == "mock" else CV2CameraManager()
     data_man = DataManager(_datafile=cfg.DATA_FILE)
-    serial_man = MockSerialManager()
+    arduino_man = (
+        MockArduinoManager()
+        if arduino_backend == "mock"
+        else PySerialArduinoManager(
+            baudrate=cfg.SERIAL_BAUDRATE,
+            timeout=cfg.SERIAL_TIMEOUT,
+            sleep_factor=cfg.SERIAL_SLEEP_FACTOR,
+            default_grid_speed=cfg.DEFAULT_GRID_SPEED,
+            default_grid_move_duration=cfg.DEFAULT_GRID_MOVE_DURATION,
+            default_grid_fire_duration=cfg.DEFAULT_GRID_FIRE_DURATION,
+        )
+    )
     app = App(
         cfg,
         camera_man=camera_man,
         data_man=data_man,
-        serial_man=serial_man,
+        arduino_man=arduino_man,
     )
     app.run()
 

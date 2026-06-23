@@ -1,15 +1,18 @@
+# pip
 import pygame
 import pygame_gui
 from pygame import Event
 from pygame_gui import UIManager
 from pygame_gui.elements import UIButton, UIPanel
 
+# local
 from stage_ui.atom import Atom
 from stage_ui.components import NO_MARGINS, Component
 from stage_ui.components.control_label import ControlLabelComponent
 from stage_ui.components.cycle_box import CycleBoxComponent
 from stage_ui.components.spin_box import SpinBoxComponent
 from stage_ui.components.text_entry_line_eager import EagerTextEntryLineComponent
+from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.screens.events import CT_GO_HOME
 
 
@@ -23,6 +26,7 @@ class SidePanelComponent(Component):
         manager: UIManager,
         container: UIPanel,
         pos: tuple[int, int],
+        arduino_man: ArduinoManager,
         serial_port: Atom[str],
         camera_index: Atom[int],
         room_temp: Atom[float | None],
@@ -32,6 +36,8 @@ class SidePanelComponent(Component):
         super().__init__()
 
         # set values
+        self.arduino_man = arduino_man
+        self.serial_port = serial_port
         self.room_temp = room_temp
         self.room_humidity = room_humidity
         self._valid = True
@@ -39,6 +45,7 @@ class SidePanelComponent(Component):
         # bindings
         self.bind(room_temp, self._render_buttons)
         self.bind(room_humidity, self._render_buttons)
+        self.bind(serial_port, self._change_port)
 
         # unpack values
         x, y = pos
@@ -70,7 +77,7 @@ class SidePanelComponent(Component):
                 pos=(10, 50),
                 w=375,
                 value=serial_port,
-                options=["COM4"],
+                options=arduino_man.ports(),
             )
         )
 
@@ -179,3 +186,8 @@ class SidePanelComponent(Component):
             self._set_valid(True)
         else:
             self._set_valid(False)
+
+    def _change_port(self) -> None:
+        # re-open the connection at the new index
+        self.arduino_man.close()
+        self.arduino_man.open(self.serial_port.value)

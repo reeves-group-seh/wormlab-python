@@ -8,10 +8,10 @@ from pygame import Clock, Surface
 # local
 from stage_ui.config import Config
 from stage_ui.context import Context, GlobalState
+from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.manager_camera import CameraManager
 from stage_ui.manager_data import DataManager
 from stage_ui.manager_screen import ScreenManager
-from stage_ui.manager_serial import SerialManager
 
 
 class App:
@@ -20,7 +20,7 @@ class App:
         cfg: Config,
         camera_man: CameraManager,
         data_man: DataManager,
-        serial_man: SerialManager,
+        arduino_man: ArduinoManager,
     ) -> None:
         pygame.init()
         pygame.display.set_caption(cfg.APP_NAME)
@@ -30,7 +30,7 @@ class App:
             cfg=cfg,
             camera_man=camera_man,
             data_man=data_man,
-            serial_man=serial_man,
+            arduino_man=arduino_man,
             state=GlobalState.new(),
         )
         self.window_surf: Surface = pygame.display.set_mode(
@@ -58,6 +58,7 @@ class App:
                 # match on types
                 if event.type == pygame.QUIT:
                     # TODO: need better cleanup logic here
+                    print("StageUI: shutting down")
                     self.running = False
 
                 # event handlers
@@ -65,7 +66,7 @@ class App:
 
             # update
             self.screen_man.update(self.dt)
-            self.ctx.serial_man.update()
+            self.ctx.arduino_man.update()
 
             # draw ui
             self.screen_man.draw_ui(self.window_surf)

@@ -5,9 +5,9 @@ from stage_ui.atom import Atom
 
 # local
 from stage_ui.config import Config
+from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.manager_camera import CameraManager
 from stage_ui.manager_data import DataManager
-from stage_ui.manager_serial import SerialManager
 
 
 @dataclass(kw_only=True)
@@ -41,9 +41,9 @@ class Context:
     Manager handling writing of data.
     """
 
-    serial_man: SerialManager
+    arduino_man: ArduinoManager
     """
-    Manager handling communication with the arduino.
+    Manager handling serial communication with the arduino.
     """
 
     #
