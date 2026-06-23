@@ -1,3 +1,6 @@
+# std
+import signal
+
 # pip
 import pygame
 from pygame import Clock, Surface
@@ -39,6 +42,12 @@ class App:
         self.dt: float = float("inf")
 
     def run(self) -> None:
+        # register ctrl-c
+        signal.signal(
+            signal.SIGINT,
+            lambda _s, _f: pygame.event.post(pygame.event.Event(pygame.QUIT)),
+        )
+
         # render loop
         while self.running:
             # update time delta

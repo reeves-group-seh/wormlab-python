@@ -18,8 +18,7 @@ class Config:
 
     def __init__(
         self,
-        data_dir: Path,
-        testing: bool = False,
+        data_dir: Path | None = None,
         camera_index: int | None = None,
     ) -> None:
         self.MARKER_POS: tuple[float, float] = (200.0, 311.0)
@@ -27,21 +26,23 @@ class Config:
         Position of the the marker relative to the video grid.
         """
 
-        self.TESTING: bool = testing
-        """
-        Whether the app should be run in "testing" mode.
-        """
-
         self.APP_NAME: str = "Stage Controller"
         """
         Application name.
         """
 
-        self.DATA_FILE: Path = (
-            data_dir / f"{dt.datetime.now().strftime('%Y-%m-%dT%H%M%S')}_data.csv"
+        self.DATA_DIR: Path = (
+            Path("C:/Users/reeve/Documents/WormData") if data_dir is None else data_dir
         )
         """
-        Name of the CSV datafile to create & write to.
+        Directory where CSV datafiles are created.
+        """
+
+        self.DATA_FILE: Path = (
+            self.DATA_DIR / f"{dt.datetime.now().strftime('%Y-%m-%dT%H%M%S')}_data.csv"
+        )
+        """
+        Path of the CSV datafile to create & write to.
         """
 
         self.FPS: int = 60
@@ -49,7 +50,7 @@ class Config:
         Max number of frames per second to render at.
         """
 
-        self.CAMERA_INDEX: int = camera_index if camera_index is not None else 3
+        self.CAMERA_INDEX: int = 3 if camera_index is None else camera_index
         """
         OpenCV video capture camera index.
         """
