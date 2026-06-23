@@ -25,13 +25,14 @@ def main() -> None:
     cfg = Config(
         Path("test_dir"),
         testing=True,
-        camera_index=3,
+        camera_index=0,
     )
 
     # create & run app
     app = App(
         cfg,
         CV2CameraManager(),
+        # MockCameraManager(),
         DataManager(_datafile=cfg.DATA_FILE),
         MockSerialManager(),
     )
