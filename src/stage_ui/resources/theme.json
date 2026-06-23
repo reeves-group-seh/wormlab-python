@@ -1,7 +1,94 @@
 {
-  "#red_panel": {
+  "panel": {
+    "misc": {
+      "border_width": "1",
+      "shadow_width": "0"
+    }
+  },
+  "text_box": {
+    "misc": {
+      "border_width": "1",
+      "shadow_width": "0"
+    }
+  },
+  "#background": {
     "colours": {
-      "dark_bg": "#FF0000"
+      "dark_bg": "#1A2024"
+    },
+    "misc": {
+      "border_width": "0",
+      "shadow_width": "0"
+    }
+  },
+  "#ascii_art": {
+    "font": {
+      "name": "fira_code_symbols",
+      "size": "14"
+    },
+    "misc": {
+      "line_spacing": "0.9",
+      "text_horiz_alignment": "center",
+      "text_vert_alignment": "center",
+      "border_width": "1",
+      "shadow_width": "0"
+    }
+  },
+  "#info_top": {
+    "misc": {
+      "border_width": "0",
+      "shadow_width": "0"
+    }
+  },
+  "#info_bottom": {
+    "misc": {
+      "text_vert_alignment": "bottom",
+      "border_width": "0",
+      "shadow_width": "0"
+    }
+  },
+  "@control_label": {
+    "font": {
+      "name": "noto_sans",
+      "size": "14",
+      "bold": "1"
+    },
+    "misc": {
+      "text_horiz_alignment": "left"
+    }
+  },
+  "@value_label": {
+    "misc": {
+      "text_horiz_alignment": "left"
+    }
+  },
+  "@cycle_box_text": {
+    "colours": {
+      "disabled_bg": "#4c5052",
+      "disabled_dark_bg": "#21282d",
+      "disabled_text": "#bbbbbb",
+      "disabled_text_shadow": "#10101070",
+      "disabled_border": "#5c6062"
+    },
+    "misc": {
+      "text_horiz_alignment": "center"
+    }
+  },
+  "@spin_box_text_entry_valid": {
+    "misc": {
+      "text_horiz_alignment": "center"
+    }
+  },
+  "@spin_box_text_entry_invalid": {
+    "colours": {
+      "normal_border": "#ff2727"
+    },
+    "misc": {
+      "text_horiz_alignment": "center"
+    }
+  },
+  "@text_entry_line_invalid": {
+    "colours": {
+      "normal_border": "#ff2727"
     }
   }
 }
