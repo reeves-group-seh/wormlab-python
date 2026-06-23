@@ -23,7 +23,7 @@ class MockCameraManager:
         if self._index is None:
             raise Exception("resource has not been opened")
 
-        return np.random.randint(0, 256, (HEIGHT, WIDTH, 3), dtype=np.uint8)
+        return np.random.randint(0, 256, (WIDTH, HEIGHT, 3), dtype=np.uint8)
 
     def index(self) -> int | None:
         return self._index

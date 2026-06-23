@@ -39,7 +39,12 @@ class CV2CameraManager:
 
         # read frame from device
         res, frame = self._feed.read()
-        return frame if res else None
+        if not res:
+            return None
+
+        frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        return frame
 
     def index(self) -> int | None:
         return self._index
