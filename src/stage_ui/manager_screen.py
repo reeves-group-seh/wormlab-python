@@ -3,7 +3,8 @@ from pygame import Event, Surface
 
 # local
 from stage_ui.context import Context
-from stage_ui.screens import HomeScreen, Screen, ScreenId, StartScreen
+from stage_ui.screens import HomeScreen, Screen, ScreenId
+from stage_ui.screens.start import StartScreen
 
 
 class ScreenManager:
@@ -33,8 +34,8 @@ class ScreenManager:
         self.current = self.screens[name]
         self.current.on_enter()
 
-    def handle_event(self, event: Event) -> None:
-        id = self.current.handle_event(event)
+    def process_event(self, event: Event) -> None:
+        id = self.current.process_event(event)
         self.switch(id) if id else ...
 
     def update(self, dt: float) -> None:
