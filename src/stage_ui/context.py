@@ -1,7 +1,9 @@
-# item imports
+# std
 from dataclasses import dataclass
 
-# local item imports
+from stage_ui.atom import Atom
+
+# local
 from stage_ui.config import Config
 from stage_ui.manager_camera import CameraManager
 from stage_ui.manager_data import DataManager
@@ -43,3 +45,42 @@ class Context:
     """
     Manager handling communication with the arduino.
     """
+
+    #
+    # global state
+    #
+
+    state: GlobalState
+    """
+    State shared across screens.
+    """
+
+    def close(self) -> None:
+        # cleanup logic
+        self.camera_man.close()
+
+        # TODO: implement fully
+
+
+@dataclass(kw_only=True)
+class GlobalState:
+    """
+    All "atomic" state shared across screens.
+    """
+
+    room_temp: Atom[float | None]
+    """
+    TI room temperature in degrees celsius, selected on the start screen.
+    """
+
+    room_humidity: Atom[float | None]
+    """
+    Relative room humidity as a percent, selected on the start screen.
+    """
+
+    @staticmethod
+    def new() -> GlobalState:
+        return GlobalState(
+            room_humidity=Atom(None),
+            room_temp=Atom(None),
+        )

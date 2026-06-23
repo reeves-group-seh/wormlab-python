@@ -4,7 +4,6 @@ from pathlib import Path
 
 # pip
 import pygame
-from pygame import Color
 from pygame_gui import PackageResource
 
 # local
@@ -77,57 +76,62 @@ class Config:
         The location of the main `theme.json` file.
         """
 
-        self.BACKGROUND_COLOR: Color = Color(120, 120, 120)
-        """
-        Color of the window background.
-        """
-
         #
-        # speed
+        # movement speed
         #
 
-        self.SPEED_STEP: float = 10.0
+        self.MOVE_SPEED_STEP: float = 10.0
         """
         Value to increment and decrement speed by in steps per second.
         """
 
-        self.MIN_SPEED: float = 10.0
+        self.MIN_MOVE_SPEED: float = 10.0
         """
         Minimum stage movement speed in steps per second.
         """
 
-        self.MAX_SPEED: float = 1000.0
+        self.MAX_MOVE_SPEED: float = 1000.0
         """
         Maximum stage movement speed in steps per second.
         """
 
-        self.DEFAULT_SPEED: float = 100.0
+        self.DEFAULT_MOVE_SPEED: float = 100.0
         """
         Default stage movement speed in steps per second.
         """
 
         #
-        # move duration
+        # step duration
         #
 
-        self.MIN_MOVE_DURATION: float = 1.0
+        self.STEP_DURATION_STEP: float = 10.0
         """
-        Mimimum stage move duration in milliseconds.
-        """
-
-        self.MAX_MOVE_DURATION: float = 5000.0
-        """
-        Maximum stage move duration in milliseconds.
+        Value to increment and decrement step duration by in milliseconds.
         """
 
-        self.DEFAULT_MOVE_DURATION: float = 100.0
+        self.MIN_STEP_DURATION: float = 1.0
         """
-        Default stage move duration in milliseconds.
+        Mimimum stage step duration in milliseconds.
+        """
+
+        self.MAX_STEP_DURATION: float = 5000.0
+        """
+        Maximum stage step duration in milliseconds.
+        """
+
+        self.DEFAULT_STEP_DURATION: float = 100.0
+        """
+        Default stage step duration in milliseconds.
         """
 
         #
         # fire duration
         #
+
+        self.FIRE_DURATION_STEP: float = 10.0
+        """
+        Value to increment and decrement fire duration by in milliseconds.
+        """
 
         self.MIN_FIRE_DURATION: float = 1.0
         """
@@ -181,6 +185,11 @@ class Config:
         #
         # other defaults
         #
+
+        self.DEFAULT_STRAIN: str = "N2"
+        """
+        Default worm strain.
+        """
 
         self.DEFAULT_FILTER_NUMBER: FilterNumber = FilterNumber.FOUR
         """

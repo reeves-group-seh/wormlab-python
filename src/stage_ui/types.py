@@ -1,4 +1,6 @@
 # std
+import datetime as dt
+from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 
 
@@ -60,3 +62,14 @@ class KeyMapAction(Enum):
     DESTROY = auto()
     GRID = auto()
     SKIP_DATA = auto()
+
+
+@dataclass(frozen=True, kw_only=True)
+class LaserFire:
+    """
+    Information about a laser fire itself. This is just the observable data that
+    is know at fire time and cannot be changed.
+    """
+
+    time: dt.datetime
+    duration: float
