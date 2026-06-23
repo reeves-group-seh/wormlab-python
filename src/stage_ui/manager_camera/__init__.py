@@ -1,12 +1,7 @@
-# std
-from typing import Protocol
-
-# pip
-import numpy as np
-
-# local
-from stage_ui.manager_camera.cv2 import CV2CameraManager
-from stage_ui.manager_camera.mock import MockCameraManager
+# relative
+from .base import CameraManager
+from .cv2 import CV2CameraManager
+from .mock import MockCameraManager
 
 # public api
 __all__ = [
@@ -14,20 +9,3 @@ __all__ = [
     "CameraManager",
     "MockCameraManager",
 ]
-
-
-class CameraManager(Protocol):
-    def open(self, index: int) -> None: ...
-    def close(self) -> None: ...
-    def read_frame(self) -> np.ndarray | None: ...
-    def index(self) -> int | None: ...
-
-    def width(self) -> int:
-        """
-        The feed's width.
-        """
-
-    def height(self) -> int:
-        """
-        The feed's height.
-        """

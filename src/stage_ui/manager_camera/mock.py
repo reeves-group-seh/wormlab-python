@@ -1,41 +1,49 @@
+# std
+from typing import override
+
 # pip
 import numpy as np
 
-# constants
-WIDTH = 720
-HEIGHT = 480
-LOG_PREFIX = "MockCameraManager"
+# relative
+from .base import CameraManager
 
 
-class MockCameraManager:
+class MockCameraManager(CameraManager):
+    # constants
+    WIDTH = 720
+    HEIGHT = 480
+    LOG_PREFIX = "MockCameraManager"
+
     def __init__(self) -> None:
         self._index: int | None = None
 
+    @override
     def open(self, index: int) -> None:
         self._index = index
-        print(f"{LOG_PREFIX}: opened at index {index}")
+        print(f"{self.LOG_PREFIX}: opened at index {index}")
 
+    @override
     def close(self) -> None:
         self._index = None
-        print(f"{LOG_PREFIX}: closed")
+        print(f"{self.LOG_PREFIX}: closed")
 
+    @override
     def read_frame(self) -> np.ndarray | None:
         if self._index is None:
             raise Exception("resource has not been opened")
 
-        return np.random.randint(0, 256, (WIDTH, HEIGHT, 3), dtype=np.uint8)
+        return np.random.randint(0, 256, (self.WIDTH, self.HEIGHT, 3), dtype=np.uint8)
 
-    def index(self) -> int | None:
-        return self._index
-
+    @override
     def width(self) -> int:
         if self._index is None:
             raise Exception("resource has not been opened")
 
-        return WIDTH
+        return self.WIDTH
 
+    @override
     def height(self) -> int:
         if self._index is None:
             raise Exception("resource has not been opened")
 
-        return HEIGHT
+        return self.HEIGHT
