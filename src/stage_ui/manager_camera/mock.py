@@ -24,8 +24,14 @@ class MockCameraManager(CameraManager):
 
     @override
     def close(self) -> None:
-        self._index = None
-        print(f"{self.LOG_PREFIX}: closed")
+        # already closed
+        if self._index is None:
+            print(f"{self.LOG_PREFIX}: attempted to close non-open index")
+            return
+
+        # close
+        print(f"{self.LOG_PREFIX}: closed at index {self._index}")
+        self._port = None
 
     @override
     def read_frame(self) -> np.ndarray | None:
