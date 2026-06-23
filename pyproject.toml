@@ -1,5 +1,6 @@
 [project]
 name = "stage-ui"
+description = "Desktop app for controlling lab microscope stage and laser."
 version = "2.0.dev0"
 requires-python = ">=3.14"
 readme = "readme.md"
@@ -7,15 +8,18 @@ authors = [
     { name = "Mack Rusing", email = "mail@mackk.net" }
 ]
 dependencies = [
-    "opencv-python>=4.13.0.90",
+    "opencv-python>=4.13.0.92",
     "pandas>=3.0.0",
     "pygame-ce>=2.5.6",
     "pygame-gui>=0.6.14",
     "pyserial>=3.5",
 ]
 
+[project.urls]
+"Repository" = "https://github.com/reeves-group-seh/stage-ui"
+
 [project.scripts]
-stage-ui = "stage_ui.main:main"
+stage-ui = "stage_ui.__main__:main"
 
 [dependency-groups]
 dev = [
@@ -27,14 +31,13 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.11.23,<0.12"]
+build-backend = "uv_build"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/stage_ui"]
+[tool]
 
-[tool.ty.rules]
-all = "error"
+[tool.ty]
+rules = { all = "error" }
 
 [tool.mypy]
 mypy_path = "src"
@@ -45,4 +48,4 @@ src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "RUF", "N", "SIM"]
-ignore = ["E501", "SIM102", "N802", "N806"]
+ignore = ["E501", "B024", "B027", "N802", "N806", "SIM102"]
