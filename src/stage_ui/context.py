@@ -1,9 +1,8 @@
 # std
 from dataclasses import dataclass
 
-from stage_ui.atom import Atom
-
 # local
+from stage_ui.atom import Atom
 from stage_ui.config import Config
 from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.manager_camera import CameraManager
@@ -55,11 +54,12 @@ class Context:
     State shared across screens.
     """
 
-    def close(self) -> None:
-        # cleanup logic
+    def destroy(self) -> None:
+        """
+        Cleanup all open resources.
+        """
         self.camera_man.close()
-
-        # TODO: implement fully
+        self.arduino_man.close()
 
 
 @dataclass(kw_only=True)

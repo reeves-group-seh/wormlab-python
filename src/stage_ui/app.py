@@ -57,7 +57,7 @@ class App:
             for event in pygame.event.get():
                 # match on types
                 if event.type == pygame.QUIT:
-                    # TODO: need better cleanup logic here
+                    self.ctx.destroy()
                     print("StageUI: shutting down")
                     self.running = False
 
