@@ -30,6 +30,11 @@ class Context:
     # managers
     #
 
+    arduino_man: ArduinoManager
+    """
+    Manager handling serial communication with the arduino.
+    """
+
     camera_man: CameraManager
     """
     Manager handling camera input.
@@ -38,11 +43,6 @@ class Context:
     data_man: DataManager
     """
     Manager handling writing of data.
-    """
-
-    arduino_man: ArduinoManager
-    """
-    Manager handling serial communication with the arduino.
     """
 
     #

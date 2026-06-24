@@ -18,9 +18,9 @@ class App:
     def __init__(
         self,
         cfg: Config,
+        arduino_man: ArduinoManager,
         camera_man: CameraManager,
         data_man: DataManager,
-        arduino_man: ArduinoManager,
     ) -> None:
         pygame.init()
         pygame.display.set_caption(cfg.APP_NAME)
@@ -28,9 +28,9 @@ class App:
         # init values
         self.ctx: Context = Context(
             cfg=cfg,
+            arduino_man=arduino_man,
             camera_man=camera_man,
             data_man=data_man,
-            arduino_man=arduino_man,
             state=GlobalState.new(),
         )
         self.window_surf: Surface = pygame.display.set_mode(
