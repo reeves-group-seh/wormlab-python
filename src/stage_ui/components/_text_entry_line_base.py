@@ -86,6 +86,7 @@ class BaseTextEntryLineComponent[T](Component):
     def _render_text_entry(self) -> None:
         if not self.text_entry.is_focused:
             self.text_entry.set_text(self.format(self.value.value))
+            self._set_valid(True)
 
     @abstractmethod
     def on_parse_error(self) -> None:
