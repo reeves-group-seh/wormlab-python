@@ -7,7 +7,7 @@ from .base import ArduinoManager
 
 class MockArduinoManager(ArduinoManager):
     # constants
-    LOG_PREFIX = "MockSerialManager"
+    LOG_PREFIX = "MockArduinoManager"
 
     def __init__(self) -> None:
         self._port: str | None = None
