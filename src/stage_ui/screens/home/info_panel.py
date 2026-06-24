@@ -8,6 +8,7 @@ from pygame_gui.elements import UIPanel, UITextBox
 # local
 from stage_ui.atom import Atom
 from stage_ui.components import NO_MARGINS, Component
+from stage_ui.manager_arduino.base import ArduinoAction
 
 
 class InfoPanelComponent(Component):
@@ -21,7 +22,7 @@ class InfoPanelComponent(Component):
         container: UIPanel,
         pos: tuple[int, int],
         datafile: Path,
-        status: Atom[str],
+        arduino_status: Atom[ArduinoAction],
         room_temp: Atom[float],
         room_humidity: Atom[float],
     ) -> None:
@@ -30,12 +31,12 @@ class InfoPanelComponent(Component):
 
         # set values
         self.datafile = datafile
-        self.status = status
+        self.arduino_status = arduino_status
         self.room_temp = room_temp
         self.room_humidity = room_humidity
 
         # bindings
-        self.bind(status, self._render_top_info)
+        self.bind(arduino_status, self._render_top_info)
         self.bind(room_temp, self._render_top_info)
         self.bind(room_humidity, self._render_top_info)
 
@@ -82,7 +83,7 @@ class InfoPanelComponent(Component):
     def _render_top_info(self) -> None:
         # grab data
         top_info_dict = {
-            "Status": self.status.value,
+            "Status": str(self.arduino_status.value),
             "Datafile": self.datafile.name,
             "Temperature": f"{self.room_temp.value} \u2103",
             "Humidity": f"{self.room_humidity.value}%",

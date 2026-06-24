@@ -21,7 +21,7 @@ class Config:
         data_dir: Path | None = None,
         camera_index: int | None = None,
     ) -> None:
-        self.MARKER_POS: tuple[float, float] = (200.0, 311.0)
+        self.MARKER_POS: tuple[int, int] = (180, 300)
         """
         Position of the the marker relative to the video grid.
         """
@@ -202,6 +202,11 @@ class Config:
         Default selected radius color.
         """
 
+        self.DESTROY_FIRE_DURATION: float = 200.0
+        """
+        Duration of fires using destroy command.
+        """
+
         #
         # serial
         #
@@ -244,12 +249,8 @@ class Config:
             pygame.K_LEFT: KeyMapAction.MOVE_LEFT,
             pygame.K_RIGHT: KeyMapAction.MOVE_RIGHT,
             pygame.K_UP: KeyMapAction.MOVE_UP,
-            pygame.K_DOWN: KeyMapAction.MOVE_UP,
-            # speed
-            pygame.K_w: KeyMapAction.INC_SPEED,
-            pygame.K_s: KeyMapAction.DEC_SPEED,
+            pygame.K_DOWN: KeyMapAction.MOVE_DOWN,
             # other
-            pygame.K_ESCAPE: KeyMapAction.QUIT,
             pygame.K_f: KeyMapAction.FIRE,
             pygame.K_d: KeyMapAction.DESTROY,
             pygame.K_m: KeyMapAction.GRID,

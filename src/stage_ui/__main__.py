@@ -78,9 +78,6 @@ def main() -> None:
             baudrate=cfg.SERIAL_BAUDRATE,
             timeout=cfg.SERIAL_TIMEOUT,
             sleep_factor=cfg.SERIAL_SLEEP_FACTOR,
-            default_grid_speed=cfg.DEFAULT_GRID_SPEED,
-            default_grid_move_duration=cfg.DEFAULT_GRID_MOVE_DURATION,
-            default_grid_fire_duration=cfg.DEFAULT_GRID_FIRE_DURATION,
         )
     )
     app = App(

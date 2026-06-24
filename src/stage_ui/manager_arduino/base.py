@@ -1,5 +1,50 @@
 # std
 from abc import ABC, abstractmethod
+from enum import Enum, auto
+from typing import override
+
+# local
+from stage_ui.atom import Atom
+
+
+class ArduinoAction(Enum):
+    IDLE = auto()
+    MOVE_LEFT = auto()
+    MOVE_RIGHT = auto()
+    MOVE_UP = auto()
+    MOVE_DOWN = auto()
+    STEP_LEFT = auto()
+    STEP_RIGHT = auto()
+    STEP_UP = auto()
+    STEP_DOWN = auto()
+    FIRE = auto()
+    GRID = auto()
+
+    @override
+    def __str__(self) -> str:
+        match self:
+            case ArduinoAction.IDLE:
+                return "Idle"
+            case ArduinoAction.MOVE_LEFT:
+                return "Move Left"
+            case ArduinoAction.MOVE_RIGHT:
+                return "Move Right"
+            case ArduinoAction.MOVE_UP:
+                return "Move Up"
+            case ArduinoAction.MOVE_DOWN:
+                return "Move Down"
+            case ArduinoAction.STEP_LEFT:
+                return "Step Left"
+            case ArduinoAction.STEP_RIGHT:
+                return "Step Right"
+            case ArduinoAction.STEP_UP:
+                return "Step Up"
+            case ArduinoAction.STEP_DOWN:
+                return "Step Down"
+            case ArduinoAction.FIRE:
+                return "Fire"
+            case ArduinoAction.GRID:
+                return "Grid"
 
 
 class ArduinoManager(ABC):
@@ -17,6 +62,12 @@ class ArduinoManager(ABC):
     def close(self) -> None:
         """
         Close the serial connection, if one exists, otherwise a no-op.
+        """
+
+    @abstractmethod
+    def action(self) -> Atom[ArduinoAction]:
+        """
+        The action currently being executed.
         """
 
     @abstractmethod

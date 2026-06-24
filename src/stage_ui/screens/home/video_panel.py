@@ -22,7 +22,7 @@ class VideoPanelComponent(Component):
     # the origin at the upper-left)
     _PLANE_W: int = 720
     _PLANE_H: int = 480
-    _GRID_STEP: int = 80
+    _GRID_STEP: int = 60
     _GRID_COLOR: pygame.Color = pygame.Color(183, 53, 219)
 
     def __init__(
@@ -31,12 +31,14 @@ class VideoPanelComponent(Component):
         container: UIPanel,
         pos: tuple[int, int],
         camera_man: CameraManager,
+        marker_pos: tuple[int, int],
     ) -> None:
         # init parent
         super().__init__()
 
         # set values
         self.camera_man = camera_man
+        self.marker_pos = marker_pos
 
         # unpack values
         x, y = pos
@@ -77,11 +79,11 @@ class VideoPanelComponent(Component):
         surf: Surface = Screen.fit_surface(
             raw, self.video_frame.get_relative_rect().size
         )
-        self._draw_overlay(surf)
+        self._draw_overlay(surf, self.marker_pos)
 
         self.video_frame.set_image(surf)
 
-    def _draw_overlay(self, surf: Surface) -> None:
+    def _draw_overlay(self, surf: Surface, marker_pos: tuple[int, int]) -> None:
         sw, sh = surf.get_size()
 
         # vertical lines at logical x = 0, 80, ... 720 (origin at the upper-left)
@@ -94,8 +96,12 @@ class VideoPanelComponent(Component):
             py = min(round(ly / self._PLANE_H * sh), sh - 1)
             pygame.draw.line(surf, self._GRID_COLOR, (0, py), (sw, py), 1)
 
-        # center the marker in the box for now
-        marker = (sw // 2, sh // 2)
+        # translate the logical coordinate onto the fitted surface and center
+        # the marker there
+        lx, ly = marker_pos
+        mx = min(round(lx / self._PLANE_W * sw), sw - 1)
+        my = min(round(ly / self._PLANE_H * sh), sh - 1)
+        marker = (mx, my)
         pygame.draw.circle(surf, pygame.Color(255, 0, 0), marker, 5, 2)
         pygame.draw.circle(surf, pygame.Color(0, 255, 0), marker, 25, 1)
         pygame.draw.circle(surf, pygame.Color(0, 0, 255), marker, 45, 1)

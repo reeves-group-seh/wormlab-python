@@ -54,10 +54,6 @@ class KeyMapAction(Enum):
     MOVE_UP = auto()
     MOVE_DOWN = auto()
 
-    INC_SPEED = auto()
-    DEC_SPEED = auto()
-
-    QUIT = auto()
     FIRE = auto()
     DESTROY = auto()
     GRID = auto()

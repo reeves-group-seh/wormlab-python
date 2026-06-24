@@ -1,8 +1,11 @@
 # std
 from typing import override
 
+# local
+from stage_ui.atom import Atom
+
 # relative
-from .base import ArduinoManager
+from .base import ArduinoAction, ArduinoManager
 
 
 class MockArduinoManager(ArduinoManager):
@@ -11,6 +14,7 @@ class MockArduinoManager(ArduinoManager):
 
     def __init__(self) -> None:
         self._port: str | None = None
+        self._action: Atom[ArduinoAction] = Atom(ArduinoAction.IDLE)
 
     @override
     def open(self, port: str) -> None:
@@ -29,10 +33,15 @@ class MockArduinoManager(ArduinoManager):
         self._port = None
 
     @override
+    def action(self) -> Atom[ArduinoAction]:
+        return self._action
+
+    @override
     def stop(self) -> None:
         if self._port is None:
             raise Exception("resource has not been opened")
 
+        self._action.value = ArduinoAction.IDLE
         print(f"{self.LOG_PREFIX}: received 'stop' command")
 
     @override
@@ -40,6 +49,7 @@ class MockArduinoManager(ArduinoManager):
         if self._port is None:
             raise Exception("resource has not been opened")
 
+        self._action.value = ArduinoAction.MOVE_LEFT
         print(
             f"{self.LOG_PREFIX}: received 'move_left' command, speed={speed}, duration={duration}"
         )
@@ -49,6 +59,7 @@ class MockArduinoManager(ArduinoManager):
         if self._port is None:
             raise Exception("resource has not been opened")
 
+        self._action.value = ArduinoAction.MOVE_RIGHT
         print(
             f"{self.LOG_PREFIX}: received 'move_right' command, speed={speed}, duration={duration}"
         )
@@ -58,6 +69,7 @@ class MockArduinoManager(ArduinoManager):
         if self._port is None:
             raise Exception("resource has not been opened")
 
+        self._action.value = ArduinoAction.MOVE_UP
         print(
             f"{self.LOG_PREFIX}: received 'move_up' command, speed={speed}, duration={duration}"
         )
@@ -67,6 +79,7 @@ class MockArduinoManager(ArduinoManager):
         if self._port is None:
             raise Exception("resource has not been opened")
 
+        self._action.value = ArduinoAction.MOVE_DOWN
         print(
             f"{self.LOG_PREFIX}: received 'move_down' command, speed={speed}, duration={duration}"
         )

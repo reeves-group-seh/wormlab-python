@@ -6,12 +6,14 @@ from typing import cast
 from stage_ui.atom import Atom
 from stage_ui.config import Config
 from stage_ui.context import GlobalState
+from stage_ui.manager_arduino import ArduinoManager
+from stage_ui.manager_arduino.base import ArduinoAction
 from stage_ui.types import FilterNumber, LaserFire
 
 
 @dataclass(kw_only=True)
 class HomeState:
-    status: Atom[str]  # TODO: change to enum
+    arduino_status: Atom[ArduinoAction]
     fire_duration: Atom[float]
     step_duration: Atom[float]
     move_speed: Atom[float]
@@ -28,13 +30,15 @@ class HomeState:
     room_humidity: Atom[float]
 
     @staticmethod
-    def new(cfg: Config, global_state: GlobalState) -> HomeState:
+    def new(
+        cfg: Config, arduino_manager: ArduinoManager, global_state: GlobalState
+    ) -> HomeState:
         # cast types
         room_temp = cast(Atom[float], global_state.room_temp)
         room_humidity = cast(Atom[float], global_state.room_humidity)
 
         return HomeState(
-            status=Atom("Idle"),
+            arduino_status=arduino_manager.action(),
             fire_duration=Atom(cfg.DEFAULT_FIRE_DURATION),
             step_duration=Atom(cfg.DEFAULT_STEP_DURATION),
             move_speed=Atom(cfg.DEFAULT_MOVE_SPEED),

@@ -12,8 +12,11 @@ from typing import override
 import serial
 import serial.tools.list_ports
 
+# local
+from stage_ui.atom import Atom
+
 # relative
-from .base import ArduinoManager
+from .base import ArduinoAction, ArduinoManager
 
 
 class PySerialArduinoManager(ArduinoManager):
@@ -22,9 +25,6 @@ class PySerialArduinoManager(ArduinoManager):
         baudrate: int,
         timeout: float,
         sleep_factor: float,
-        default_grid_speed: float,
-        default_grid_move_duration: float,
-        default_grid_fire_duration: float,
     ) -> None:
         self._worker: _SerialWorker | None = None
         """
@@ -34,7 +34,12 @@ class PySerialArduinoManager(ArduinoManager):
 
         self._action: _SerialAction = _SerialActionIdle()
         """
-        The current high-level action being preformed.
+        The current action to be given to the arduino.
+        """
+
+        self._executing_action: Atom[ArduinoAction] = Atom(ArduinoAction.IDLE)
+        """
+        The action currently being executed by the arduino worker.
         """
 
         self._baudrate = baudrate
@@ -57,26 +62,8 @@ class PySerialArduinoManager(ArduinoManager):
         be set to a value > 1.0.
         """
 
-        self._default_grid_speed = default_grid_speed
-        """
-        The default speed for movement commands when using step-and-shoot.
-        """
-
-        self._default_grid_move_duration = default_grid_move_duration
-        """
-        The default duration of move commands when using step-and-shoot.
-        """
-
-        self._default_grid_fire_duration = default_grid_fire_duration
-        """
-        The default duration of fire commands when using step-and-shoot.
-        """
-
     @override
     def open(self, port: str) -> None:
-        """
-        Open the serial connection at the given port.
-        """
         self._worker = _SerialWorker.new(
             port,
             self._baudrate,
@@ -86,9 +73,6 @@ class PySerialArduinoManager(ArduinoManager):
 
     @override
     def close(self) -> None:
-        """
-        Close the serial connection, if one exists, otherwise a no-op.
-        """
         # no-op if closed
         if self._worker is None:
             return
@@ -97,6 +81,10 @@ class PySerialArduinoManager(ArduinoManager):
         self._worker.kill()
         self._worker = None
         self._action = _SerialActionIdle()
+
+    @override
+    def action(self) -> Atom[ArduinoAction]:
+        return self._executing_action
 
     @override
     def stop(self) -> None:
@@ -174,9 +162,9 @@ class PySerialArduinoManager(ArduinoManager):
     def grid(
         self,
         n: int,
-        move_speed: float | None = None,
-        move_duration: float | None = None,
-        fire_duration: float | None = None,
+        move_speed: float,
+        move_duration: float,
+        fire_duration: float,
     ) -> None:
         """
         Execute the step-and-shoot functionality.
@@ -193,17 +181,6 @@ class PySerialArduinoManager(ArduinoManager):
         :param fire_duration:
             Duration to fire the laser for.
         """
-        move_speed = move_speed if move_speed is not None else self._default_grid_speed
-        move_duration = (
-            move_duration
-            if move_duration is not None
-            else self._default_grid_move_duration
-        )
-        fire_duration = (
-            fire_duration
-            if fire_duration is not None
-            else self._default_grid_fire_duration
-        )
 
         self._action = _SerialActionGrid(
             n=n,
@@ -301,7 +278,18 @@ class _SerialActionMove(_SerialAction):
 
     @override
     def run(self, worker: _SerialWorker) -> None:
-        worker.enqueue_move(self.speed, self.direction, self.duration)
+        action: ArduinoAction
+        match self.direction:
+            case _Direction.LEFT | _Direction.DEFAULT:
+                action = ArduinoAction.MOVE_LEFT
+            case _Direction.RIGHT:
+                action = ArduinoAction.MOVE_RIGHT
+            case _Direction.UP:
+                action = ArduinoAction.MOVE_UP
+            case _Direction.DOWN:
+                action = ArduinoAction.MOVE_DOWN
+
+        worker.enqueue_move(self.speed, self.direction, self.duration, action)
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -327,7 +315,18 @@ class _SerialActionStep(_SerialAction):
 
     @override
     def run(self, worker: _SerialWorker) -> None:
-        worker.enqueue_move(self.speed, self.direction, self.duration)
+        action: ArduinoAction
+        match self.direction:
+            case _Direction.LEFT | _Direction.DEFAULT:
+                action = ArduinoAction.STEP_LEFT
+            case _Direction.RIGHT:
+                action = ArduinoAction.STEP_RIGHT
+            case _Direction.UP:
+                action = ArduinoAction.STEP_UP
+            case _Direction.DOWN:
+                action = ArduinoAction.STEP_DOWN
+
+        worker.enqueue_move(self.speed, self.direction, self.duration, action)
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -343,7 +342,10 @@ class _SerialActionFire(_SerialAction):
 
     @override
     def run(self, worker: _SerialWorker) -> None:
-        worker.enqueue_fire(self.duration)
+        worker.enqueue_fire(
+            self.duration,
+            ArduinoAction.FIRE,
+        )
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -384,9 +386,10 @@ class _SerialActionGrid(_SerialAction):
                         self.move_speed,
                         _Direction.RIGHT,
                         self.move_duration,
+                        ArduinoAction.GRID,
                     )
                 # fire laser at current point
-                worker.enqueue_fire(self.fire_duration)
+                worker.enqueue_fire(self.fire_duration, ArduinoAction.GRID)
 
             # if row is not the last, move left back to first col, then
             # down one to next row
@@ -397,10 +400,16 @@ class _SerialActionGrid(_SerialAction):
                         self.move_speed,
                         _Direction.LEFT,
                         self.move_duration,
+                        ArduinoAction.GRID,
                     )
                 # move down (?) 1. everything was labeled down but int
                 # was 3, so i changed const to indicate up?
-                worker.enqueue_move(self.move_speed, _Direction.UP, self.move_duration)
+                worker.enqueue_move(
+                    self.move_speed,
+                    _Direction.UP,
+                    self.move_duration,
+                    ArduinoAction.GRID,
+                )
 
         # move up to top row. should this also move to left? also this
         # was again 2 but labeled everywhere as up?
@@ -409,6 +418,7 @@ class _SerialActionGrid(_SerialAction):
                 self.move_speed,
                 _Direction.DOWN,
                 self.move_duration,
+                ArduinoAction.GRID,
             )
 
 
@@ -448,6 +458,11 @@ class _SerialWorker:
     Queue of commands for the arduino to execute.
     """
 
+    _current_action: ArduinoAction
+    """
+    The action currently executing.
+    """
+
     _thread: Thread = field(init=False)
     """
     The worker thread dealing with writing to the serial port.
@@ -473,6 +488,7 @@ class _SerialWorker:
             _timeout=timeout,
             _sleep_factor=sleep_factor,
             _queue=Queue(),
+            _current_action=ArduinoAction.IDLE,
         )
 
     def queue_empty(self) -> bool:
@@ -481,22 +497,34 @@ class _SerialWorker:
         """
         return self._queue.empty()
 
-    def enqueue_fire(self, duration: float) -> None:
+    def enqueue_fire(
+        self,
+        duration: float,
+        action: ArduinoAction,
+    ) -> None:
         """
         Add a fire command to the queue.
         """
-        self._queue.put(_SerialCommand.new_fire_command(duration))
+        self._queue.put(_SerialCommand.new_fire_command(duration, action))
 
     def enqueue_move(
         self,
         speed: float,
         direction: _Direction,
         duration: float,
+        action: ArduinoAction,
     ) -> None:
         """
         Add a move command to the queue.
         """
-        self._queue.put(_SerialCommand.new_move_command(speed, direction, duration))
+        self._queue.put(
+            _SerialCommand.new_move_command(
+                speed,
+                direction,
+                duration,
+                action,
+            )
+        )
 
     def kill(self) -> None:
         """
@@ -518,8 +546,11 @@ class _SerialWorker:
                 command = self._queue.get()
                 if command is None:
                     break
+                self._current_action = command.action
                 ser.write(command.to_packet())
                 time.sleep((command.max_duration() / 1000.0) * self._sleep_factor)
+                if self._queue.empty():
+                    self._current_action = ArduinoAction.IDLE
 
 
 @dataclass(kw_only=True)
@@ -548,11 +579,17 @@ class _SerialCommand:
     Duration to fire for in milliseconds.
     """
 
+    action: ArduinoAction
+    """
+    The action this command represents.
+    """
+
     @staticmethod
     def new_move_command(
         speed: float,
         direction: _Direction,
         duration: float,
+        action: ArduinoAction,
     ) -> _SerialCommand:
         """
         Create a new command that moves the stage.
@@ -562,10 +599,14 @@ class _SerialCommand:
             move_direction=direction,
             move_duration=duration,
             fire_duration=0.0,
+            action=action,
         )
 
     @staticmethod
-    def new_fire_command(duration: float) -> _SerialCommand:
+    def new_fire_command(
+        duration: float,
+        action: ArduinoAction,
+    ) -> _SerialCommand:
         """
         Create a new command that fires the laser.
         """
@@ -574,6 +615,7 @@ class _SerialCommand:
             move_direction=_Direction.DEFAULT,
             move_duration=0.0,
             fire_duration=duration,
+            action=action,
         )
 
     def max_duration(self) -> float:
