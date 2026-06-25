@@ -7,14 +7,11 @@ wheels/
 *.egg-info
 
 # virtual environments
-.venv
+.venv/
 
 # tool-generated files
-.mypy_cache
-.ruff_cache
-
-# temp files
-*.tmp*
+.mypy_cache/
+.ruff_cache/
 
 # old implementations
-src/stage_legacy
+src/stage_legacy/
