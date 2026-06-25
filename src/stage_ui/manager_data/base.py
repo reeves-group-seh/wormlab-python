@@ -28,7 +28,9 @@ class DataRow:
         return [key.name for key in dataclasses.fields(DataRow)]
 
     def as_dict(self) -> dict[str, Any]:
-        return dataclasses.asdict(self)
+        dict = dataclasses.asdict(self)
+        dict["fire_time"] = self.fire_time.isoformat(timespec="seconds")
+        return dict
 
 
 class DataManager(ABC):
