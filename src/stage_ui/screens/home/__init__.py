@@ -1,9 +1,8 @@
 # std
 from typing import override
 
-import pygame
-
 # pip
+import pygame
 from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel, UITextEntryLine
 
@@ -11,7 +10,7 @@ from pygame_gui.elements import UIPanel, UITextEntryLine
 from stage_ui.components import Component
 from stage_ui.context import Context
 from stage_ui.screens import Screen, ScreenId
-from stage_ui.types import KeyMapAction
+from stage_ui.types import KeyMapAction, LaserFire
 
 # relative
 from .info_panel import InfoPanelComponent
@@ -40,7 +39,7 @@ class HomeScreen(Screen):
                 manager=self.manager,
                 bg=self.bg,
                 ctx=self.ctx,
-                home_state=self.state,
+                state=self.state,
                 marker_pos=self.ctx.cfg.MARKER_POS,
             )
         )
@@ -91,22 +90,31 @@ class HomeScreen(Screen):
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.FIRE:
-                    self.ctx.arduino_man.fire(
-                        self.state.fire_duration.value,
-                    )
+                    if not self.state.data_needed.value:
+                        fire = LaserFire.new(self.state.fire_duration.value)
+                        self.ctx.arduino_man.fire(fire.duration)
+                        self.state.num_fires.value += 1
+                        self.state.last_fire.value = fire
+                        self.state.data_needed.value = True
                 case KeyMapAction.DESTROY:
-                    self.ctx.arduino_man.fire(
-                        self.ctx.cfg.DESTROY_FIRE_DURATION,
-                    )
+                    if not self.state.data_needed.value:
+                        fire = LaserFire.new(self.ctx.cfg.DESTROY_FIRE_DURATION)
+                        self.ctx.arduino_man.fire(fire.duration)
+                        self.ctx.data_man.add_non_data_fire(fire, "Destroy Fire")
                 case KeyMapAction.GRID:
-                    self.ctx.arduino_man.grid(
-                        self.state.grid_size.value,
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
-                        self.state.fire_duration.value,
-                    )
+                    if not self.state.data_needed.value:
+                        self.ctx.arduino_man.grid(
+                            self.state.grid_size.value,
+                            self.state.move_speed.value,
+                            self.state.step_duration.value,
+                            self.state.fire_duration.value,
+                        )
                 case KeyMapAction.SKIP_DATA:
-                    ...
+                    if self.state.last_fire.value and self.state.data_needed.value:
+                        self.ctx.data_man.add_non_data_fire(
+                            self.state.last_fire.value, "Non-Data Fire"
+                        )
+                        self.state.data_needed.value = False
 
         if event.type == pygame.KEYUP and not self._is_typing():
             action = self.ctx.cfg.KEYMAP.get(event.key)
@@ -137,7 +145,7 @@ class HomeScreenComponent(Component):
         manager: UIManager,
         bg: UIPanel,
         ctx: Context,
-        home_state: HomeState,
+        state: HomeState,
         marker_pos: tuple[int, int],
     ) -> None:
         # init parent
@@ -150,9 +158,9 @@ class HomeScreenComponent(Component):
                 container=bg,
                 pos=(20, 20),
                 datafile=ctx.cfg.DATA_FILE,
-                arduino_status=home_state.arduino_status,
-                room_temp=home_state.room_temp,
-                room_humidity=home_state.room_humidity,
+                arduino_status=state.arduino_status,
+                room_temp=state.room_temp,
+                room_humidity=state.room_humidity,
             )
         )
 
@@ -163,10 +171,10 @@ class HomeScreenComponent(Component):
                 container=bg,
                 pos=(435, 20),
                 cfg=ctx.cfg,
-                fire_duration=home_state.fire_duration,
-                step_duration=home_state.step_duration,
-                move_speed=home_state.move_speed,
-                grid_size=home_state.grid_size,
+                fire_duration=state.fire_duration,
+                step_duration=state.step_duration,
+                move_speed=state.move_speed,
+                grid_size=state.grid_size,
             )
         )
 
@@ -176,11 +184,8 @@ class HomeScreenComponent(Component):
                 manager=manager,
                 container=bg,
                 pos=(20, 260),
-                last_fire=home_state.last_fire,
-                num_fires=home_state.num_fires,
-                filter=home_state.filter,
-                strain=home_state.strain,
-                worm_id=home_state.worm_id,
+                data_manager=ctx.data_man,
+                state=state,
             )
         )
 

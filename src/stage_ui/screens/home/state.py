@@ -19,9 +19,10 @@ class HomeState:
     move_speed: Atom[float]
     grid_size: Atom[int]
     last_fire: Atom[LaserFire | None]
+    data_needed: Atom[bool]
     num_fires: Atom[int]
-    filter: Atom[FilterNumber]
-    strain: Atom[str]
+    filter_number: Atom[FilterNumber]
+    worm_strain: Atom[str]
     worm_id: Atom[str]
 
     # these are references to global state with a narrowed type as we know that
@@ -37,17 +38,29 @@ class HomeState:
         room_temp = cast(Atom[float], global_state.room_temp)
         room_humidity = cast(Atom[float], global_state.room_humidity)
 
-        return HomeState(
+        # create
+        s = HomeState(
             arduino_status=arduino_manager.action(),
             fire_duration=Atom(cfg.DEFAULT_FIRE_DURATION),
             step_duration=Atom(cfg.DEFAULT_STEP_DURATION),
             move_speed=Atom(cfg.DEFAULT_MOVE_SPEED),
             grid_size=Atom(cfg.DEFAULT_GRID_SIZE),
             last_fire=Atom(None),
+            data_needed=Atom(False),
             num_fires=Atom(0),
-            filter=Atom(cfg.DEFAULT_FILTER_NUMBER),
-            strain=Atom(cfg.DEFAULT_STRAIN),
+            filter_number=Atom(cfg.DEFAULT_FILTER_NUMBER),
+            worm_strain=Atom(cfg.DEFAULT_STRAIN),
             worm_id=Atom("1"),
             room_temp=room_temp,
             room_humidity=room_humidity,
         )
+
+        # bind
+        s.worm_id.subscribe(lambda: HomeState._reset_num_fires(s.num_fires))
+
+        # return
+        return s
+
+    @staticmethod
+    def _reset_num_fires(num_fires: Atom[int]) -> None:
+        num_fires.value = 0

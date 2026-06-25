@@ -69,3 +69,10 @@ class LaserFire:
 
     time: dt.datetime
     duration: float
+
+    @staticmethod
+    def new(duration: float) -> LaserFire:
+        return LaserFire(
+            time=dt.datetime.now().astimezone(),
+            duration=duration,
+        )
