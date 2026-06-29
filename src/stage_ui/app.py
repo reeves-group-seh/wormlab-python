@@ -1,5 +1,6 @@
 # std
 import signal
+import sys
 
 # pip
 import pygame
@@ -38,7 +39,6 @@ class App:
         )
         self.screen_man: ScreenManager = ScreenManager(self.ctx)
         self.clock: Clock = Clock()
-        self.running: bool = True
         self.dt: float = float("inf")
 
     def run(self) -> None:
@@ -49,7 +49,7 @@ class App:
         )
 
         # render loop
-        while self.running:
+        while True:
             # update time delta
             self.dt = self.clock.tick(self.ctx.cfg.FPS) / 1000.0
 
@@ -57,9 +57,10 @@ class App:
             for event in pygame.event.get():
                 # match on types
                 if event.type == pygame.QUIT:
-                    self.ctx.destroy()
                     print("StageUI: shutting down")
-                    self.running = False
+                    self.ctx.destroy()
+                    pygame.quit()
+                    sys.exit(0)
 
                 # event handlers
                 self.screen_man.process_event(event)
@@ -73,6 +74,3 @@ class App:
 
             # update display
             pygame.display.flip()
-
-        # exit ui
-        pygame.quit()
