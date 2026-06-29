@@ -35,14 +35,14 @@ class Config:
             Path("C:/Users/reeve/Documents/WormData") if data_dir is None else data_dir
         )
         """
-        Directory where CSV datafiles are created.
+        Directory where CSV data files are created.
         """
 
         self.DATA_FILE: Path = (
             self.DATA_DIR / f"{dt.datetime.now().strftime('%Y-%m-%dT%H%M%S')}_data.csv"
         )
         """
-        Path of the CSV datafile to create & write to.
+        Path of the CSV data file to create & write to.
         """
 
         self.FPS: int = 60

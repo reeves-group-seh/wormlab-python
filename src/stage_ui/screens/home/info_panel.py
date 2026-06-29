@@ -21,7 +21,7 @@ class InfoPanelComponent(Component):
         manager: UIManager,
         container: UIPanel,
         pos: tuple[int, int],
-        datafile: Path,
+        data_file: Path,
         arduino_status: Atom[ArduinoAction],
         room_temp: Atom[float],
         room_humidity: Atom[float],
@@ -30,7 +30,7 @@ class InfoPanelComponent(Component):
         super().__init__()
 
         # set values
-        self.datafile = datafile
+        self.data_file = data_file
         self.arduino_status = arduino_status
         self.room_temp = room_temp
         self.room_humidity = room_humidity
@@ -84,7 +84,7 @@ class InfoPanelComponent(Component):
         # grab data
         top_info_dict = {
             "Status": str(self.arduino_status.value),
-            "Datafile": self.datafile.name,
+            "Data File": self.data_file.name,
             "Temperature": f"{self.room_temp.value} \u2103",
             "Humidity": f"{self.room_humidity.value}%",
         }

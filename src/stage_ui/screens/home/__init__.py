@@ -157,7 +157,7 @@ class HomeScreenComponent(Component):
                 manager=manager,
                 container=bg,
                 pos=(20, 20),
-                datafile=ctx.cfg.DATA_FILE,
+                data_file=ctx.cfg.DATA_FILE,
                 arduino_status=state.arduino_status,
                 room_temp=state.room_temp,
                 room_humidity=state.room_humidity,

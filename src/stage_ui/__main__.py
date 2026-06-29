@@ -20,7 +20,7 @@ def main() -> None:
         "-d",
         "--data-dir",
         type=Path,
-        help="directory to write datafiles to",
+        help="directory to write data files to",
         dest="data_dir",
     )
     parser.add_argument(
