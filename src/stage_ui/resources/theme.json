@@ -33,19 +33,6 @@
       "shadow_width": "0"
     }
   },
-  "#info_top": {
-    "misc": {
-      "border_width": "0",
-      "shadow_width": "0"
-    }
-  },
-  "#info_bottom": {
-    "misc": {
-      "text_vert_alignment": "bottom",
-      "border_width": "0",
-      "shadow_width": "0"
-    }
-  },
   "@control_label": {
     "font": {
       "name": "noto_sans",
@@ -63,11 +50,11 @@
   },
   "@cycle_box_text": {
     "colours": {
-      "disabled_bg": "#4c5052",
-      "disabled_dark_bg": "#21282d",
-      "disabled_text": "#bbbbbb",
+      "disabled_bg": "#4C5052",
+      "disabled_dark_bg": "#21282D",
+      "disabled_text": "#BBBBBB",
       "disabled_text_shadow": "#10101070",
-      "disabled_border": "#5c6062"
+      "disabled_border": "#5C6062"
     },
     "misc": {
       "text_horiz_alignment": "center"
@@ -80,7 +67,7 @@
   },
   "@spin_box_text_entry_invalid": {
     "colours": {
-      "normal_border": "#ff2727"
+      "normal_border": "#FF2727"
     },
     "misc": {
       "text_horiz_alignment": "center"
@@ -88,7 +75,15 @@
   },
   "@text_entry_line_invalid": {
     "colours": {
-      "normal_border": "#ff2727"
+      "normal_border": "#FF2727"
+    }
+  },
+  "@static_kv_label": {
+    "colours": {},
+    "misc": {
+      "border_width": "0",
+      "shadow_width": "0",
+      "text_vert_alignment": "center"
     }
   }
 }

@@ -8,7 +8,7 @@ from stage_ui.config import Config
 from stage_ui.context import GlobalState
 from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.manager_arduino.base import ArduinoAction
-from stage_ui.types import FilterNumber, LaserFire
+from stage_ui.types import FilterNumber, LaserFire, RadiusColor
 
 
 @dataclass(kw_only=True)
@@ -22,6 +22,7 @@ class HomeState:
     data_needed: Atom[bool]
     num_fires: Atom[int]
     filter_number: Atom[FilterNumber]
+    radius_color: Atom[RadiusColor]
     worm_strain: Atom[str]
     worm_id: Atom[str]
 
@@ -49,6 +50,7 @@ class HomeState:
             data_needed=Atom(False),
             num_fires=Atom(0),
             filter_number=Atom(cfg.DEFAULT_FILTER_NUMBER),
+            radius_color=Atom(cfg.DEFAULT_RADIUS_COLOR),
             worm_strain=Atom(cfg.DEFAULT_STRAIN),
             worm_id=Atom("1"),
             room_temp=room_temp,

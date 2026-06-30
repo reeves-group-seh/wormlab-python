@@ -158,9 +158,7 @@ class HomeScreenComponent(Component):
                 container=bg,
                 pos=(20, 20),
                 data_file=ctx.cfg.DATA_FILE,
-                arduino_status=state.arduino_status,
-                room_temp=state.room_temp,
-                room_humidity=state.room_humidity,
+                state=state,
             )
         )
 
@@ -196,6 +194,7 @@ class HomeScreenComponent(Component):
                 container=bg,
                 pos=(435, 260),
                 camera_man=ctx.camera_man,
-                marker_pos=marker_pos,
+                marker_plane_pos=marker_pos,
+                radius_color=state.radius_color,
             )
         )
