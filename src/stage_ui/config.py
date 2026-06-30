@@ -226,7 +226,7 @@ class Config:
         Time in seconds to timeout the connection to the arduino.
         """
 
-        self.SERIAL_SLEEP_FACTOR: float = 1.5
+        self.SERIAL_SLEEP_FACTOR: float = 1.1
         """
         A factor determining how long to wait between writes to the arduino. A value
         of 1.0 indicates the program will wait for exactly the theroretical
