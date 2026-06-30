@@ -46,7 +46,7 @@ class StaticKVLabelComponent(Component):
                 object_id=ObjectID(class_id="@static_kv_label"),
             )
         )
-        self.text_box.disable()
+        self.text_box.disable()  # type: ignore[no-untyped-call]
 
     def _format(self, value: str) -> str:
         return f"<b>{self.key}</b>: {value}"

@@ -99,7 +99,7 @@ class StartScreenComponent(Component):
                 plain_text_display_only=True,
             )
         )
-        title.disable()
+        title.disable()  # type: ignore[no-untyped-call]
 
         # side panel
         self.track(

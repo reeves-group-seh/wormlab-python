@@ -197,15 +197,15 @@ class SidePanelComponent(Component):
 
     def _render_buttons(self) -> None:
         if self._state.data_needed.value:
-            self.f_res_button.enable()
-            self.p_res_button.enable()
-            self.a_res_button.enable()
-            self.n_res_button.enable()
+            self.f_res_button.enable()  # type: ignore[no-untyped-call]
+            self.p_res_button.enable()  # type: ignore[no-untyped-call]
+            self.a_res_button.enable()  # type: ignore[no-untyped-call]
+            self.n_res_button.enable()  # type: ignore[no-untyped-call]
         else:
-            self.f_res_button.disable()
-            self.p_res_button.disable()
-            self.a_res_button.disable()
-            self.n_res_button.disable()
+            self.f_res_button.disable()  # type: ignore[no-untyped-call]
+            self.p_res_button.disable()  # type: ignore[no-untyped-call]
+            self.a_res_button.disable()  # type: ignore[no-untyped-call]
+            self.n_res_button.disable()  # type: ignore[no-untyped-call]
 
     def _record_response(
         self,

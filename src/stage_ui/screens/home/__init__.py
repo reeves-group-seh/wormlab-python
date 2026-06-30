@@ -133,7 +133,7 @@ class HomeScreen(Screen):
         return None
 
     def _is_typing(self) -> bool:
-        focused = self.manager.get_focus_set()
+        focused = self.manager.get_focus_set()  # type: ignore[no-untyped-call]
         if not focused:
             return False
         return any(isinstance(el, UITextEntryLine) for el in focused)

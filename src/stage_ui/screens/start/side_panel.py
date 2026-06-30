@@ -155,7 +155,7 @@ class SidePanelComponent(Component):
                 container=panel,
             )
         )
-        test_serial_button.disable()
+        test_serial_button.disable()  # type: ignore[no-untyped-call]
         self._start_button = self.track(
             UIButton(
                 relative_rect=(201, 320, 184, 40),
@@ -167,7 +167,7 @@ class SidePanelComponent(Component):
         self._start_button.bind(
             pygame_gui.UI_BUTTON_PRESSED, lambda: pygame.event.post(Event(CT_GO_HOME))
         )
-        self._start_button.disable()
+        self._start_button.disable()  # type: ignore[no-untyped-call]
 
     def _set_valid(self, valid: bool) -> None:
         # skip if correct
@@ -177,9 +177,9 @@ class SidePanelComponent(Component):
         # flip state and enable / disable
         self._valid = valid
         if valid:
-            self._start_button.enable()
+            self._start_button.enable()  # type: ignore[no-untyped-call]
         else:
-            self._start_button.disable()
+            self._start_button.disable()  # type: ignore[no-untyped-call]
 
     def _render_buttons(self) -> None:
         if self.room_temp.value is not None and self.room_humidity.value is not None:

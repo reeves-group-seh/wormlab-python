@@ -61,7 +61,7 @@ class CycleBoxComponent[T: str](Component):
                 initial_text=value.value,
             )
         )
-        self.text.disable()
+        self.text.disable()  # type: ignore[no-untyped-call]
 
         next_button = self.track(
             UIButton(
