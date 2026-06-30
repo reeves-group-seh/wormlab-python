@@ -633,8 +633,8 @@ class _SerialCommand:
 
     def max_duration(self) -> float:
         """
-        The theorietical runtime of the command in seconds (the max of the move
-        and fire durations).
+        The theorietical runtime of the command in milliseconds (the max of the
+        move and fire durations).
         """
         return max(self.move_duration, self.fire_duration)
 
