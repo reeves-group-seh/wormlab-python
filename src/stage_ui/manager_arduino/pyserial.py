@@ -195,8 +195,15 @@ class PySerialArduinoManager(ArduinoManager):
         Continue to communicate with the arduino. This should be called on every
         frame.
         """
-        # only update if worker is not executing
-        if self._worker is None or not self._worker.queue_empty():
+        # no worker, nothing to do
+        if self._worker is None:
+            return
+
+        # mirror the worker's currently executing action
+        self._executing_action.value = self._worker.current_action()
+
+        # only send new commands once the worker has drained its queue
+        if not self._worker.queue_empty():
             return
 
         # send command(s) based on action
@@ -496,6 +503,12 @@ class _SerialWorker:
         Check whether the command queue is empty.
         """
         return self._queue.empty()
+
+    def current_action(self) -> ArduinoAction:
+        """
+        The action the worker is currently executing.
+        """
+        return self._current_action
 
     def enqueue_fire(
         self,
