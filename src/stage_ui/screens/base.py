@@ -69,6 +69,7 @@ class Screen(ABC):
         # clean up components
         for component in self._components:
             component.kill()
+        self._components.clear()
 
     def process_event(self, event: Event) -> ScreenId | None:
         """
