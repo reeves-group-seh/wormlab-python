@@ -259,7 +259,7 @@ wheels = [
 
 [[package]]
 name = "stage-ui"
-version = "2.0.dev3"
+version = "2.0.dev4"
 source = { editable = "." }
 dependencies = [
     { name = "opencv-python" },
