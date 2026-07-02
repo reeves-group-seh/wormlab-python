@@ -161,6 +161,7 @@ class HomeScreenComponent(Component):
                 container=bg,
                 pos=(20, 20),
                 data_file=ctx.cfg.DATA_FILE,
+                countdown_length=ctx.cfg.COUNTDOWN_LENGTH,
                 state=state,
             )
         )

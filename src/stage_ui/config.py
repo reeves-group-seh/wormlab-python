@@ -79,6 +79,11 @@ class Config:
     Main application keymap.
     """
 
+    COUNTDOWN_LENGTH: int = 15
+    """
+    Number of seconds for fire countdown.
+    """
+
     # start screen defaults
 
     DEFAULT_CAMERA_INDEX: int = 1

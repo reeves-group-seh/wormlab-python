@@ -22,6 +22,7 @@ class InfoPanelComponent(Component):
     # instance vars
     _state: HomeState
     _data_file: Path
+    _countdown_length: int
     _countdown_seconds: int | None
 
     _room_temp_label: StaticKVLabelComponent
@@ -36,6 +37,7 @@ class InfoPanelComponent(Component):
         container: UIPanel,
         pos: tuple[int, int],
         data_file: Path,
+        countdown_length: int,
         state: HomeState,
     ) -> None:
         # init parent
@@ -44,6 +46,7 @@ class InfoPanelComponent(Component):
         # set values
         self._state = state
         self._data_file = data_file
+        self._countdown_length = countdown_length
         self._countdown_seconds: int | None = None
 
         # bindings
@@ -122,7 +125,7 @@ class InfoPanelComponent(Component):
                 container=panel,
                 pos=(5, 135),
                 w=(self.W - 10),
-                key="Time Since Fire",
+                key="Countdown",
                 value="",
             )
         )
@@ -165,10 +168,10 @@ class InfoPanelComponent(Component):
             return
 
         # calculate change
-        elapsed = (dt.datetime.now().astimezone() - last_fire.time).total_seconds()
-        seconds = max(0, int(elapsed))
+        elapsed = max(
+            0, int((dt.datetime.now().astimezone() - last_fire.time).total_seconds())
+        )
+        seconds = max(0, 15 - elapsed)
         if seconds != self._countdown_seconds:
             self._countdown_seconds = seconds
-            self._countdown_label.set_value(
-                f"{seconds if seconds <= 300 else '300+'} s"
-            )
+            self._countdown_label.set_value(f"{seconds} s")
