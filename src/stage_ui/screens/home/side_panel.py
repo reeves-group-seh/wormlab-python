@@ -68,37 +68,41 @@ class SidePanelComponent(Component):
         )
 
         # filter
-        LabeledCycleBoxComponent(
-            manager=manager,
-            container=panel,
-            pos=(10, 10),
-            w=375,
-            label_text="Filter Number",
-            value=state.filter_number,
-            options=[
-                FilterNumber.ONE,
-                FilterNumber.TWO,
-                FilterNumber.THREE,
-                FilterNumber.FOUR,
-                FilterNumber.FIVE,
-                FilterNumber.SIX,
-            ],
+        self.track(
+            LabeledCycleBoxComponent(
+                manager=manager,
+                container=panel,
+                pos=(10, 10),
+                w=375,
+                label_text="Filter Number",
+                value=state.filter_number,
+                options=[
+                    FilterNumber.ONE,
+                    FilterNumber.TWO,
+                    FilterNumber.THREE,
+                    FilterNumber.FOUR,
+                    FilterNumber.FIVE,
+                    FilterNumber.SIX,
+                ],
+            )
         )
 
         # radius
-        LabeledCycleBoxComponent(
-            manager=manager,
-            container=panel,
-            pos=(10, 80),
-            w=375,
-            label_text="Radius Color",
-            value=state.radius_color,
-            options=[
-                RadiusColor.RED,
-                RadiusColor.GREEN,
-                RadiusColor.BLUE,
-                RadiusColor.YELLOW,
-            ],
+        self.track(
+            LabeledCycleBoxComponent(
+                manager=manager,
+                container=panel,
+                pos=(10, 80),
+                w=375,
+                label_text="Radius Color",
+                value=state.radius_color,
+                options=[
+                    RadiusColor.RED,
+                    RadiusColor.GREEN,
+                    RadiusColor.BLUE,
+                    RadiusColor.YELLOW,
+                ],
+            )
         )
 
         # strain
@@ -143,44 +147,52 @@ class SidePanelComponent(Component):
         )
 
         # buttons
-        self._f_res_button = UIButton(
-            relative_rect=(10, 290, 87, 70),
-            text="F",
-            manager=manager,
-            container=panel,
+        self._f_res_button = self.track(
+            UIButton(
+                relative_rect=(10, 290, 87, 70),
+                text="F",
+                manager=manager,
+                container=panel,
+            )
         )
         self._f_res_button.bind(
             pygame_gui.UI_BUTTON_PRESSED,
             lambda: self._record_response(WormResponse.FULL),
         )
 
-        self._p_res_button = UIButton(
-            relative_rect=(106, 290, 87, 70),
-            text="P",
-            manager=manager,
-            container=panel,
+        self._p_res_button = self.track(
+            UIButton(
+                relative_rect=(106, 290, 87, 70),
+                text="P",
+                manager=manager,
+                container=panel,
+            )
         )
         self._p_res_button.bind(
             pygame_gui.UI_BUTTON_PRESSED,
             lambda: self._record_response(WormResponse.PARTIAL),
         )
 
-        self._a_res_button = UIButton(
-            relative_rect=(202, 290, 87, 70),
-            text="A",
-            manager=manager,
-            container=panel,
+        self._a_res_button = self.track(
+            UIButton(
+                relative_rect=(202, 290, 87, 70),
+                text="A",
+                manager=manager,
+                container=panel,
+            )
         )
         self._a_res_button.bind(
             pygame_gui.UI_BUTTON_PRESSED,
             lambda: self._record_response(WormResponse.ACKNOWLEDGE),
         )
 
-        self._n_res_button = UIButton(
-            relative_rect=(298, 290, 87, 70),
-            text="N",
-            manager=manager,
-            container=panel,
+        self._n_res_button = self.track(
+            UIButton(
+                relative_rect=(298, 290, 87, 70),
+                text="N",
+                manager=manager,
+                container=panel,
+            )
         )
         self._n_res_button.bind(
             pygame_gui.UI_BUTTON_PRESSED,
