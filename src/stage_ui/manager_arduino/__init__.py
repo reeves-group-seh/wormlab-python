@@ -1,4 +1,4 @@
-# relatice
+# relative
 from .base import ArduinoManager
 from .mock import MockArduinoManager
 from .pyserial import PySerialArduinoManager

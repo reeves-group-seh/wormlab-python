@@ -1,6 +1,7 @@
 # std
+import enum
 from abc import ABC, abstractmethod
-from enum import Enum, auto
+from enum import Enum
 from typing import override
 
 # local
@@ -8,17 +9,17 @@ from stage_ui.atom import Atom
 
 
 class ArduinoAction(Enum):
-    IDLE = auto()
-    MOVE_LEFT = auto()
-    MOVE_RIGHT = auto()
-    MOVE_UP = auto()
-    MOVE_DOWN = auto()
-    STEP_LEFT = auto()
-    STEP_RIGHT = auto()
-    STEP_UP = auto()
-    STEP_DOWN = auto()
-    FIRE = auto()
-    GRID = auto()
+    IDLE = enum.auto()
+    MOVE_LEFT = enum.auto()
+    MOVE_RIGHT = enum.auto()
+    MOVE_UP = enum.auto()
+    MOVE_DOWN = enum.auto()
+    STEP_LEFT = enum.auto()
+    STEP_RIGHT = enum.auto()
+    STEP_UP = enum.auto()
+    STEP_DOWN = enum.auto()
+    FIRE = enum.auto()
+    GRID = enum.auto()
 
     @override
     def __str__(self) -> str:

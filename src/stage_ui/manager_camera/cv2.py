@@ -15,8 +15,11 @@ class CV2CameraManager(CameraManager):
     Class for handling frame capture and other video-related logic.
     """
 
+    # instance variables
+    _feed: cv2.VideoCapture | None
+
     def __init__(self) -> None:
-        self._feed: cv2.VideoCapture | None = None
+        self._feed = None
 
     @override
     def open(self, index: int) -> None:

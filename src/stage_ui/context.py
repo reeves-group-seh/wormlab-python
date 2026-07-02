@@ -1,4 +1,5 @@
 # std
+import dataclasses
 from dataclasses import dataclass
 
 # local
@@ -10,15 +11,34 @@ from stage_ui.manager_data import DataManager
 
 
 @dataclass(kw_only=True)
+class GlobalState:
+    """
+    All "atomic" state shared across screens.
+    """
+
+    room_temp: Atom[float | None] = dataclasses.field(
+        default_factory=lambda: Atom(None)
+    )
+    """
+    TI room temperature in degrees celsius, selected on the start screen.
+    """
+
+    room_humidity: Atom[float | None] = dataclasses.field(
+        default_factory=lambda: Atom(None)
+    )
+    """
+    Relative room humidity as a percent, selected on the start screen.
+    """
+
+
+@dataclass(kw_only=True)
 class Context:
     """
     All shared application context. Any data used beteen multiple components
     should be stored here.
     """
 
-    #
     # static config
-    #
 
     cfg: Config
     """
@@ -26,9 +46,7 @@ class Context:
     the application lifecycle.
     """
 
-    #
     # managers
-    #
 
     arduino_man: ArduinoManager
     """
@@ -45,11 +63,9 @@ class Context:
     Manager handling writing of data.
     """
 
-    #
     # global state
-    #
 
-    state: GlobalState
+    state: GlobalState = dataclasses.field(default_factory=lambda: GlobalState())
     """
     State shared across screens.
     """
@@ -60,27 +76,3 @@ class Context:
         """
         self.camera_man.close()
         self.arduino_man.close()
-
-
-@dataclass(kw_only=True)
-class GlobalState:
-    """
-    All "atomic" state shared across screens.
-    """
-
-    room_temp: Atom[float | None]
-    """
-    TI room temperature in degrees celsius, selected on the start screen.
-    """
-
-    room_humidity: Atom[float | None]
-    """
-    Relative room humidity as a percent, selected on the start screen.
-    """
-
-    @staticmethod
-    def new() -> GlobalState:
-        return GlobalState(
-            room_humidity=Atom(None),
-            room_temp=Atom(None),
-        )

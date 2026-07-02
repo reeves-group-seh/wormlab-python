@@ -43,7 +43,7 @@ class HomeState:
         s = HomeState(
             arduino_status=arduino_manager.action(),
             fire_duration=Atom(cfg.DEFAULT_FIRE_DURATION),
-            step_duration=Atom(cfg.DEFAULT_STEP_DURATION),
+            step_duration=Atom(cfg.DEFAULT_MOVE_DURATION),
             move_speed=Atom(cfg.DEFAULT_MOVE_SPEED),
             grid_size=Atom(cfg.DEFAULT_GRID_SIZE),
             last_fire=Atom(None),
@@ -51,7 +51,7 @@ class HomeState:
             num_fires=Atom(0),
             filter_number=Atom(cfg.DEFAULT_FILTER_NUMBER),
             radius_color=Atom(cfg.DEFAULT_RADIUS_COLOR),
-            worm_strain=Atom(cfg.DEFAULT_STRAIN),
+            worm_strain=Atom(cfg.DEFAULT_WORM_STRAIN),
             worm_id=Atom("1"),
             room_temp=room_temp,
             room_humidity=room_humidity,

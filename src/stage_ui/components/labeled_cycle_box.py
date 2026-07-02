@@ -1,14 +1,14 @@
-# std
-
 # pip
 from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.components.base import Component
-from stage_ui.components.control_label import ControlLabelComponent
-from stage_ui.components.cycle_box import CycleBoxComponent
+
+# relative
+from .base import Component
+from .control_label import ControlLabelComponent
+from .cycle_box import CycleBoxComponent
 
 
 class LabeledCycleBoxComponent[T: str](Component):

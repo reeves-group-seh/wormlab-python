@@ -1,19 +1,25 @@
+# std
+from typing import ClassVar
+
 # pip
 from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.components import NO_MARGINS, Component
-from stage_ui.components.control_label import ControlLabelComponent
-from stage_ui.components.spin_box import SpinBoxComponent
+from stage_ui.components import (
+    NO_MARGINS,
+    Component,
+    ControlLabelComponent,
+    SpinBoxComponent,
+)
 from stage_ui.config import Config
 
 
 class TopPanelComponent(Component):
-    # constants
-    W: int = 545
-    H: int = 220
+    # public class constants
+    W: ClassVar[int] = 545
+    H: ClassVar[int] = 220
 
     def __init__(
         self,
@@ -82,8 +88,8 @@ class TopPanelComponent(Component):
                 pos=(10, 110),
                 w=258,
                 value=step_duration,
-                inc=lambda v: min(cfg.MAX_STEP_DURATION, v + cfg.STEP_DURATION_STEP),
-                dec=lambda v: max(cfg.MIN_STEP_DURATION, v - cfg.STEP_DURATION_STEP),
+                inc=lambda v: min(cfg.MAX_MOVE_DURATION, v + cfg.MOVE_DURATION_STEP),
+                dec=lambda v: max(cfg.MIN_MOVE_DURATION, v - cfg.MOVE_DURATION_STEP),
                 parse=float,
             )
         )

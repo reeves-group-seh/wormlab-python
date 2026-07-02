@@ -6,8 +6,8 @@ from pygame_gui import UIManager
 from pygame_gui.core import ObjectID
 from pygame_gui.elements import UIPanel, UITextBox
 
-# local
-from stage_ui.components.base import Component
+# relative
+from .base import Component
 
 
 class StaticKVLabelComponent(Component):
@@ -15,8 +15,8 @@ class StaticKVLabelComponent(Component):
     H: ClassVar[int] = 25
 
     # params
-    key: str
-    text_box: UITextBox
+    _key: str
+    _text_box: UITextBox
 
     def __init__(
         self,
@@ -31,13 +31,13 @@ class StaticKVLabelComponent(Component):
         super().__init__()
 
         # set values
-        self.key = key
+        self._key = key
 
         # unpack values
         x, y = pos
 
         # create
-        self.text_box = self.track(
+        self._text_box = self.track(
             UITextBox(
                 html_text=self._format(value),
                 relative_rect=(x, y, w, self.H),
@@ -46,10 +46,10 @@ class StaticKVLabelComponent(Component):
                 object_id=ObjectID(class_id="@static_kv_label"),
             )
         )
-        self.text_box.disable()  # type: ignore[no-untyped-call]
+        self._text_box.disable()  # type: ignore[no-untyped-call]
 
     def _format(self, value: str) -> str:
-        return f"<b>{self.key}</b>: {value}"
+        return f"<b>{self._key}</b>: {value}"
 
     def set_value(self, text: str) -> None:
-        self.text_box.set_text(self._format(text))
+        self._text_box.set_text(self._format(text))

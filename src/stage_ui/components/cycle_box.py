@@ -1,4 +1,5 @@
 # std
+from typing import ClassVar
 
 # pip
 import pygame_gui
@@ -8,12 +9,21 @@ from pygame_gui.elements import UIButton, UIPanel, UITextEntryLine
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.components.base import Component
+
+# relative
+from .base import Component
 
 
 class CycleBoxComponent[T: str](Component):
-    # constants
-    H: int = 30
+    # public class constants
+    H: ClassVar[int] = 30
+
+    # instance vars
+    _value: Atom[T]
+    _options: list[T]
+    _idx: int
+
+    _text: UITextEntryLine
 
     def __init__(
         self,
@@ -28,12 +38,12 @@ class CycleBoxComponent[T: str](Component):
         super().__init__()
 
         # set values
-        self.value = value
-        self.options = options
-        self.idx = options.index(value.value)
+        self._value = value
+        self._options = options
+        self._idx = options.index(value.value)
 
         # bindings
-        self.bind(self.value, self._render_text)
+        self.bind(self._value, self._render_text)
 
         # unpack values
         x, y = pos
@@ -52,7 +62,7 @@ class CycleBoxComponent[T: str](Component):
         )
         prev_button.bind(pygame_gui.UI_BUTTON_PRESSED, self._handle_prev)
 
-        self.text = self.track(
+        self._text = self.track(
             UITextEntryLine(
                 relative_rect=(x + self.H, y, text_w, self.H),
                 manager=manager,
@@ -61,7 +71,7 @@ class CycleBoxComponent[T: str](Component):
                 initial_text=value.value,
             )
         )
-        self.text.disable()  # type: ignore[no-untyped-call]
+        self._text.disable()  # type: ignore[no-untyped-call]
 
         next_button = self.track(
             UIButton(
@@ -80,21 +90,21 @@ class CycleBoxComponent[T: str](Component):
 
     def _handle_prev(self) -> None:
         # compute new idx
-        new_idx = self.idx - 1
+        new_idx = self._idx - 1
         if new_idx < 0:
-            new_idx = len(self.options) - 1
+            new_idx = len(self._options) - 1
 
         # update state
-        self.value.value = self.options[new_idx]
+        self._value.value = self._options[new_idx]
 
     def _handle_next(self) -> None:
         # compute new idx
-        new_idx = (self.idx + 1) % len(self.options)
+        new_idx = (self._idx + 1) % len(self._options)
 
         # update state
-        self.value.value = self.options[new_idx]
+        self._value.value = self._options[new_idx]
 
     def _render_text(self) -> None:
         # sync with state update
-        self.idx = self.options.index(self.value.value)
-        self.text.set_text(self.value.value)
+        self._idx = self._options.index(self._value.value)
+        self._text.set_text(self._value.value)

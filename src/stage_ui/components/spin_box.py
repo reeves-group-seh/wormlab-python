@@ -1,5 +1,6 @@
 # std
 from collections.abc import Callable
+from typing import ClassVar
 
 # pip
 import pygame_gui
@@ -8,13 +9,24 @@ from pygame_gui.elements import UIButton, UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.components.base import Component
-from stage_ui.components.text_entry_line import TextEntryLineComponent
+
+# relative
+from .base import Component
+from .text_entry_line import TextEntryLineComponent
 
 
 class SpinBoxComponent[T](Component):
-    # constants
-    H: int = 30
+    # public class constants
+    H: ClassVar[int] = 30
+
+    # instance vars
+    _value: Atom[T]
+    _inc: Callable[[T], T]
+    _dec: Callable[[T], T]
+    _parse: Callable[[str], T]
+    _format: Callable[[T], str]
+
+    _text_entry: TextEntryLineComponent[T]
 
     def __init__(
         self,
@@ -32,11 +44,11 @@ class SpinBoxComponent[T](Component):
         super().__init__()
 
         # set values
-        self.value = value
-        self.inc = inc
-        self.dec = dec
-        self.parse = parse
-        self.format = format
+        self._value = value
+        self._inc = inc
+        self._dec = dec
+        self._parse = parse
+        self._format = format
 
         # unpack values
         x, y = pos
@@ -55,7 +67,7 @@ class SpinBoxComponent[T](Component):
         )
         dec_button.bind(pygame_gui.UI_BUTTON_PRESSED, self._handle_dec)
 
-        self.text_entry = self.track(
+        self._text_entry = self.track(
             TextEntryLineComponent(
                 manager=manager,
                 container=container,
@@ -85,7 +97,7 @@ class SpinBoxComponent[T](Component):
         inc_button.bind(pygame_gui.UI_BUTTON_PRESSED, self._handle_inc)
 
     def _handle_inc(self) -> None:
-        self.value.value = self.inc(self.value.value)
+        self._value.value = self._inc(self._value.value)
 
     def _handle_dec(self) -> None:
-        self.value.value = self.dec(self.value.value)
+        self._value.value = self._dec(self._value.value)

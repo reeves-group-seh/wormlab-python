@@ -1,10 +1,11 @@
 # std
 from argparse import ArgumentParser
-from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
+# local
+import stage_ui
 from stage_ui.manager_arduino import PySerialArduinoManager
 from stage_ui.manager_camera import MockCameraManager
 from stage_ui.manager_data import PandasDataManager
@@ -60,8 +61,14 @@ def main() -> None:
     camera_backend: Literal["cv2", "mock"] = args.camera_backend
     data_backend: Literal["pandas"] = args.data_backend
 
-    # local imports after reading arguments
+    # build up configs's kwargs
+    cfg_kwargs: dict[str, Any] = {}
+    if data_dir is not None:
+        cfg_kwargs["DATA_DIR"] = data_dir
+    if camera_index is not None:
+        cfg_kwargs["DEFAULT_CAMERA_INDEX"] = camera_index
 
+    # local imports after reading arguments
     from stage_ui.app import App
     from stage_ui.config import Config
     from stage_ui.manager_arduino import MockArduinoManager
@@ -69,13 +76,10 @@ def main() -> None:
 
     # print startup info
     ascii_art = (files("stage_ui.resources") / "title.txt").read_text()
-    print(f"{ascii_art}\nStageUI: starting v{version('stage-ui')}")
+    print(f"{ascii_art}\nStageUI: starting v{stage_ui.VERSION}")
 
     # create config
-    cfg = Config(
-        data_dir=data_dir,
-        camera_index=camera_index,
-    )
+    cfg = Config(**cfg_kwargs)
 
     # create & run app
     arduino_man = (

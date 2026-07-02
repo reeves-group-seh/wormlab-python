@@ -1,21 +1,28 @@
 # std
+import contextlib
+from typing import ClassVar
 
 # pip
-import contextlib
-
 import pygame_gui
 from pygame_gui import UIManager
 from pygame_gui.elements import UIButton, UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.components.base import Component
-from stage_ui.components.text_entry_line import TextEntryLineComponent
+
+# relative
+from .base import Component
+from .text_entry_line import TextEntryLineComponent
 
 
 class IncrementBoxComponent(Component):
-    # constants
-    H: int = 30
+    # public class constants
+    H: ClassVar[int] = 30
+
+    # instance vars
+    _value: Atom[str]
+
+    _text_entry: TextEntryLineComponent[str]
 
     def __init__(
         self,
@@ -29,7 +36,7 @@ class IncrementBoxComponent(Component):
         super().__init__()
 
         # set values
-        self.value = value
+        self._value = value
 
         # unpack values
         x, y = pos
@@ -38,7 +45,7 @@ class IncrementBoxComponent(Component):
         text_w = w - self.H
 
         # create
-        self.text_entry = self.track(
+        self._text_entry = self.track(
             TextEntryLineComponent(
                 manager=manager,
                 container=container,
@@ -66,5 +73,5 @@ class IncrementBoxComponent(Component):
 
     def _handle_inc(self) -> None:
         with contextlib.suppress(ValueError):
-            int_val = int(self.value.value)
-            self.value.value = str(int_val + 1)
+            int_val = int(self._value.value)
+            self._value.value = str(int_val + 1)

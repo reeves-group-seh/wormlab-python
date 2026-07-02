@@ -10,7 +10,7 @@ from typing import Any
 from stage_ui.types import FilterNumber, LaserFire, RadiusColor, WormResponse
 
 
-@dataclass
+@dataclass(kw_only=True, frozen=True)
 class DataRow:
     fire_time: dt.datetime
     fire_duration: float

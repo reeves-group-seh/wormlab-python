@@ -1,26 +1,25 @@
 # pip
-from pygame import Event, Surface
+import pygame
 
 # local
 from stage_ui.context import Context
-from stage_ui.screens import HomeScreen, Screen, ScreenId
-from stage_ui.screens.start import StartScreen
+from stage_ui.screens import HomeScreen, Screen, ScreenId, StartScreen
 
 
 class ScreenManager:
-    def __init__(self, ctx: Context) -> None:
-        # declare members
-        self.screens: dict[ScreenId, Screen]
-        self.current: Screen
+    # instance vars
+    _screens: dict[ScreenId, Screen]
+    _current: Screen
 
+    def __init__(self, ctx: Context) -> None:
         # initialize screens
-        self.screens = {}
-        self.screens[ScreenId.START] = StartScreen(ctx)
-        self.screens[ScreenId.HOME] = HomeScreen(ctx)
+        self._screens = {}
+        self._screens[ScreenId.START] = StartScreen(ctx)
+        self._screens[ScreenId.HOME] = HomeScreen(ctx)
 
         # set current to start
-        self.current = self.screens[ScreenId.START]
-        self.current.on_enter()
+        self._current = self._screens[ScreenId.START]
+        self._current.on_enter()
 
     def switch(self, name: ScreenId) -> None:
         """
@@ -28,18 +27,18 @@ class ScreenManager:
         """
 
         # cleanup current screen
-        self.current.on_exit()
+        self._current.on_exit()
 
         # build new screen
-        self.current = self.screens[name]
-        self.current.on_enter()
+        self._current = self._screens[name]
+        self._current.on_enter()
 
-    def process_event(self, event: Event) -> None:
-        id = self.current.process_event(event)
+    def process_event(self, event: pygame.Event) -> None:
+        id = self._current.process_event(event)
         self.switch(id) if id else ...
 
     def update(self, dt: float) -> None:
-        self.current.update(dt)
+        self._current.update(dt)
 
-    def draw_ui(self, surface: Surface) -> None:
-        self.current.draw_ui(surface)
+    def draw_ui(self, surface: pygame.Surface) -> None:
+        self._current.draw_ui(surface)

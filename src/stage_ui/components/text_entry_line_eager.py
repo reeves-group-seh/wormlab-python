@@ -8,7 +8,9 @@ from pygame_gui.elements import UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.components._text_entry_line_base import BaseTextEntryLineComponent
+
+# relative
+from ._text_entry_line_base import BaseTextEntryLineComponent
 
 
 class EagerTextEntryLineComponent[T](BaseTextEntryLineComponent[T | None]):
@@ -38,5 +40,5 @@ class EagerTextEntryLineComponent[T](BaseTextEntryLineComponent[T | None]):
         )
 
     @override
-    def on_parse_error(self) -> None:
-        self.value.value = None
+    def _on_parse_error(self) -> None:
+        self._value.value = None

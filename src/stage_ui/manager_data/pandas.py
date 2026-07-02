@@ -10,8 +10,11 @@ from .base import DataManager, DataRow
 
 
 class PandasDataManager(DataManager):
+    # instance variables
+    _data_file: Path | None
+
     def __init__(self) -> None:
-        self._data_file: Path | None = None
+        self._data_file = None
 
     @override
     def open(self, data_file: Path) -> None:

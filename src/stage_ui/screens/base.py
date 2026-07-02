@@ -9,11 +9,8 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
-from stage_ui.components import Component
+from stage_ui.components import NO_MARGINS, Component
 from stage_ui.context import Context
-
-# constants
-_NO_MARGINS: dict[str, int] = {"top": 0, "right": 0, "bottom": 0, "left": 0}
 
 
 class ScreenId(Enum):
@@ -27,13 +24,20 @@ class ScreenId(Enum):
 
 
 class Screen(ABC):
+    # instance variables
+    _ctx: Context
+    _manager: UIManager
+    _components: list[Component]
+
+    _bg: UIPanel  # only available after call to on_enter
+
     def __init__(self, ctx: Context) -> None:
-        self.ctx: Context = ctx
-        self.manager: UIManager = UIManager(
+        self._ctx = ctx
+        self._manager = UIManager(
             ctx.cfg.WINDOW_SIZE,
             theme_path=ctx.cfg.THEME_FILE,
         )
-        self._components: list[Component] = []
+        self._components = []
 
     def track[C: Component](self, component: C) -> C:
         """
@@ -48,10 +52,10 @@ class Screen(ABC):
         screen.
         """
         self.bg = UIPanel(
-            relative_rect=(0, 0, self.ctx.cfg.WINDOW_W, self.ctx.cfg.WINDOW_H),
-            manager=self.manager,
+            relative_rect=(0, 0, self._ctx.cfg.WINDOW_W, self._ctx.cfg.WINDOW_H),
+            manager=self._manager,
             object_id="#background",
-            margins=_NO_MARGINS,
+            margins=NO_MARGINS,
         )
 
     def on_exit(self) -> None:
@@ -60,7 +64,7 @@ class Screen(ABC):
         """
 
         # clean up elements
-        self.manager.clear_and_reset()  # type: ignore[no-untyped-call]
+        self._manager.clear_and_reset()  # type: ignore[no-untyped-call]
 
         # clean up components
         for component in self._components:
@@ -74,7 +78,7 @@ class Screen(ABC):
         """
 
         # let ui manager handle events
-        self.manager.process_events(event)
+        self._manager.process_events(event)
 
         # let sub-components handle events
         for component in self._components:
@@ -89,7 +93,7 @@ class Screen(ABC):
         """
 
         # update ui manager
-        self.manager.update(dt)
+        self._manager.update(dt)
 
         # update sub-components
         for component in self._components:
@@ -99,7 +103,7 @@ class Screen(ABC):
         """
         Draw the `Screen`'s UI to the given surface (window).
         """
-        self.manager.draw_ui(surface)
+        self._manager.draw_ui(surface)
 
     @staticmethod
     def fit_surface(surface: Surface, size: tuple[float, float]) -> Surface:

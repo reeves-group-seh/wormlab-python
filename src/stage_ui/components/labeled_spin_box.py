@@ -7,9 +7,11 @@ from pygame_gui.elements import UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.components.base import Component
-from stage_ui.components.control_label import ControlLabelComponent
-from stage_ui.components.spin_box import SpinBoxComponent
+
+# relative
+from .base import Component
+from .control_label import ControlLabelComponent
+from .spin_box import SpinBoxComponent
 
 
 class LabeledSpinBoxComponent[T](Component):

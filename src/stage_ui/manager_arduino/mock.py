@@ -1,5 +1,5 @@
 # std
-from typing import override
+from typing import ClassVar, override
 
 # local
 from stage_ui.atom import Atom
@@ -10,26 +10,30 @@ from .base import ArduinoAction, ArduinoManager
 
 class MockArduinoManager(ArduinoManager):
     # constants
-    LOG_PREFIX = "MockArduinoManager"
+    _LOG_PREFIX: ClassVar[str] = "MockArduinoManager"
+
+    # instance variables
+    _port: str | None
+    _action: Atom[ArduinoAction]
 
     def __init__(self) -> None:
-        self._port: str | None = None
-        self._action: Atom[ArduinoAction] = Atom(ArduinoAction.IDLE)
+        self._port = None
+        self._action = Atom(ArduinoAction.IDLE)
 
     @override
     def open(self, port: str) -> None:
         self._port = port
-        print(f"{self.LOG_PREFIX}: opened at port '{port}'")
+        print(f"{self._LOG_PREFIX}: opened at port '{port}'")
 
     @override
     def close(self) -> None:
         # already closed
         if self._port is None:
-            print(f"{self.LOG_PREFIX}: attempted to close non-open port")
+            print(f"{self._LOG_PREFIX}: attempted to close non-open port")
             return
 
         # close
-        print(f"{self.LOG_PREFIX}: closed at port '{self._port}'")
+        print(f"{self._LOG_PREFIX}: closed at port '{self._port}'")
         self._port = None
 
     @override
@@ -42,7 +46,7 @@ class MockArduinoManager(ArduinoManager):
             raise Exception("resource has not been opened")
 
         self._action.value = ArduinoAction.IDLE
-        print(f"{self.LOG_PREFIX}: received 'stop' command")
+        print(f"{self._LOG_PREFIX}: received 'stop' command")
 
     @override
     def move_left(self, speed: float, duration: float) -> None:
@@ -51,7 +55,7 @@ class MockArduinoManager(ArduinoManager):
 
         self._action.value = ArduinoAction.MOVE_LEFT
         print(
-            f"{self.LOG_PREFIX}: received 'move_left' command, speed={speed}, duration={duration}"
+            f"{self._LOG_PREFIX}: received 'move_left' command, speed={speed}, duration={duration}"
         )
 
     @override
@@ -61,7 +65,7 @@ class MockArduinoManager(ArduinoManager):
 
         self._action.value = ArduinoAction.MOVE_RIGHT
         print(
-            f"{self.LOG_PREFIX}: received 'move_right' command, speed={speed}, duration={duration}"
+            f"{self._LOG_PREFIX}: received 'move_right' command, speed={speed}, duration={duration}"
         )
 
     @override
@@ -71,7 +75,7 @@ class MockArduinoManager(ArduinoManager):
 
         self._action.value = ArduinoAction.MOVE_UP
         print(
-            f"{self.LOG_PREFIX}: received 'move_up' command, speed={speed}, duration={duration}"
+            f"{self._LOG_PREFIX}: received 'move_up' command, speed={speed}, duration={duration}"
         )
 
     @override
@@ -81,7 +85,7 @@ class MockArduinoManager(ArduinoManager):
 
         self._action.value = ArduinoAction.MOVE_DOWN
         print(
-            f"{self.LOG_PREFIX}: received 'move_down' command, speed={speed}, duration={duration}"
+            f"{self._LOG_PREFIX}: received 'move_down' command, speed={speed}, duration={duration}"
         )
 
     @override
@@ -90,7 +94,7 @@ class MockArduinoManager(ArduinoManager):
             raise Exception("resource has not been opened")
 
         print(
-            f"{self.LOG_PREFIX}: received 'step_left' command, speed={speed}, duration={duration}"
+            f"{self._LOG_PREFIX}: received 'step_left' command, speed={speed}, duration={duration}"
         )
 
     @override
@@ -99,7 +103,7 @@ class MockArduinoManager(ArduinoManager):
             raise Exception("resource has not been opened")
 
         print(
-            f"{self.LOG_PREFIX}: received 'step_right' command, speed={speed}, duration={duration}"
+            f"{self._LOG_PREFIX}: received 'step_right' command, speed={speed}, duration={duration}"
         )
 
     @override
@@ -108,7 +112,7 @@ class MockArduinoManager(ArduinoManager):
             raise Exception("resource has not been opened")
 
         print(
-            f"{self.LOG_PREFIX}: received 'step_up' command, speed={speed}, duration={duration}"
+            f"{self._LOG_PREFIX}: received 'step_up' command, speed={speed}, duration={duration}"
         )
 
     @override
@@ -117,12 +121,12 @@ class MockArduinoManager(ArduinoManager):
             raise Exception("resource has not been opened")
 
         print(
-            f"{self.LOG_PREFIX}: received 'step_down' command, speed={speed}, duration={duration}"
+            f"{self._LOG_PREFIX}: received 'step_down' command, speed={speed}, duration={duration}"
         )
 
     @override
     def fire(self, duration: float) -> None:
-        print(f"{self.LOG_PREFIX}: received 'fire' command, duration={duration}")
+        print(f"{self._LOG_PREFIX}: received 'fire' command, duration={duration}")
 
     @override
     def grid(
@@ -133,7 +137,7 @@ class MockArduinoManager(ArduinoManager):
         fire_duration: float,
     ) -> None:
         print(
-            f"{self.LOG_PREFIX}: received 'grid' command, n={n}, move_speed={move_speed}, move_duration={move_duration}, fire_duration={fire_duration}"
+            f"{self._LOG_PREFIX}: received 'grid' command, n={n}, move_speed={move_speed}, move_duration={move_duration}, fire_duration={fire_duration}"
         )
 
     @override
@@ -142,7 +146,4 @@ class MockArduinoManager(ArduinoManager):
 
     @override
     def ports(self) -> list[str]:
-        """
-        Get a listing of all available serial ports.
-        """
         return ["COM3", "COM4"]

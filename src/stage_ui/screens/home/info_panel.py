@@ -1,22 +1,34 @@
 # std
 import datetime as dt
 from pathlib import Path
-from typing import override
+from typing import ClassVar, override
 
 # pip
 from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
-from stage_ui.components import NO_MARGINS, Component
-from stage_ui.components.static_kv_label import StaticKVLabelComponent
-from stage_ui.screens.home.state import HomeState
+from stage_ui.components import NO_MARGINS, Component, StaticKVLabelComponent
+
+# relative
+from .state import HomeState
 
 
 class InfoPanelComponent(Component):
-    # constants
-    W: int = 395
-    H: int = 220
+    # public class constants
+    W: ClassVar[int] = 395
+    H: ClassVar[int] = 220
+
+    # instance vars
+    _state: HomeState
+    _data_file: Path
+    _countdown_seconds: int | None
+
+    _room_temp_label: StaticKVLabelComponent
+    _room_humidity_label: StaticKVLabelComponent
+    _arduino_status_label: StaticKVLabelComponent
+    _last_fire_label: StaticKVLabelComponent
+    _countdown_label: StaticKVLabelComponent
 
     def __init__(
         self,
@@ -30,9 +42,9 @@ class InfoPanelComponent(Component):
         super().__init__()
 
         # set values
-        self.state = state
-        self.data_file = data_file
-        self.countdown_seconds: int | None = None
+        self._state = state
+        self._data_file = data_file
+        self._countdown_seconds: int | None = None
 
         # bindings
         self.bind(state.arduino_status, self._render_arduino_status_label)
@@ -64,7 +76,7 @@ class InfoPanelComponent(Component):
                 value=data_file.name,
             )
         )
-        self.room_temp_label = self.track(
+        self._room_temp_label = self.track(
             StaticKVLabelComponent(
                 manager=manager,
                 container=panel,
@@ -74,7 +86,7 @@ class InfoPanelComponent(Component):
                 value="",
             )
         )
-        self.room_humidity_label = self.track(
+        self._room_humidity_label = self.track(
             StaticKVLabelComponent(
                 manager=manager,
                 container=panel,
@@ -84,7 +96,7 @@ class InfoPanelComponent(Component):
                 value="",
             )
         )
-        self.arduino_status_label = self.track(
+        self._arduino_status_label = self.track(
             StaticKVLabelComponent(
                 manager=manager,
                 container=panel,
@@ -94,7 +106,7 @@ class InfoPanelComponent(Component):
                 value="",
             )
         )
-        self.last_fire_label = self.track(
+        self._last_fire_label = self.track(
             StaticKVLabelComponent(
                 manager=manager,
                 container=panel,
@@ -104,7 +116,7 @@ class InfoPanelComponent(Component):
                 value="",
             )
         )
-        self.countdown_label = self.track(
+        self._countdown_label = self.track(
             StaticKVLabelComponent(
                 manager=manager,
                 container=panel,
@@ -127,34 +139,36 @@ class InfoPanelComponent(Component):
         self._render_countdown_label()
 
     def _render_arduino_status_label(self) -> None:
-        self.arduino_status_label.set_value(str(self.state.arduino_status.value))
+        self._arduino_status_label.set_value(str(self._state.arduino_status.value))
 
     def _render_room_temp_label(self) -> None:
-        self.room_temp_label.set_value(f"{self.state.room_temp.value} \u2103")
+        self._room_temp_label.set_value(f"{self._state.room_temp.value} \u2103")
 
     def _render_room_humidity_label(self) -> None:
-        self.room_humidity_label.set_value(f"{self.state.room_humidity.value}%")
+        self._room_humidity_label.set_value(f"{self._state.room_humidity.value}%")
 
     def _render_last_fire_label(self) -> None:
         # last fire
-        last_fire = self.state.last_fire.value
+        last_fire = self._state.last_fire.value
         last_fire_txt = (
             "N/A"
             if last_fire is None
-            else f"{last_fire.time.strftime('%H:%M:%S')} (fire {self.state.num_fires.value}) {last_fire.duration} ms"
+            else f"{last_fire.time.strftime('%H:%M:%S')} (fire {self._state.num_fires.value}) {last_fire.duration} ms"
         )
-        self.last_fire_label.set_value(last_fire_txt)
+        self._last_fire_label.set_value(last_fire_txt)
 
     def _render_countdown_label(self) -> None:
         # last fire
-        last_fire = self.state.last_fire.value
+        last_fire = self._state.last_fire.value
         if last_fire is None:
-            self.countdown_label.set_value("N/A")
+            self._countdown_label.set_value("N/A")
             return
 
         # calculate change
         elapsed = (dt.datetime.now().astimezone() - last_fire.time).total_seconds()
         seconds = max(0, int(elapsed))
-        if seconds != self.countdown_seconds:
-            self.countdown_seconds = seconds
-            self.countdown_label.set_value(f"{seconds if seconds <= 300 else '300+'} s")
+        if seconds != self._countdown_seconds:
+            self._countdown_seconds = seconds
+            self._countdown_label.set_value(
+                f"{seconds if seconds <= 300 else '300+'} s"
+            )

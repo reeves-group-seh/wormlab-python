@@ -1,17 +1,21 @@
 # std
+from typing import ClassVar
 
 # pip
 from pygame_gui import UIManager
 from pygame_gui.core import ObjectID
 from pygame_gui.elements import UILabel, UIPanel
 
-# local
-from stage_ui.components.base import Component
+# relative
+from .base import Component
 
 
 class ValueLabelComponent(Component):
     # constants
-    H: int = 30
+    H: ClassVar[int] = 30
+
+    # instance vars
+    _label: UILabel
 
     def __init__(
         self,
@@ -28,7 +32,7 @@ class ValueLabelComponent(Component):
         x, y = pos
 
         # create
-        self.label = self.track(
+        self._label = self.track(
             UILabel(
                 relative_rect=(x, y, w, self.H),
                 manager=manager,
@@ -39,4 +43,4 @@ class ValueLabelComponent(Component):
         )
 
     def set_text(self, text: str) -> None:
-        self.label.set_text(text)
+        self._label.set_text(text)

@@ -1,7 +1,9 @@
 # std
+import dataclasses
 import datetime as dt
+import enum
 from dataclasses import dataclass
-from enum import Enum, StrEnum, auto
+from enum import Enum, StrEnum
 
 
 class RadiusColor(StrEnum):
@@ -44,35 +46,30 @@ class KeyMapAction(Enum):
     Actions mapped to keys.
     """
 
-    STEP_LEFT = auto()
-    STEP_RIGHT = auto()
-    STEP_UP = auto()
-    STEP_DOWN = auto()
+    STEP_LEFT = enum.auto()
+    STEP_RIGHT = enum.auto()
+    STEP_UP = enum.auto()
+    STEP_DOWN = enum.auto()
 
-    MOVE_LEFT = auto()
-    MOVE_RIGHT = auto()
-    MOVE_UP = auto()
-    MOVE_DOWN = auto()
+    MOVE_LEFT = enum.auto()
+    MOVE_RIGHT = enum.auto()
+    MOVE_UP = enum.auto()
+    MOVE_DOWN = enum.auto()
 
-    FIRE = auto()
-    DESTROY = auto()
-    GRID = auto()
-    SKIP_DATA = auto()
+    FIRE = enum.auto()
+    DESTROY = enum.auto()
+    GRID = enum.auto()
+    SKIP_DATA = enum.auto()
 
 
 @dataclass(frozen=True, kw_only=True)
 class LaserFire:
     """
     Information about a laser fire itself. This is just the observable data that
-    is know at fire time and cannot be changed.
+    is known at fire time and cannot be changed.
     """
 
-    time: dt.datetime
+    time: dt.datetime = dataclasses.field(
+        default_factory=lambda: dt.datetime.now().astimezone()
+    )
     duration: float
-
-    @staticmethod
-    def new(duration: float) -> LaserFire:
-        return LaserFire(
-            time=dt.datetime.now().astimezone(),
-            duration=duration,
-        )

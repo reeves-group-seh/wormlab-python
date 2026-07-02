@@ -1,6 +1,7 @@
-# pip
-from typing import override
+# std
+from typing import ClassVar, override
 
+# pip
 import pygame
 from pygame import Color, Surface
 from pygame_gui import UIManager
@@ -19,9 +20,18 @@ _BLANK_SURFACE.fill(Color(26, 32, 36))
 
 
 class VideoPanelComponent(Component):
-    # constants
-    W: int = 545
-    H: int = 370
+    # public class constants
+    W: ClassVar[int] = 545
+    H: ClassVar[int] = 370
+
+    # private class constants
+    _BLANK_SURFACE: ClassVar[Surface] = _BLANK_SURFACE
+
+    # instance vars
+    _camera_man: CameraManager
+    _camera_index: Atom[int]
+
+    _video_frame: UIImage
 
     def __init__(
         self,
@@ -35,8 +45,8 @@ class VideoPanelComponent(Component):
         super().__init__()
 
         # set values
-        self.camera_man = camera_man
-        self.camera_index = camera_index
+        self._camera_man = camera_man
+        self._camera_index = camera_index
 
         # bindings
         self.bind(camera_index, self._change_camera)
@@ -53,7 +63,7 @@ class VideoPanelComponent(Component):
         )
         self._video_frame = UIImage(
             relative_rect=(10, 10, 525, 350),
-            image_surface=_BLANK_SURFACE,
+            image_surface=self._BLANK_SURFACE,
             manager=manager,
             container=video_panel,
         )
@@ -64,7 +74,7 @@ class VideoPanelComponent(Component):
         super().update(dt)
 
         # get frame, skip if none
-        frame = self.camera_man.read_frame()
+        frame = self._camera_man.read_frame()
         if frame is None:
             return
 
@@ -76,8 +86,8 @@ class VideoPanelComponent(Component):
 
     def _change_camera(self) -> None:
         # re-open the feed at the new index
-        self.camera_man.close()
-        self.camera_man.open(self.camera_index.value)
+        self._camera_man.close()
+        self._camera_man.open(self._camera_index.value)
 
         # reset the preview until the new camera yields a frame
-        self._video_frame.set_image(_BLANK_SURFACE)
+        self._video_frame.set_image(self._BLANK_SURFACE)

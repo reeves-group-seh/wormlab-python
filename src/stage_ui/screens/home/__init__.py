@@ -21,6 +21,9 @@ from .video_panel import VideoPanelComponent
 
 
 class HomeScreen(Screen):
+    # instance vars
+    state: HomeState
+
     def __init__(self, ctx: Context) -> None:
         # init parent
         super().__init__(ctx)
@@ -36,74 +39,74 @@ class HomeScreen(Screen):
         # create
         self.track(
             HomeScreenComponent(
-                manager=self.manager,
+                manager=self._manager,
                 bg=self.bg,
-                ctx=self.ctx,
+                ctx=self._ctx,
                 state=self.state,
-                marker_pos=self.ctx.cfg.MARKER_POS,
+                marker_pos=self._ctx.cfg.MARKER_POS,
             )
         )
 
     @override
     def process_event(self, event: pygame.Event) -> ScreenId | None:
         if event.type == pygame.KEYDOWN and not self._is_typing():
-            action = self.ctx.cfg.KEYMAP.get(event.key)
+            action = self._ctx.cfg.KEYMAP.get(event.key)
             match action:
                 case KeyMapAction.STEP_LEFT:
-                    self.ctx.arduino_man.step_left(
+                    self._ctx.arduino_man.step_left(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.STEP_RIGHT:
-                    self.ctx.arduino_man.step_right(
+                    self._ctx.arduino_man.step_right(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.STEP_UP:
-                    self.ctx.arduino_man.step_up(
+                    self._ctx.arduino_man.step_up(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.STEP_DOWN:
-                    self.ctx.arduino_man.step_down(
+                    self._ctx.arduino_man.step_down(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_LEFT:
-                    self.ctx.arduino_man.move_left(
+                    self._ctx.arduino_man.move_left(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_RIGHT:
-                    self.ctx.arduino_man.move_right(
+                    self._ctx.arduino_man.move_right(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_UP:
-                    self.ctx.arduino_man.move_up(
+                    self._ctx.arduino_man.move_up(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_DOWN:
-                    self.ctx.arduino_man.move_down(
+                    self._ctx.arduino_man.move_down(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.FIRE:
                     if not self.state.data_needed.value:
-                        fire = LaserFire.new(self.state.fire_duration.value)
-                        self.ctx.arduino_man.fire(fire.duration)
+                        fire = LaserFire(duration=self.state.fire_duration.value)
+                        self._ctx.arduino_man.fire(fire.duration)
                         self.state.num_fires.value += 1
                         self.state.last_fire.value = fire
                         self.state.data_needed.value = True
                 case KeyMapAction.DESTROY:
                     if not self.state.data_needed.value:
-                        fire = LaserFire.new(self.ctx.cfg.DESTROY_FIRE_DURATION)
-                        self.ctx.arduino_man.fire(fire.duration)
-                        self.ctx.data_man.add_non_data_fire(fire, "Destroy Fire")
+                        fire = LaserFire(duration=self._ctx.cfg.DESTROY_FIRE_DURATION)
+                        self._ctx.arduino_man.fire(fire.duration)
+                        self._ctx.data_man.add_non_data_fire(fire, "Destroy Fire")
                 case KeyMapAction.GRID:
                     if not self.state.data_needed.value:
-                        self.ctx.arduino_man.grid(
+                        self._ctx.arduino_man.grid(
                             self.state.grid_size.value,
                             self.state.move_speed.value,
                             self.state.step_duration.value,
@@ -111,29 +114,29 @@ class HomeScreen(Screen):
                         )
                 case KeyMapAction.SKIP_DATA:
                     if self.state.last_fire.value and self.state.data_needed.value:
-                        self.ctx.data_man.add_non_data_fire(
+                        self._ctx.data_man.add_non_data_fire(
                             self.state.last_fire.value, "Non-Data Fire"
                         )
                         self.state.data_needed.value = False
 
         if event.type == pygame.KEYUP and not self._is_typing():
-            action = self.ctx.cfg.KEYMAP.get(event.key)
+            action = self._ctx.cfg.KEYMAP.get(event.key)
             match action:
                 case KeyMapAction.MOVE_LEFT:
-                    self.ctx.arduino_man.stop()
+                    self._ctx.arduino_man.stop()
                 case KeyMapAction.MOVE_RIGHT:
-                    self.ctx.arduino_man.stop()
+                    self._ctx.arduino_man.stop()
                 case KeyMapAction.MOVE_UP:
-                    self.ctx.arduino_man.stop()
+                    self._ctx.arduino_man.stop()
                 case KeyMapAction.MOVE_DOWN:
-                    self.ctx.arduino_man.stop()
+                    self._ctx.arduino_man.stop()
 
         # process child events
         super().process_event(event)
         return None
 
     def _is_typing(self) -> bool:
-        focused = self.manager.get_focus_set()  # type: ignore[no-untyped-call]
+        focused = self._manager.get_focus_set()  # type: ignore[no-untyped-call]
         if not focused:
             return False
         return any(isinstance(el, UITextEntryLine) for el in focused)

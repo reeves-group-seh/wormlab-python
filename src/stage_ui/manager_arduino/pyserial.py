@@ -2,7 +2,7 @@
 import struct
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from queue import Queue
 from threading import Thread
@@ -20,51 +20,58 @@ from .base import ArduinoAction, ArduinoManager
 
 
 class PySerialArduinoManager(ArduinoManager):
+    _worker: _SerialWorker | None
+    """
+    Helper that handles the worker thread and writes binary packets to the
+    arduino.
+    """
+
+    _action: _SerialAction
+    """
+    The current action to be given to the arduino.
+    """
+
+    _executing_action: Atom[ArduinoAction]
+    """
+    The action currently being executed by the arduino worker.
+    """
+
+    _baudrate: int
+    """
+    The rate in which to communicate with the arduino.
+    """
+
+    _timeout: float
+    """
+    The time in seconds to timeout the connection to the arduino.
+    """
+
+    _sleep_factor: float
+    """
+    A factor determining how long to wait between writes to the arduino. A
+    value of 1.0 indicates the program will wait for exactly the
+    theroretical execution time of a command before sending another. A value
+    of 2.0 indicates the program will wait for double this theroretical
+    execution time, 0.5 will wait half, etc. To be safe, this value should
+    be set to a value > 1.0.
+    """
+
     def __init__(
         self,
         baudrate: int,
         timeout: float,
         sleep_factor: float,
     ) -> None:
-        self._worker: _SerialWorker | None = None
-        """
-        Helper that handles the worker thread and writes binary packets to the
-        arduino.
-        """
-
-        self._action: _SerialAction = _SerialActionIdle()
-        """
-        The current action to be given to the arduino.
-        """
-
-        self._executing_action: Atom[ArduinoAction] = Atom(ArduinoAction.IDLE)
-        """
-        The action currently being executed by the arduino worker.
-        """
-
+        self._worker = None
+        self._action = _SerialActionIdle()
+        self._executing_action = Atom(ArduinoAction.IDLE)
         self._baudrate = baudrate
-        """
-        The rate in which to communicate with the arduino.
-        """
-
         self._timeout = timeout
-        """
-        The time in seconds to timeout the connection to the arduino.
-        """
-
         self._sleep_factor = sleep_factor
-        """
-        A factor determining how long to wait between writes to the arduino. A
-        value of 1.0 indicates the program will wait for exactly the
-        theroretical execution time of a command before sending another. A value
-        of 2.0 indicates the program will wait for double this theroretical
-        execution time, 0.5 will wait half, etc. To be safe, this value should
-        be set to a value > 1.0.
-        """
 
     @override
     def open(self, port: str) -> None:
-        self._worker = _SerialWorker.new(
+        self._worker = _SerialWorker(
             port,
             self._baudrate,
             self._timeout,
@@ -230,8 +237,8 @@ class _Direction(Enum):
     # directions
     LEFT = 0.0
     RIGHT = 1.0
-    DOWN = 2.0  # away (up)
-    UP = 3.0  # towards
+    DOWN = 2.0
+    UP = 3.0
 
     # default
     DEFAULT = LEFT
@@ -429,7 +436,6 @@ class _SerialActionGrid(_SerialAction):
             )
 
 
-@dataclass(kw_only=True)
 class _SerialWorker:
     """
     Worker that deals with creating a thread for serial communication and
@@ -470,33 +476,26 @@ class _SerialWorker:
     The action currently executing.
     """
 
-    _thread: Thread = field(init=False)
+    _thread: Thread
     """
     The worker thread dealing with writing to the serial port.
     """
 
-    def __post_init__(self) -> None:
-        self._thread = Thread(target=self._thread_loop, daemon=True)
-        self._thread.start()
-
-    @staticmethod
-    def new(
+    def __init__(
+        self,
         port: str,
-        baudrate: int,
+        bauderate: int,
         timeout: float,
         sleep_factor: float,
-    ) -> _SerialWorker:
-        """
-        Create a new worker with the given config.
-        """
-        return _SerialWorker(
-            _port=port,
-            _baudrate=baudrate,
-            _timeout=timeout,
-            _sleep_factor=sleep_factor,
-            _queue=Queue(),
-            _current_action=ArduinoAction.IDLE,
-        )
+    ) -> None:
+        self._port = port
+        self._baudrate = bauderate
+        self._timeout = timeout
+        self._sleep_factor = sleep_factor
+        self._queue = Queue()
+        self._current_action = ArduinoAction.IDLE
+        self._thread = Thread(target=self._thread_loop, daemon=True)
+        self._thread.start()
 
     def queue_empty(self) -> bool:
         """

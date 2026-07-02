@@ -11,10 +11,14 @@ from stage_ui.atom import Atom
 
 
 class Component(ABC):
+    # instance variables
+    _elements: list[UIElement | Component]
+    _unsubs: list[Callable[[], None]]
+
     def __init__(self) -> None:
         # store values
-        self._elements: list[UIElement | Component] = []
-        self._unsubs: list[Callable[[], None]] = []
+        self._elements = []
+        self._unsubs = []
 
     def track[E: UIElement | Component](self, element: E) -> E:
         """

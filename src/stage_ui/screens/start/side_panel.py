@@ -1,3 +1,6 @@
+# std
+from typing import ClassVar
+
 # pip
 import pygame
 import pygame_gui
@@ -7,19 +10,31 @@ from pygame_gui.elements import UIButton, UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.components import NO_MARGINS, Component
-from stage_ui.components.control_label import ControlLabelComponent
-from stage_ui.components.cycle_box import CycleBoxComponent
-from stage_ui.components.spin_box import SpinBoxComponent
-from stage_ui.components.text_entry_line_eager import EagerTextEntryLineComponent
+from stage_ui.components import (
+    NO_MARGINS,
+    Component,
+    ControlLabelComponent,
+    CycleBoxComponent,
+    EagerTextEntryLineComponent,
+    SpinBoxComponent,
+)
 from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.screens.events import CT_GO_HOME
 
 
 class SidePanelComponent(Component):
-    # constants
-    W: int = 395
-    H: int = 370
+    # public class constants
+    W: ClassVar[int] = 395
+    H: ClassVar[int] = 370
+
+    # instance vars
+    _arduino_man: ArduinoManager
+    _serial_port: Atom[str]
+    _room_temp: Atom[float | None]
+    _room_humidity: Atom[float | None]
+    _valid: bool
+
+    _start_button: UIButton
 
     def __init__(
         self,
@@ -36,10 +51,10 @@ class SidePanelComponent(Component):
         super().__init__()
 
         # set values
-        self.arduino_man = arduino_man
-        self.serial_port = serial_port
-        self.room_temp = room_temp
-        self.room_humidity = room_humidity
+        self._arduino_man = arduino_man
+        self._serial_port = serial_port
+        self._room_temp = room_temp
+        self._room_humidity = room_humidity
         self._valid = True
 
         # bindings
@@ -182,12 +197,12 @@ class SidePanelComponent(Component):
             self._start_button.disable()  # type: ignore[no-untyped-call]
 
     def _render_buttons(self) -> None:
-        if self.room_temp.value is not None and self.room_humidity.value is not None:
+        if self._room_temp.value is not None and self._room_humidity.value is not None:
             self._set_valid(True)
         else:
             self._set_valid(False)
 
     def _change_port(self) -> None:
         # re-open the connection at the new index
-        self.arduino_man.close()
-        self.arduino_man.open(self.serial_port.value)
+        self._arduino_man.close()
+        self._arduino_man.open(self._serial_port.value)

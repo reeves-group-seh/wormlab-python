@@ -1,5 +1,4 @@
 # std
-from importlib.metadata import version
 from importlib.resources import files
 from typing import override
 
@@ -8,6 +7,7 @@ from pygame import Event
 from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel, UITextBox
 
+import stage_ui
 from stage_ui.atom import Atom
 
 # local
@@ -21,17 +21,21 @@ from .video_panel import VideoPanelComponent
 
 
 class StartScreen(Screen):
+    # instance vars
+    _serial_port: Atom[str]
+    _camera_index: Atom[int]
+
     def __init__(self, ctx: Context) -> None:
         # init parent
         super().__init__(ctx)
 
         # initial state
-        self.serial_port = Atom(ctx.arduino_man.ports()[0])
-        self.camera_index = Atom(ctx.cfg.CAMERA_INDEX)
+        self._serial_port = Atom(ctx.arduino_man.ports()[0])
+        self._camera_index = Atom(ctx.cfg.DEFAULT_CAMERA_INDEX)
 
         # (try to) open default serial connection and camera
-        self.ctx.arduino_man.open(self.serial_port.value)
-        self.ctx.camera_man.open(self.camera_index.value)
+        self._ctx.arduino_man.open(self._serial_port.value)
+        self._ctx.camera_man.open(self._camera_index.value)
 
     @override
     def on_enter(self) -> None:
@@ -41,11 +45,11 @@ class StartScreen(Screen):
         # create
         self.track(
             StartScreenComponent(
-                manager=self.manager,
+                manager=self._manager,
                 bg=self.bg,
-                ctx=self.ctx,
-                serial_port=self.serial_port,
-                camera_index=self.camera_index,
+                ctx=self._ctx,
+                serial_port=self._serial_port,
+                camera_index=self._camera_index,
             )
         )
 
@@ -62,6 +66,11 @@ class StartScreen(Screen):
 
 
 class StartScreenComponent(Component):
+    # instance vars
+    _ctx: Context
+    _serial_port: Atom[str]
+    _camera_index: Atom[int]
+
     def __init__(
         self,
         manager: UIManager,
@@ -74,9 +83,9 @@ class StartScreenComponent(Component):
         super().__init__()
 
         # set values
-        self.ctx = ctx
-        self.serial_port = serial_port
-        self.camera_index = camera_index
+        self._ctx = ctx
+        self._serial_port = serial_port
+        self._camera_index = camera_index
 
         # top panel
         top_panel = self.track(
@@ -90,7 +99,7 @@ class StartScreenComponent(Component):
         ascii_art = (files("stage_ui.resources") / "title.txt").read_text()
         title = self.track(
             UITextBox(
-                html_text=f"{ascii_art}\n\nVersion: {version('stage-ui')}",
+                html_text=f"{ascii_art}\n\nVersion: {stage_ui.VERSION}",
                 relative_rect=(0, 0, 960, 220),
                 manager=manager,
                 container=top_panel,
@@ -108,8 +117,8 @@ class StartScreenComponent(Component):
                 container=bg,
                 pos=(20, 260),
                 arduino_man=ctx.arduino_man,
-                serial_port=self.serial_port,
-                camera_index=self.camera_index,
+                serial_port=self._serial_port,
+                camera_index=self._camera_index,
                 room_temp=ctx.state.room_temp,
                 room_humidity=ctx.state.room_humidity,
             )
@@ -122,6 +131,6 @@ class StartScreenComponent(Component):
                 container=bg,
                 pos=(435, 260),
                 camera_man=ctx.camera_man,
-                camera_index=self.camera_index,
+                camera_index=self._camera_index,
             )
         )

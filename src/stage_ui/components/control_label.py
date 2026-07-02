@@ -1,17 +1,18 @@
 # std
+from typing import ClassVar
 
 # pip
 from pygame_gui import UIManager
 from pygame_gui.core import ObjectID
 from pygame_gui.elements import UILabel, UIPanel
 
-# local
-from stage_ui.components.base import Component
+# relative
+from .base import Component
 
 
 class ControlLabelComponent(Component):
-    # constants
-    H: int = 30
+    # public class constants
+    H: ClassVar[int] = 30
 
     def __init__(
         self,
