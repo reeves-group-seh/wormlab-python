@@ -78,7 +78,7 @@ class TopPanelComponent(Component):
                 container=panel,
                 pos=(10, 80),
                 w=258,
-                text="Step Duration (ms)",
+                text="Move Duration (ms)",
             )
         )
         self.track(
