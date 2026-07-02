@@ -20,7 +20,7 @@ class Config:
     app lifecycle.
     """
 
-    MARKER_POS: tuple[int, int] = (180, 300)
+    DEFAULT_MARKER_POS: tuple[int, int] = (180, 300)
     """
     Position of the the marker relative to the video grid.
     """

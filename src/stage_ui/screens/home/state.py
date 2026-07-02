@@ -18,6 +18,7 @@ class HomeState:
     step_duration: Atom[float]
     move_speed: Atom[float]
     grid_size: Atom[int]
+    marker_pos: Atom[tuple[int, int]]
     last_fire: Atom[LaserFire | None]
     data_needed: Atom[bool]
     num_fires: Atom[int]
@@ -46,6 +47,7 @@ class HomeState:
             step_duration=Atom(cfg.DEFAULT_MOVE_DURATION),
             move_speed=Atom(cfg.DEFAULT_MOVE_SPEED),
             grid_size=Atom(cfg.DEFAULT_GRID_SIZE),
+            marker_pos=Atom(cfg.DEFAULT_MARKER_POS),
             last_fire=Atom(None),
             data_needed=Atom(False),
             num_fires=Atom(0),

@@ -43,7 +43,6 @@ class HomeScreen(Screen):
                 bg=self.bg,
                 ctx=self._ctx,
                 state=self.state,
-                marker_pos=self._ctx.cfg.MARKER_POS,
             )
         )
 
@@ -149,7 +148,6 @@ class HomeScreenComponent(Component):
         bg: UIPanel,
         ctx: Context,
         state: HomeState,
-        marker_pos: tuple[int, int],
     ) -> None:
         # init parent
         super().__init__()
@@ -177,6 +175,7 @@ class HomeScreenComponent(Component):
                 step_duration=state.step_duration,
                 move_speed=state.move_speed,
                 grid_size=state.grid_size,
+                marker_pos=state.marker_pos,
             )
         )
 
@@ -198,7 +197,7 @@ class HomeScreenComponent(Component):
                 container=bg,
                 pos=(435, 260),
                 camera_man=ctx.camera_man,
-                marker_plane_pos=marker_pos,
+                marker_pos=state.marker_pos,
                 radius_color=state.radius_color,
             )
         )

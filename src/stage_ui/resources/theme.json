@@ -78,6 +78,19 @@
       "normal_border": "#FF2727"
     }
   },
+  "@marker_pos_valid": {
+    "misc": {
+      "text_horiz_alignment": "center"
+    }
+  },
+  "@marker_pos_invalid": {
+    "colours": {
+      "normal_border": "#FF2727"
+    },
+    "misc": {
+      "text_horiz_alignment": "center"
+    }
+  },
   "@static_kv_label": {
     "colours": {},
     "misc": {

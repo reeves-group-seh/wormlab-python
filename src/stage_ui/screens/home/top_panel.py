@@ -12,6 +12,7 @@ from stage_ui.components import (
     Component,
     ControlLabelComponent,
     SpinBoxComponent,
+    TextEntryLineComponent,
 )
 from stage_ui.config import Config
 
@@ -20,6 +21,11 @@ class TopPanelComponent(Component):
     # public class constants
     W: ClassVar[int] = 545
     H: ClassVar[int] = 220
+
+    # instance vars
+    _marker_pos: Atom[tuple[int, int]]
+    _marker_x: Atom[int]
+    _marker_y: Atom[int]
 
     def __init__(
         self,
@@ -31,9 +37,20 @@ class TopPanelComponent(Component):
         step_duration: Atom[float],
         move_speed: Atom[float],
         grid_size: Atom[int],
+        marker_pos: Atom[tuple[int, int]],
     ) -> None:
         # init parent
         super().__init__()
+
+        # set values
+        self._marker_pos = marker_pos
+        self._marker_x = Atom(cfg.DEFAULT_MARKER_POS[0])
+        self._marker_y = Atom(cfg.DEFAULT_MARKER_POS[1])
+
+        # bind values
+        self.bind(marker_pos, self._marker_pos_outer)
+        self.bind(self._marker_x, self._marker_pos_inner)
+        self.bind(self._marker_y, self._marker_pos_inner)
 
         # unpack values
         x, y = pos
@@ -139,3 +156,45 @@ class TopPanelComponent(Component):
                 parse=int,
             )
         )
+
+        # marker position
+        self.track(
+            ControlLabelComponent(
+                manager=manager,
+                container=panel,
+                pos=(277, 80),
+                w=258,
+                text="Marker Position",
+            )
+        )
+        self.track(
+            TextEntryLineComponent(
+                manager=manager,
+                container=panel,
+                pos=(277, 110),
+                w=127,
+                value=self._marker_x,
+                parse=int,
+                valid_class_id="@marker_pos_valid",
+                invalid_class_id="@marker_pos_invalid",
+            )
+        )
+        self.track(
+            TextEntryLineComponent(
+                manager=manager,
+                container=panel,
+                pos=(408, 110),
+                w=127,
+                value=self._marker_y,
+                parse=int,
+                valid_class_id="@marker_pos_valid",
+                invalid_class_id="@marker_pos_invalid",
+            )
+        )
+
+    def _marker_pos_outer(self) -> None:
+        self._marker_x.value = self._marker_pos.value[0]
+        self._marker_y.value = self._marker_pos.value[1]
+
+    def _marker_pos_inner(self) -> None:
+        self._marker_pos.value = (self._marker_x.value, self._marker_y.value)

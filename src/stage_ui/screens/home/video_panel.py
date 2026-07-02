@@ -38,7 +38,8 @@ class VideoPanelComponent(Component):
 
     # instance variables
     _camera_man: CameraManager
-    _marker_plane_pos: tuple[int, int]  # relative to logical 720x480 plane
+    _marker_pos: Atom[tuple[int, int]]  # relative to logical 720x480 plane
+    _marker_plane_pos: tuple[int, int]  # unwraped value of atom
     _marker_norm_pos: tuple[float, float]  # relative to 1x1 unit grid
     _marker_image_pos: tuple[int, int]  # relative to 525x350 image
     _radius_color: Atom[RadiusColor]
@@ -52,23 +53,19 @@ class VideoPanelComponent(Component):
         container: UIPanel,
         pos: tuple[int, int],
         camera_man: CameraManager,
-        marker_plane_pos: tuple[int, int],
+        marker_pos: Atom[tuple[int, int]],
         radius_color: Atom[RadiusColor],
     ) -> None:
         # init parent
         super().__init__()
 
+        # bind
+        self.bind(marker_pos, self._update_marker_pos)
+
         # set values
         self._camera_man = camera_man
-        self._marker_plane_pos = marker_plane_pos
-        self._marker_norm_pos = (
-            marker_plane_pos[0] / self._PLANE_W,
-            marker_plane_pos[1] / self._PLANE_H,
-        )
-        self._marker_image_pos = (
-            round(self._marker_norm_pos[0] * self._IMAGE_W),
-            round(self._marker_norm_pos[1] * self._IMAGE_H),
-        )
+        self._marker_pos = marker_pos
+        self._update_marker_pos()
         self._radius_color = radius_color
 
         # unpack values
@@ -128,6 +125,17 @@ class VideoPanelComponent(Component):
 
         # update video
         self._render_frame()
+
+    def _update_marker_pos(self) -> None:
+        self._marker_plane_pos = self._marker_pos.value
+        self._marker_norm_pos = (
+            self._marker_plane_pos[0] / self._PLANE_W,
+            self._marker_plane_pos[1] / self._PLANE_H,
+        )
+        self._marker_image_pos = (
+            round(self._marker_norm_pos[0] * self._IMAGE_W),
+            round(self._marker_norm_pos[1] * self._IMAGE_H),
+        )
 
     def _render_frame(self) -> None:
         # grab a frame, skip if none is available
