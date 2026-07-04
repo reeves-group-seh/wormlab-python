@@ -14,7 +14,7 @@ from stage_ui.types import FilterNumber, KeyMapAction, RadiusColor
 
 
 @dataclass(kw_only=True)
-class Config:
+class AppConfig:
     """
     Configuration defined at application start and not changed throughout the
     app lifecycle.

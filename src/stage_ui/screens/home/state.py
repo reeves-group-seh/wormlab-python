@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import cast
 
 # local
+from stage_ui.app_config import AppConfig
+from stage_ui.app_state import AppState
 from stage_ui.atom import Atom
-from stage_ui.config import Config
-from stage_ui.context import GlobalState
 from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.manager_arduino.base import ArduinoAction
 from stage_ui.types import FilterNumber, LaserFire, RadiusColor
@@ -34,7 +34,7 @@ class HomeState:
 
     @staticmethod
     def new(
-        cfg: Config, arduino_manager: ArduinoManager, global_state: GlobalState
+        cfg: AppConfig, arduino_manager: ArduinoManager, global_state: AppState
     ) -> HomeState:
         # cast types
         room_temp = cast(Atom[float], global_state.room_temp)

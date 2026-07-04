@@ -70,7 +70,7 @@ def main() -> None:
 
     # local imports after reading arguments
     from stage_ui.app import App
-    from stage_ui.config import Config
+    from stage_ui.app_config import AppConfig
     from stage_ui.manager_arduino import MockArduinoManager
     from stage_ui.manager_camera import CV2CameraManager
 
@@ -79,7 +79,7 @@ def main() -> None:
     print(f"{ascii_art}\nStageUI: starting v{stage_ui.VERSION}")
 
     # create config
-    cfg = Config(**cfg_kwargs)
+    cfg = AppConfig(**cfg_kwargs)
 
     # create & run app
     arduino_man = (

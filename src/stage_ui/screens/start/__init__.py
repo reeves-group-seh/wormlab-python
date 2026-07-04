@@ -7,15 +7,15 @@ from pygame import Event
 from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel, UITextBox
 
-import stage_ui
-from stage_ui.atom import Atom
-
 # local
+import stage_ui
+from stage_ui.app_context import AppContext
+from stage_ui.atom import Atom
 from stage_ui.components import NO_MARGINS, Component
-from stage_ui.context import Context
 from stage_ui.screens import Screen, ScreenId
 from stage_ui.screens.events import CT_GO_HOME
 
+# relative
 from .side_panel import SidePanelComponent
 from .video_panel import VideoPanelComponent
 
@@ -25,7 +25,7 @@ class StartScreen(Screen):
     _serial_port: Atom[str]
     _camera_index: Atom[int]
 
-    def __init__(self, ctx: Context) -> None:
+    def __init__(self, ctx: AppContext) -> None:
         # init parent
         super().__init__(ctx)
 
@@ -67,7 +67,7 @@ class StartScreen(Screen):
 
 class StartScreenComponent(Component):
     # instance vars
-    _ctx: Context
+    _ctx: AppContext
     _serial_port: Atom[str]
     _camera_index: Atom[int]
 
@@ -75,7 +75,7 @@ class StartScreenComponent(Component):
         self,
         manager: UIManager,
         bg: UIPanel,
-        ctx: Context,
+        ctx: AppContext,
         serial_port: Atom[str],
         camera_index: Atom[int],
     ) -> None:

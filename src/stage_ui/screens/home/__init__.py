@@ -7,8 +7,8 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel, UITextEntryLine
 
 # local
+from stage_ui.app_context import AppContext
 from stage_ui.components import Component
-from stage_ui.context import Context
 from stage_ui.screens import Screen, ScreenId
 from stage_ui.types import KeyMapAction, LaserFire
 
@@ -24,7 +24,7 @@ class HomeScreen(Screen):
     # instance vars
     state: HomeState
 
-    def __init__(self, ctx: Context) -> None:
+    def __init__(self, ctx: AppContext) -> None:
         # init parent
         super().__init__(ctx)
 
@@ -146,7 +146,7 @@ class HomeScreenComponent(Component):
         self,
         manager: UIManager,
         bg: UIPanel,
-        ctx: Context,
+        ctx: AppContext,
         state: HomeState,
     ) -> None:
         # init parent

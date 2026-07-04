@@ -2,16 +2,16 @@
 import pygame
 
 # local
-from stage_ui.context import Context
+from stage_ui.app_context import AppContext
 from stage_ui.screens import HomeScreen, Screen, ScreenId, StartScreen
 
 
-class ScreenManager:
+class AppRouter:
     # instance vars
     _screens: dict[ScreenId, Screen]
     _current: Screen
 
-    def __init__(self, ctx: Context) -> None:
+    def __init__(self, ctx: AppContext) -> None:
         # initialize screens
         self._screens = {}
         self._screens[ScreenId.START] = StartScreen(ctx)

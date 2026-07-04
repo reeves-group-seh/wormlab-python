@@ -6,6 +6,7 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
+from stage_ui.app_config import AppConfig
 from stage_ui.atom import Atom
 from stage_ui.components import (
     NO_MARGINS,
@@ -14,7 +15,6 @@ from stage_ui.components import (
     SpinBoxComponent,
     TextEntryLineComponent,
 )
-from stage_ui.config import Config
 
 
 class TopPanelComponent(Component):
@@ -32,7 +32,7 @@ class TopPanelComponent(Component):
         manager: UIManager,
         container: UIPanel,
         pos: tuple[int, int],
-        cfg: Config,
+        cfg: AppConfig,
         fire_duration: Atom[float],
         step_duration: Atom[float],
         move_speed: Atom[float],

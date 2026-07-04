@@ -9,8 +9,8 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
+from stage_ui.app_context import AppContext
 from stage_ui.components import NO_MARGINS, Component
-from stage_ui.context import Context
 
 
 class ScreenId(Enum):
@@ -25,13 +25,13 @@ class ScreenId(Enum):
 
 class Screen(ABC):
     # instance variables
-    _ctx: Context
+    _ctx: AppContext
     _manager: UIManager
     _components: list[Component]
 
     _bg: UIPanel  # only available after call to on_enter
 
-    def __init__(self, ctx: Context) -> None:
+    def __init__(self, ctx: AppContext) -> None:
         self._ctx = ctx
         self._manager = UIManager(
             ctx.cfg.WINDOW_SIZE,

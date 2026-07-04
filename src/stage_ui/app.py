@@ -7,25 +7,25 @@ import pygame
 
 # local
 import stage_ui
-from stage_ui.config import Config
-from stage_ui.context import Context
+from stage_ui.app_config import AppConfig
+from stage_ui.app_context import AppContext
+from stage_ui.app_router import AppRouter
 from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.manager_camera import CameraManager
 from stage_ui.manager_data import DataManager
-from stage_ui.manager_screen import ScreenManager
 
 
 class App:
     # instance variables
-    _ctx: Context
+    _ctx: AppContext
     _window_surf: pygame.Surface
-    _screen_man: ScreenManager
+    _router: AppRouter
     _clock: pygame.Clock
     _dt: float
 
     def __init__(
         self,
-        cfg: Config,
+        cfg: AppConfig,
         arduino_man: ArduinoManager,
         camera_man: CameraManager,
         data_man: DataManager,
@@ -34,14 +34,14 @@ class App:
         pygame.display.set_caption(stage_ui.APP_NAME)
 
         # init values
-        self._ctx = Context(
+        self._ctx = AppContext(
             cfg=cfg,
             arduino_man=arduino_man,
             camera_man=camera_man,
             data_man=data_man,
         )
         self._window_surf = pygame.display.set_mode(cfg.WINDOW_SIZE)
-        self._screen_man = ScreenManager(self._ctx)
+        self._router = AppRouter(self._ctx)
         self._clock = pygame.Clock()
         self._dt: float = float("inf")
 
@@ -67,14 +67,14 @@ class App:
                     sys.exit(0)
 
                 # event handlers
-                self._screen_man.process_event(event)
+                self._router.process_event(event)
 
             # update
-            self._screen_man.update(self._dt)
+            self._router.update(self._dt)
             self._ctx.arduino_man.update()
 
             # draw ui
-            self._screen_man.draw_ui(self._window_surf)
+            self._router.draw_ui(self._window_surf)
 
             # update display
             pygame.display.flip()
