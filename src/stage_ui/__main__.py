@@ -4,17 +4,11 @@ from importlib.resources import files
 from pathlib import Path
 from typing import Any, Literal
 
-# local
-import stage_ui
-from stage_ui.manager_arduino import PySerialArduinoManager
-from stage_ui.manager_camera import MockCameraManager
-from stage_ui.manager_data import PandasDataManager
-
 
 def main() -> None:
     # create argparser
     parser = ArgumentParser(
-        prog="stage_ui",
+        prog="stage-ui",
         description="",
     )
     parser.add_argument(
@@ -48,7 +42,7 @@ def main() -> None:
     parser.add_argument(
         "--data-backend",
         default="pandas",
-        choices=["pandas"],
+        choices=["pandas", "mock"],
         help="backend for writing data",
         dest="data_backend",
     )
@@ -59,7 +53,7 @@ def main() -> None:
     camera_index: int | None = args.camera_index
     arduino_backend: Literal["pyserial", "mock"] = args.arduino_backend
     camera_backend: Literal["cv2", "mock"] = args.camera_backend
-    data_backend: Literal["pandas"] = args.data_backend
+    data_backend: Literal["pandas", "mock"] = args.data_backend
 
     # build up configs's kwargs
     cfg_kwargs: dict[str, Any] = {}
@@ -69,10 +63,12 @@ def main() -> None:
         cfg_kwargs["DEFAULT_CAMERA_INDEX"] = camera_index
 
     # local imports after reading arguments
+    import stage_ui
     from stage_ui.app import App
     from stage_ui.app_config import AppConfig
-    from stage_ui.manager_arduino import MockArduinoManager
-    from stage_ui.manager_camera import CV2CameraManager
+    from stage_ui.manager_arduino import MockArduinoManager, PySerialArduinoManager
+    from stage_ui.manager_camera import CV2CameraManager, MockCameraManager
+    from stage_ui.manager_data import MockDataManager, PandasDataManager
 
     # print startup info
     ascii_art = (files("stage_ui.resources") / "title.txt").read_text()
@@ -92,7 +88,7 @@ def main() -> None:
         )
     )
     camera_man = MockCameraManager() if camera_backend == "mock" else CV2CameraManager()
-    data_man = PandasDataManager()
+    data_man = MockDataManager() if data_backend == "mock" else PandasDataManager()
     data_man.open(cfg.DATA_FILE)
     app = App(
         cfg,
