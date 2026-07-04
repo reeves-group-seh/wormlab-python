@@ -7,6 +7,7 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIButton, UIPanel
 
 # local
+from stage_ui.backend_data import DataBackend
 from stage_ui.components import (
     NO_MARGINS,
     Component,
@@ -15,7 +16,6 @@ from stage_ui.components import (
     LabeledCycleBoxComponent,
     TextEntryLineComponent,
 )
-from stage_ui.manager_data import DataManager
 from stage_ui.types import FilterNumber, RadiusColor, WormResponse
 
 # relative
@@ -28,7 +28,7 @@ class SidePanelComponent(Component):
     H: ClassVar[int] = 370
 
     # instance vars
-    _data_manager: DataManager
+    _data: DataBackend
     _state: HomeState
 
     _f_res_button: UIButton
@@ -41,14 +41,14 @@ class SidePanelComponent(Component):
         manager: UIManager,
         container: UIPanel,
         pos: tuple[int, int],
-        data_manager: DataManager,
+        data: DataBackend,
         state: HomeState,
     ):
         # init parent
         super().__init__()
 
         # set values
-        self._data_manager = data_manager
+        self._data = data
         self._state = state
 
         # bindings
@@ -223,7 +223,7 @@ class SidePanelComponent(Component):
         assert fire is not None
 
         # add data
-        self._data_manager.add_data_entry(
+        self._data.add_data_entry(
             fire=fire,
             room_temp=self._state.room_temp.value,
             room_humidity=self._state.room_humidity.value,

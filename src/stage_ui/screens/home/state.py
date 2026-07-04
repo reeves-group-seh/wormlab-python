@@ -6,8 +6,8 @@ from typing import cast
 from stage_ui.app_config import AppConfig
 from stage_ui.app_state import AppState
 from stage_ui.atom import Atom
-from stage_ui.manager_arduino import ArduinoManager
-from stage_ui.manager_arduino.base import ArduinoAction
+from stage_ui.backend_arduino import ArduinoBackend
+from stage_ui.backend_arduino.base import ArduinoAction
 from stage_ui.types import FilterNumber, LaserFire, RadiusColor
 
 
@@ -34,15 +34,17 @@ class HomeState:
 
     @staticmethod
     def new(
-        cfg: AppConfig, arduino_manager: ArduinoManager, global_state: AppState
+        cfg: AppConfig,
+        app_state: AppState,
+        arduino: ArduinoBackend,
     ) -> HomeState:
         # cast types
-        room_temp = cast(Atom[float], global_state.room_temp)
-        room_humidity = cast(Atom[float], global_state.room_humidity)
+        room_temp = cast(Atom[float], app_state.room_temp)
+        room_humidity = cast(Atom[float], app_state.room_humidity)
 
         # create
         s = HomeState(
-            arduino_status=arduino_manager.action(),
+            arduino_status=arduino.action(),
             fire_duration=Atom(cfg.DEFAULT_FIRE_DURATION),
             step_duration=Atom(cfg.DEFAULT_MOVE_DURATION),
             move_speed=Atom(cfg.DEFAULT_MOVE_SPEED),

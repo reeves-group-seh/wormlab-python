@@ -29,7 +29,11 @@ class HomeScreen(Screen):
         super().__init__(ctx)
 
         # state
-        self.state = HomeState.new(ctx.cfg, ctx.arduino_man, ctx.state)
+        self.state = HomeState.new(
+            ctx.cfg,
+            ctx.state,
+            ctx.arduino,
+        )
 
     @override
     def on_enter(self) -> None:
@@ -52,60 +56,60 @@ class HomeScreen(Screen):
             action = self._ctx.cfg.KEYMAP.get(event.key)
             match action:
                 case KeyMapAction.STEP_LEFT:
-                    self._ctx.arduino_man.step_left(
+                    self._ctx.arduino.step_left(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.STEP_RIGHT:
-                    self._ctx.arduino_man.step_right(
+                    self._ctx.arduino.step_right(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.STEP_UP:
-                    self._ctx.arduino_man.step_up(
+                    self._ctx.arduino.step_up(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.STEP_DOWN:
-                    self._ctx.arduino_man.step_down(
+                    self._ctx.arduino.step_down(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_LEFT:
-                    self._ctx.arduino_man.move_left(
+                    self._ctx.arduino.move_left(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_RIGHT:
-                    self._ctx.arduino_man.move_right(
+                    self._ctx.arduino.move_right(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_UP:
-                    self._ctx.arduino_man.move_up(
+                    self._ctx.arduino.move_up(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_DOWN:
-                    self._ctx.arduino_man.move_down(
+                    self._ctx.arduino.move_down(
                         self.state.move_speed.value,
                         self.state.step_duration.value,
                     )
                 case KeyMapAction.FIRE:
                     if not self.state.data_needed.value:
                         fire = LaserFire(duration=self.state.fire_duration.value)
-                        self._ctx.arduino_man.fire(fire.duration)
+                        self._ctx.arduino.fire(fire.duration)
                         self.state.num_fires.value += 1
                         self.state.last_fire.value = fire
                         self.state.data_needed.value = True
                 case KeyMapAction.DESTROY:
                     if not self.state.data_needed.value:
                         fire = LaserFire(duration=self._ctx.cfg.DESTROY_FIRE_DURATION)
-                        self._ctx.arduino_man.fire(fire.duration)
-                        self._ctx.data_man.add_non_data_fire(fire, "Destroy Fire")
+                        self._ctx.arduino.fire(fire.duration)
+                        self._ctx.data.add_non_data_fire(fire, "Destroy Fire")
                 case KeyMapAction.GRID:
                     if not self.state.data_needed.value:
-                        self._ctx.arduino_man.grid(
+                        self._ctx.arduino.grid(
                             self.state.grid_size.value,
                             self.state.move_speed.value,
                             self.state.step_duration.value,
@@ -113,7 +117,7 @@ class HomeScreen(Screen):
                         )
                 case KeyMapAction.SKIP_DATA:
                     if self.state.last_fire.value and self.state.data_needed.value:
-                        self._ctx.data_man.add_non_data_fire(
+                        self._ctx.data.add_non_data_fire(
                             self.state.last_fire.value, "Non-Data Fire"
                         )
                         self.state.data_needed.value = False
@@ -122,13 +126,13 @@ class HomeScreen(Screen):
             action = self._ctx.cfg.KEYMAP.get(event.key)
             match action:
                 case KeyMapAction.MOVE_LEFT:
-                    self._ctx.arduino_man.stop()
+                    self._ctx.arduino.stop()
                 case KeyMapAction.MOVE_RIGHT:
-                    self._ctx.arduino_man.stop()
+                    self._ctx.arduino.stop()
                 case KeyMapAction.MOVE_UP:
-                    self._ctx.arduino_man.stop()
+                    self._ctx.arduino.stop()
                 case KeyMapAction.MOVE_DOWN:
-                    self._ctx.arduino_man.stop()
+                    self._ctx.arduino.stop()
 
         # process child events
         super().process_event(event)
@@ -185,7 +189,7 @@ class HomeScreenComponent(Component):
                 manager=manager,
                 container=bg,
                 pos=(20, 260),
-                data_manager=ctx.data_man,
+                data=ctx.data,
                 state=state,
             )
         )
@@ -196,7 +200,7 @@ class HomeScreenComponent(Component):
                 manager=manager,
                 container=bg,
                 pos=(435, 260),
-                camera_man=ctx.camera_man,
+                camera=ctx.camera,
                 marker_pos=state.marker_pos,
                 radius_color=state.radius_color,
             )

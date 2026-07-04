@@ -10,9 +10,9 @@ import stage_ui
 from stage_ui.app_config import AppConfig
 from stage_ui.app_context import AppContext
 from stage_ui.app_router import AppRouter
-from stage_ui.manager_arduino import ArduinoManager
-from stage_ui.manager_camera import CameraManager
-from stage_ui.manager_data import DataManager
+from stage_ui.backend_arduino import ArduinoBackend
+from stage_ui.backend_camera import CameraBackend
+from stage_ui.backend_data import DataBackend
 
 
 class App:
@@ -26,9 +26,9 @@ class App:
     def __init__(
         self,
         cfg: AppConfig,
-        arduino_man: ArduinoManager,
-        camera_man: CameraManager,
-        data_man: DataManager,
+        arduino: ArduinoBackend,
+        camera: CameraBackend,
+        data: DataBackend,
     ) -> None:
         pygame.init()
         pygame.display.set_caption(stage_ui.APP_NAME)
@@ -36,9 +36,9 @@ class App:
         # init values
         self._ctx = AppContext(
             cfg=cfg,
-            arduino_man=arduino_man,
-            camera_man=camera_man,
-            data_man=data_man,
+            arduino=arduino,
+            camera=camera,
+            data=data,
         )
         self._window_surf = pygame.display.set_mode(cfg.WINDOW_SIZE)
         self._router = AppRouter(self._ctx)
@@ -71,7 +71,7 @@ class App:
 
             # update
             self._router.update(self._dt)
-            self._ctx.arduino_man.update()
+            self._ctx.arduino.update()
 
             # draw ui
             self._router.draw_ui(self._window_surf)

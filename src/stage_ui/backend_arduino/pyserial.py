@@ -16,10 +16,10 @@ import serial.tools.list_ports
 from stage_ui.atom import Atom
 
 # relative
-from .base import ArduinoAction, ArduinoManager
+from .base import ArduinoAction, ArduinoBackend
 
 
-class PySerialArduinoManager(ArduinoManager):
+class PySerialArduinoBackend(ArduinoBackend):
     _worker: _SerialWorker | None
     """
     Helper that handles the worker thread and writes binary packets to the

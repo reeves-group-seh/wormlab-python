@@ -5,14 +5,14 @@ from typing import ClassVar, override
 import numpy as np
 
 # relative
-from .base import CameraManager
+from .base import CameraBackend
 
 
-class MockCameraManager(CameraManager):
+class MockCameraBackend(CameraBackend):
     # class constants
     _WIDTH: ClassVar[int] = 720
     _HEIGHT: ClassVar[int] = 480
-    _LOG_PREFIX: ClassVar[str] = "MockCameraManager"
+    _LOG_PREFIX: ClassVar[str] = "MockCameraBackend"
 
     # instance variables
     _index: int | None

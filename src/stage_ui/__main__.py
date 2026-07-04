@@ -66,9 +66,9 @@ def main() -> None:
     import stage_ui
     from stage_ui.app import App
     from stage_ui.app_config import AppConfig
-    from stage_ui.manager_arduino import MockArduinoManager, PySerialArduinoManager
-    from stage_ui.manager_camera import CV2CameraManager, MockCameraManager
-    from stage_ui.manager_data import MockDataManager, PandasDataManager
+    from stage_ui.backend_arduino import MockArduinoBackend, PySerialArduinoBackend
+    from stage_ui.backend_camera import CV2CameraBackend, MockCameraBackend
+    from stage_ui.backend_data import MockDataBackend, PandasDataBackend
 
     # print startup info
     ascii_art = (files("stage_ui.resources") / "title.txt").read_text()
@@ -78,23 +78,23 @@ def main() -> None:
     cfg = AppConfig(**cfg_kwargs)
 
     # create & run app
-    arduino_man = (
-        MockArduinoManager()
+    arduino = (
+        MockArduinoBackend()
         if arduino_backend == "mock"
-        else PySerialArduinoManager(
+        else PySerialArduinoBackend(
             baudrate=cfg.SERIAL_BAUDRATE,
             timeout=cfg.SERIAL_TIMEOUT,
             sleep_factor=cfg.SERIAL_SLEEP_FACTOR,
         )
     )
-    camera_man = MockCameraManager() if camera_backend == "mock" else CV2CameraManager()
-    data_man = MockDataManager() if data_backend == "mock" else PandasDataManager()
-    data_man.open(cfg.DATA_FILE)
+    camera = MockCameraBackend() if camera_backend == "mock" else CV2CameraBackend()
+    data = MockDataBackend() if data_backend == "mock" else PandasDataBackend()
+    data.open(cfg.DATA_FILE)
     app = App(
         cfg,
-        arduino_man=arduino_man,
-        camera_man=camera_man,
-        data_man=data_man,
+        arduino=arduino,
+        camera=camera,
+        data=data,
     )
     app.run()
 

@@ -48,7 +48,7 @@ class ArduinoAction(Enum):
                 return "Grid"
 
 
-class ArduinoManager(ABC):
+class ArduinoBackend(ABC):
     """
     Bridge that handles communication to the ardunio.
     """

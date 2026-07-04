@@ -5,9 +5,9 @@ from dataclasses import dataclass
 # local
 from stage_ui.app_config import AppConfig
 from stage_ui.app_state import AppState
-from stage_ui.manager_arduino import ArduinoManager
-from stage_ui.manager_camera import CameraManager
-from stage_ui.manager_data import DataManager
+from stage_ui.backend_arduino import ArduinoBackend
+from stage_ui.backend_camera import CameraBackend
+from stage_ui.backend_data import DataBackend
 
 
 @dataclass(kw_only=True)
@@ -28,26 +28,26 @@ class AppContext:
     State shared across screens.
     """
 
-    # managers
+    # backends
 
-    arduino_man: ArduinoManager
+    arduino: ArduinoBackend
     """
-    Manager handling serial communication with the arduino.
-    """
-
-    camera_man: CameraManager
-    """
-    Manager handling camera input.
+    Backend handling serial communication with the arduino.
     """
 
-    data_man: DataManager
+    camera: CameraBackend
     """
-    Manager handling writing of data.
+    Backend handling camera input.
+    """
+
+    data: DataBackend
+    """
+    Backend handling writing of data.
     """
 
     def destroy(self) -> None:
         """
         Cleanup all open resources.
         """
-        self.camera_man.close()
-        self.arduino_man.close()
+        self.camera.close()
+        self.arduino.close()

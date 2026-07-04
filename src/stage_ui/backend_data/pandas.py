@@ -6,10 +6,10 @@ from typing import override
 import pandas as pd
 
 # relative
-from .base import DataManager, DataRow
+from .base import DataBackend, DataRow
 
 
-class PandasDataManager(DataManager):
+class PandasDataBackend(DataBackend):
     # instance variables
     _data_file: Path | None
 

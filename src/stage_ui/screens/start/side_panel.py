@@ -10,6 +10,7 @@ from pygame_gui.elements import UIButton, UIPanel
 
 # local
 from stage_ui.atom import Atom
+from stage_ui.backend_arduino import ArduinoBackend
 from stage_ui.components import (
     NO_MARGINS,
     Component,
@@ -18,7 +19,6 @@ from stage_ui.components import (
     EagerTextEntryLineComponent,
     SpinBoxComponent,
 )
-from stage_ui.manager_arduino import ArduinoManager
 from stage_ui.screens.events import CT_GO_HOME
 
 
@@ -28,7 +28,7 @@ class SidePanelComponent(Component):
     H: ClassVar[int] = 370
 
     # instance vars
-    _arduino_man: ArduinoManager
+    _arduino: ArduinoBackend
     _serial_port: Atom[str]
     _room_temp: Atom[float | None]
     _room_humidity: Atom[float | None]
@@ -41,7 +41,7 @@ class SidePanelComponent(Component):
         manager: UIManager,
         container: UIPanel,
         pos: tuple[int, int],
-        arduino_man: ArduinoManager,
+        arduino: ArduinoBackend,
         serial_port: Atom[str],
         camera_index: Atom[int],
         room_temp: Atom[float | None],
@@ -51,7 +51,7 @@ class SidePanelComponent(Component):
         super().__init__()
 
         # set values
-        self._arduino_man = arduino_man
+        self._arduino = arduino
         self._serial_port = serial_port
         self._room_temp = room_temp
         self._room_humidity = room_humidity
@@ -92,7 +92,7 @@ class SidePanelComponent(Component):
                 pos=(10, 50),
                 w=375,
                 value=serial_port,
-                options=arduino_man.ports(),
+                options=arduino.ports(),
             )
         )
 
@@ -204,5 +204,5 @@ class SidePanelComponent(Component):
 
     def _change_port(self) -> None:
         # re-open the connection at the new index
-        self._arduino_man.close()
-        self._arduino_man.open(self._serial_port.value)
+        self._arduino.close()
+        self._arduino.open(self._serial_port.value)

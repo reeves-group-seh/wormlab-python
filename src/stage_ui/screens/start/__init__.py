@@ -30,12 +30,12 @@ class StartScreen(Screen):
         super().__init__(ctx)
 
         # initial state
-        self._serial_port = Atom(ctx.arduino_man.ports()[0])
+        self._serial_port = Atom(ctx.arduino.ports()[0])
         self._camera_index = Atom(ctx.cfg.DEFAULT_CAMERA_INDEX)
 
         # (try to) open default serial connection and camera
-        self._ctx.arduino_man.open(self._serial_port.value)
-        self._ctx.camera_man.open(self._camera_index.value)
+        self._ctx.arduino.open(self._serial_port.value)
+        self._ctx.camera.open(self._camera_index.value)
 
     @override
     def on_enter(self) -> None:
@@ -116,7 +116,7 @@ class StartScreenComponent(Component):
                 manager=manager,
                 container=bg,
                 pos=(20, 260),
-                arduino_man=ctx.arduino_man,
+                arduino=ctx.arduino,
                 serial_port=self._serial_port,
                 camera_index=self._camera_index,
                 room_temp=ctx.state.room_temp,
@@ -130,7 +130,7 @@ class StartScreenComponent(Component):
                 manager=manager,
                 container=bg,
                 pos=(435, 260),
-                camera_man=ctx.camera_man,
+                camera=ctx.camera,
                 camera_index=self._camera_index,
             )
         )

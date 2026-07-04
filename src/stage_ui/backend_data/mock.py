@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import ClassVar, override
 
-from .base import DataManager, DataRow
+from .base import DataBackend, DataRow
 
 
-class MockDataManager(DataManager):
+class MockDataBackend(DataBackend):
     # class constants
-    _LOG_PREFIX: ClassVar[str] = "MockDataManager"
+    _LOG_PREFIX: ClassVar[str] = "MockDataBackend"
 
     # instance variables
     _data_file: Path | None

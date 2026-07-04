@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
-class CameraManager(ABC):
+class CameraBackend(ABC):
     @abstractmethod
     def open(self, index: int) -> None:
         """

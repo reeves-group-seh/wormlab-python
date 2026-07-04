@@ -5,12 +5,12 @@ from typing import ClassVar, override
 from stage_ui.atom import Atom
 
 # relative
-from .base import ArduinoAction, ArduinoManager
+from .base import ArduinoAction, ArduinoBackend
 
 
-class MockArduinoManager(ArduinoManager):
+class MockArduinoBackend(ArduinoBackend):
     # constants
-    _LOG_PREFIX: ClassVar[str] = "MockArduinoManager"
+    _LOG_PREFIX: ClassVar[str] = "MockArduinoBackend"
 
     # instance variables
     _port: str | None

@@ -33,7 +33,7 @@ class DataRow:
         return dict
 
 
-class DataManager(ABC):
+class DataBackend(ABC):
     @abstractmethod
     def open(self, data_file: Path) -> None:
         """

@@ -6,11 +6,10 @@ import cv2
 import numpy as np
 
 # relative
-from .base import CameraManager
+from .base import CameraBackend
 
 
-# @dataclass(kw_only=True)
-class CV2CameraManager(CameraManager):
+class CV2CameraBackend(CameraBackend):
     """
     Class for handling frame capture and other video-related logic.
     """

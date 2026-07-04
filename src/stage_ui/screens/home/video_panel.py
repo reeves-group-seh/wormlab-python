@@ -11,8 +11,8 @@ from pygame_gui.elements import UIImage, UIPanel
 
 # local
 from stage_ui.atom import Atom
+from stage_ui.backend_camera import CameraBackend
 from stage_ui.components import NO_MARGINS, Component
-from stage_ui.manager_camera import CameraManager
 from stage_ui.screens.base import Screen
 from stage_ui.types import RadiusColor
 
@@ -37,7 +37,7 @@ class VideoPanelComponent(Component):
     ]
 
     # instance variables
-    _camera_man: CameraManager
+    _camera: CameraBackend
     _marker_pos: Atom[tuple[int, int]]  # relative to logical 720x480 plane
     _marker_plane_pos: tuple[int, int]  # unwraped value of atom
     _marker_norm_pos: tuple[float, float]  # relative to 1x1 unit grid
@@ -52,7 +52,7 @@ class VideoPanelComponent(Component):
         manager: UIManager,
         container: UIPanel,
         pos: tuple[int, int],
-        camera_man: CameraManager,
+        camera: CameraBackend,
         marker_pos: Atom[tuple[int, int]],
         radius_color: Atom[RadiusColor],
     ) -> None:
@@ -63,7 +63,7 @@ class VideoPanelComponent(Component):
         self.bind(marker_pos, self._update_marker_pos)
 
         # set values
-        self._camera_man = camera_man
+        self._camera = camera
         self._marker_pos = marker_pos
         self._update_marker_pos()
         self._radius_color = radius_color
@@ -139,7 +139,7 @@ class VideoPanelComponent(Component):
 
     def _render_frame(self) -> None:
         # grab a frame, skip if none is available
-        frame = self._camera_man.read_frame()
+        frame = self._camera.read_frame()
         if frame is None:
             return
 

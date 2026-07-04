@@ -7,11 +7,10 @@ from pygame import Color, Surface
 from pygame_gui import UIManager
 from pygame_gui.elements import UIImage, UIPanel
 
-from stage_ui.atom import Atom
-
 # local
+from stage_ui.atom import Atom
+from stage_ui.backend_camera import CameraBackend
 from stage_ui.components import NO_MARGINS, Component
-from stage_ui.manager_camera import CameraManager
 from stage_ui.screens import Screen
 
 # constants
@@ -28,7 +27,7 @@ class VideoPanelComponent(Component):
     _BLANK_SURFACE: ClassVar[Surface] = _BLANK_SURFACE
 
     # instance vars
-    _camera_man: CameraManager
+    _camera: CameraBackend
     _camera_index: Atom[int]
 
     _video_frame: UIImage
@@ -38,14 +37,14 @@ class VideoPanelComponent(Component):
         manager: UIManager,
         container: UIPanel,
         pos: tuple[int, int],
-        camera_man: CameraManager,
+        camera: CameraBackend,
         camera_index: Atom[int],
     ) -> None:
         # init parent
         super().__init__()
 
         # set values
-        self._camera_man = camera_man
+        self._camera = camera
         self._camera_index = camera_index
 
         # bindings
@@ -74,7 +73,7 @@ class VideoPanelComponent(Component):
         super().update(dt)
 
         # get frame, skip if none
-        frame = self._camera_man.read_frame()
+        frame = self._camera.read_frame()
         if frame is None:
             return
 
@@ -86,8 +85,8 @@ class VideoPanelComponent(Component):
 
     def _change_camera(self) -> None:
         # re-open the feed at the new index
-        self._camera_man.close()
-        self._camera_man.open(self._camera_index.value)
+        self._camera.close()
+        self._camera.open(self._camera_index.value)
 
         # reset the preview until the new camera yields a frame
         self._video_frame.set_image(self._BLANK_SURFACE)
