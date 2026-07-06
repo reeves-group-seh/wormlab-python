@@ -157,51 +157,43 @@ class HomeScreenComponent(Component):
         super().__init__()
 
         # info panel
-        self.track(
-            InfoPanelComponent(
-                manager=manager,
-                container=bg,
-                pos=(20, 20),
-                data_file=ctx.cfg.DATA_FILE,
-                countdown_length=ctx.cfg.COUNTDOWN_LENGTH,
-                state=state,
-            )
+        InfoPanelComponent(
+            manager=manager,
+            container=bg,
+            pos=(20, 20),
+            data_file=ctx.cfg.DATA_FILE,
+            countdown_length=ctx.cfg.COUNTDOWN_LENGTH,
+            state=state,
         )
 
         # top panel
-        self.track(
-            TopPanelComponent(
-                manager=manager,
-                container=bg,
-                pos=(435, 20),
-                cfg=ctx.cfg,
-                fire_duration=state.fire_duration,
-                step_duration=state.step_duration,
-                move_speed=state.move_speed,
-                grid_size=state.grid_size,
-                marker_pos=state.marker_pos,
-            )
+        TopPanelComponent(
+            manager=manager,
+            container=bg,
+            pos=(435, 20),
+            cfg=ctx.cfg,
+            fire_duration=state.fire_duration,
+            step_duration=state.step_duration,
+            move_speed=state.move_speed,
+            grid_size=state.grid_size,
+            marker_pos=state.marker_pos,
         )
 
         # side panel
-        self.track(
-            SidePanelComponent(
-                manager=manager,
-                container=bg,
-                pos=(20, 260),
-                data=ctx.data,
-                state=state,
-            )
+        SidePanelComponent(
+            manager=manager,
+            container=bg,
+            pos=(20, 260),
+            data=ctx.data,
+            state=state,
         )
 
         # video panel
-        self.track(
-            VideoPanelComponent(
-                manager=manager,
-                container=bg,
-                pos=(435, 260),
-                camera=ctx.camera,
-                marker_pos=state.marker_pos,
-                radius_color=state.radius_color,
-            )
+        VideoPanelComponent(
+            manager=manager,
+            container=bg,
+            pos=(435, 260),
+            camera=ctx.camera,
+            marker_pos=state.marker_pos,
+            radius_color=state.radius_color,
         )

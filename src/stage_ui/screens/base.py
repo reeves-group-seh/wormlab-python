@@ -27,6 +27,7 @@ class Screen(ABC):
     # instance variables
     _ctx: AppContext
     _manager: UIManager
+    _root_component: type[Component]
     _components: list[Component]
 
     _bg: UIPanel  # only available after call to on_enter

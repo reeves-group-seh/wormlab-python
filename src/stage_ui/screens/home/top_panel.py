@@ -56,140 +56,116 @@ class TopPanelComponent(Component):
         x, y = pos
 
         # create
-        panel = self.track(
-            UIPanel(
-                relative_rect=(x, y, self.W, self.H),
-                manager=manager,
-                container=container,
-                margins=NO_MARGINS,
-            )
+        panel = UIPanel(
+            relative_rect=(x, y, self.W, self.H),
+            manager=manager,
+            container=container,
+            margins=NO_MARGINS,
         )
 
         # fire duration
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 10),
-                w=258,
-                text="Fire Duration (ms)",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 10),
+            w=258,
+            text="Fire Duration (ms)",
         )
-        self.track(
-            SpinBoxComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 40),
-                w=258,
-                value=fire_duration,
-                inc=lambda v: min(cfg.MAX_FIRE_DURATION, v + cfg.FIRE_DURATION_STEP),
-                dec=lambda v: max(cfg.MIN_FIRE_DURATION, v - cfg.FIRE_DURATION_STEP),
-                parse=float,
-            )
+        SpinBoxComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 40),
+            w=258,
+            value=fire_duration,
+            inc=lambda v: min(cfg.MAX_FIRE_DURATION, v + cfg.FIRE_DURATION_STEP),
+            dec=lambda v: max(cfg.MIN_FIRE_DURATION, v - cfg.FIRE_DURATION_STEP),
+            parse=float,
         )
 
         # step duration
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 80),
-                w=258,
-                text="Move Duration (ms)",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 80),
+            w=258,
+            text="Move Duration (ms)",
         )
-        self.track(
-            SpinBoxComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 110),
-                w=258,
-                value=step_duration,
-                inc=lambda v: min(cfg.MAX_MOVE_DURATION, v + cfg.MOVE_DURATION_STEP),
-                dec=lambda v: max(cfg.MIN_MOVE_DURATION, v - cfg.MOVE_DURATION_STEP),
-                parse=float,
-            )
+        SpinBoxComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 110),
+            w=258,
+            value=step_duration,
+            inc=lambda v: min(cfg.MAX_MOVE_DURATION, v + cfg.MOVE_DURATION_STEP),
+            dec=lambda v: max(cfg.MIN_MOVE_DURATION, v - cfg.MOVE_DURATION_STEP),
+            parse=float,
         )
 
         # move speed
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 150),
-                w=258,
-                text="Move Speed (steps/s)",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 150),
+            w=258,
+            text="Move Speed (steps/s)",
         )
-        self.track(
-            SpinBoxComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 180),
-                w=258,
-                value=move_speed,
-                inc=lambda v: min(cfg.MAX_MOVE_SPEED, v + cfg.MOVE_SPEED_STEP),
-                dec=lambda v: max(cfg.MIN_MOVE_SPEED, v - cfg.MOVE_SPEED_STEP),
-                parse=float,
-            )
+        SpinBoxComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 180),
+            w=258,
+            value=move_speed,
+            inc=lambda v: min(cfg.MAX_MOVE_SPEED, v + cfg.MOVE_SPEED_STEP),
+            dec=lambda v: max(cfg.MIN_MOVE_SPEED, v - cfg.MOVE_SPEED_STEP),
+            parse=float,
         )
 
         # grid size
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(277, 10),
-                w=258,
-                text="Grid Size",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(277, 10),
+            w=258,
+            text="Grid Size",
         )
-        self.track(
-            SpinBoxComponent(
-                manager=manager,
-                container=panel,
-                pos=(277, 40),
-                w=258,
-                value=grid_size,
-                inc=lambda v: min(cfg.MAX_GRID_SIZE, v + 1),
-                dec=lambda v: max(cfg.MIN_GRID_SIZE, v - 1),
-                parse=int,
-            )
+        SpinBoxComponent(
+            manager=manager,
+            container=panel,
+            pos=(277, 40),
+            w=258,
+            value=grid_size,
+            inc=lambda v: min(cfg.MAX_GRID_SIZE, v + 1),
+            dec=lambda v: max(cfg.MIN_GRID_SIZE, v - 1),
+            parse=int,
         )
 
         # marker position
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(277, 80),
-                w=258,
-                text="Marker Position",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(277, 80),
+            w=258,
+            text="Marker Position",
         )
-        self.track(
-            TextEntryLineComponent(
-                manager=manager,
-                container=panel,
-                pos=(277, 110),
-                w=127,
-                value=self._marker_x,
-                parse=int,
-                valid_class_id="@marker_pos_valid",
-                invalid_class_id="@marker_pos_invalid",
-            )
+        TextEntryLineComponent(
+            manager=manager,
+            container=panel,
+            pos=(277, 110),
+            w=127,
+            value=self._marker_x,
+            parse=int,
+            valid_class_id="@marker_pos_valid",
+            invalid_class_id="@marker_pos_invalid",
         )
-        self.track(
-            TextEntryLineComponent(
-                manager=manager,
-                container=panel,
-                pos=(408, 110),
-                w=127,
-                value=self._marker_y,
-                parse=int,
-                valid_class_id="@marker_pos_valid",
-                invalid_class_id="@marker_pos_invalid",
-            )
+        TextEntryLineComponent(
+            manager=manager,
+            container=panel,
+            pos=(408, 110),
+            w=127,
+            value=self._marker_y,
+            parse=int,
+            valid_class_id="@marker_pos_valid",
+            invalid_class_id="@marker_pos_invalid",
         )
 
     def _marker_pos_outer(self) -> None:

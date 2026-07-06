@@ -29,22 +29,19 @@ class LabeledCycleBoxComponent[T: str](Component):
         x, y = pos
 
         # create
-        label = self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=container,
-                pos=pos,
-                w=w,
-                text=label_text,
-            )
+        label = ControlLabelComponent(
+            manager=manager,
+            container=container,
+            pos=pos,
+            w=w,
+            text=label_text,
         )
-        self.track(
-            CycleBoxComponent(
-                manager=manager,
-                container=container,
-                pos=(x, y + label.H),
-                w=w,
-                value=value,
-                options=options,
-            )
+
+        CycleBoxComponent(
+            manager=manager,
+            container=container,
+            pos=(x, y + label.H),
+            w=w,
+            value=value,
+            options=options,
         )

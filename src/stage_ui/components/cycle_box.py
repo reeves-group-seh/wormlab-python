@@ -52,40 +52,35 @@ class CycleBoxComponent[T: str](Component):
         text_w = w - (2 * self.H)
 
         # create
-        prev_button = self.track(
-            UIButton(
-                relative_rect=(x, y, self.H, self.H),
-                text="<",
-                manager=manager,
-                container=container,
-            )
+        prev_button = UIButton(
+            relative_rect=(x, y, self.H, self.H),
+            text="<",
+            manager=manager,
+            container=container,
         )
         prev_button.bind(pygame_gui.UI_BUTTON_PRESSED, self._handle_prev)
 
-        self._text = self.track(
-            UITextEntryLine(
-                relative_rect=(x + self.H, y, text_w, self.H),
-                manager=manager,
-                container=container,
-                object_id=ObjectID(class_id="@cycle_box_text"),
-                initial_text=value.value,
-            )
+        self._text = UITextEntryLine(
+            relative_rect=(x + self.H, y, text_w, self.H),
+            manager=manager,
+            container=container,
+            object_id=ObjectID(class_id="@cycle_box_text"),
+            initial_text=value.value,
         )
         self._text.disable()  # type: ignore[no-untyped-call]
 
-        next_button = self.track(
-            UIButton(
-                relative_rect=(
-                    x + self.H + text_w,
-                    y,
-                    self.H,
-                    self.H,
-                ),
-                text=">",
-                manager=manager,
-                container=container,
-            )
+        next_button = UIButton(
+            relative_rect=(
+                x + self.H + text_w,
+                y,
+                self.H,
+                self.H,
+            ),
+            text=">",
+            manager=manager,
+            container=container,
         )
+
         next_button.bind(pygame_gui.UI_BUTTON_PRESSED, self._handle_next)
 
     def _handle_prev(self) -> None:

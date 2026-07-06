@@ -45,29 +45,25 @@ class IncrementBoxComponent(Component):
         text_w = w - self.H
 
         # create
-        self._text_entry = self.track(
-            TextEntryLineComponent(
-                manager=manager,
-                container=container,
-                pos=(x, y),
-                w=text_w,
-                value=value,
-                parse=str,
-            )
+        self._text_entry = TextEntryLineComponent(
+            manager=manager,
+            container=container,
+            pos=(x, y),
+            w=text_w,
+            value=value,
+            parse=str,
         )
 
-        inc_button = self.track(
-            UIButton(
-                relative_rect=(
-                    x + text_w,
-                    y,
-                    self.H,
-                    self.H,
-                ),
-                text="+",
-                manager=manager,
-                container=container,
-            )
+        inc_button = UIButton(
+            relative_rect=(
+                x + text_w,
+                y,
+                self.H,
+                self.H,
+            ),
+            text="+",
+            manager=manager,
+            container=container,
         )
         inc_button.bind(pygame_gui.UI_BUTTON_PRESSED, self._handle_inc)
 

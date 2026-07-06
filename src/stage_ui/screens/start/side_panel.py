@@ -66,118 +66,96 @@ class SidePanelComponent(Component):
         x, y = pos
 
         # panel
-        panel = self.track(
-            UIPanel(
-                relative_rect=(x, y, self.W, self.H),
-                manager=manager,
-                margins=NO_MARGINS,
-                container=container,
-            )
+        panel = UIPanel(
+            relative_rect=(x, y, self.W, self.H),
+            manager=manager,
+            margins=NO_MARGINS,
+            container=container,
         )
 
         # serial select
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 20),
-                w=375,
-                text="Serial",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 20),
+            w=375,
+            text="Serial",
         )
-        self.track(
-            CycleBoxComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 50),
-                w=375,
-                value=serial_port,
-                options=arduino.ports(),
-            )
+        CycleBoxComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 50),
+            w=375,
+            value=serial_port,
+            options=arduino.ports(),
         )
 
         # camera select
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 90),
-                w=375,
-                text="Camera",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 90),
+            w=375,
+            text="Camera",
         )
-        self.track(
-            SpinBoxComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 120),
-                w=375,
-                value=camera_index,
-                inc=lambda v: v + 1,
-                dec=lambda v: max(0, v - 1),
-                parse=int,
-            )
+        SpinBoxComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 120),
+            w=375,
+            value=camera_index,
+            inc=lambda v: v + 1,
+            dec=lambda v: max(0, v - 1),
+            parse=int,
         )
 
         # temp input
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 160),
-                w=375,
-                text="TI Temperature (\u2103)",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 160),
+            w=375,
+            text="TI Temperature (\u2103)",
         )
-        self.track(
-            EagerTextEntryLineComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 190),
-                w=375,
-                value=room_temp,
-                parse=float,
-            )
+        EagerTextEntryLineComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 190),
+            w=375,
+            value=room_temp,
+            parse=float,
         )
 
         # humidity input
-        self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 230),
-                w=375,
-                text="Relative Humidity (%)",
-            )
+        ControlLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 230),
+            w=375,
+            text="Relative Humidity (%)",
         )
-        self.track(
-            EagerTextEntryLineComponent(
-                manager=manager,
-                container=panel,
-                pos=(10, 260),
-                w=375,
-                value=room_humidity,
-                parse=float,
-            )
+        EagerTextEntryLineComponent(
+            manager=manager,
+            container=panel,
+            pos=(10, 260),
+            w=375,
+            value=room_humidity,
+            parse=float,
         )
 
         # buttons
-        test_serial_button = self.track(
-            UIButton(
-                relative_rect=(10, 320, 184, 40),
-                text="Test Serial",
-                manager=manager,
-                container=panel,
-            )
+        test_serial_button = UIButton(
+            relative_rect=(10, 320, 184, 40),
+            text="Test Serial",
+            manager=manager,
+            container=panel,
         )
         test_serial_button.disable()  # type: ignore[no-untyped-call]
-        self._start_button = self.track(
-            UIButton(
-                relative_rect=(201, 320, 184, 40),
-                text="Start",
-                manager=manager,
-                container=panel,
-            )
+        self._start_button = UIButton(
+            relative_rect=(201, 320, 184, 40),
+            text="Start",
+            manager=manager,
+            container=panel,
         )
         self._start_button.bind(
             pygame_gui.UI_BUTTON_PRESSED, lambda: pygame.event.post(Event(CT_GO_HOME))

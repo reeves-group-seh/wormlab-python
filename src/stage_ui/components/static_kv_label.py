@@ -37,14 +37,12 @@ class StaticKVLabelComponent(Component):
         x, y = pos
 
         # create
-        self._text_box = self.track(
-            UITextBox(
-                html_text=self._format(value),
-                relative_rect=(x, y, w, self.H),
-                manager=manager,
-                container=container,
-                object_id=ObjectID(class_id="@static_kv_label"),
-            )
+        self._text_box = UITextBox(
+            html_text=self._format(value),
+            relative_rect=(x, y, w, self.H),
+            manager=manager,
+            container=container,
+            object_id=ObjectID(class_id="@static_kv_label"),
         )
         self._text_box.disable()  # type: ignore[no-untyped-call]
 

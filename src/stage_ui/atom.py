@@ -28,7 +28,7 @@ class Atom[T]:
     def value(self, new: T) -> None:
         if self._value != new:
             self._value = new
-            for cb in self._subs:
+            for cb in list(self._subs):
                 cb()
 
     def subscribe(self, cb: Callable[[], None]) -> Callable[[], None]:

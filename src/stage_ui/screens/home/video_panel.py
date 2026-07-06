@@ -72,22 +72,18 @@ class VideoPanelComponent(Component):
         x, y = pos
 
         # create
-        panel = self.track(
-            UIPanel(
-                relative_rect=(x, y, self.W, self.H),
-                manager=manager,
-                container=container,
-                margins=NO_MARGINS,
-            )
+        panel = UIPanel(
+            relative_rect=(x, y, self.W, self.H),
+            manager=manager,
+            container=container,
+            margins=NO_MARGINS,
         )
 
-        self._video_frame = self.track(
-            UIImage(
-                relative_rect=(10, 10, self._IMAGE_W, self._IMAGE_H),
-                image_surface=pygame.Surface((self._IMAGE_W, self._IMAGE_H)),
-                manager=manager,
-                container=panel,
-            )
+        self._video_frame = UIImage(
+            relative_rect=(10, 10, self._IMAGE_W, self._IMAGE_H),
+            image_surface=pygame.Surface((self._IMAGE_W, self._IMAGE_H)),
+            manager=manager,
+            container=panel,
         )
 
     @override

@@ -88,49 +88,41 @@ class StartScreenComponent(Component):
         self._camera_index = camera_index
 
         # top panel
-        top_panel = self.track(
-            UIPanel(
-                relative_rect=(20, 20, 960, 220),
-                manager=manager,
-                margins=NO_MARGINS,
-                container=bg,
-            )
+        top_panel = UIPanel(
+            relative_rect=(20, 20, 960, 220),
+            manager=manager,
+            margins=NO_MARGINS,
+            container=bg,
         )
         ascii_art = (files("stage_ui.resources") / "title.txt").read_text()
-        title = self.track(
-            UITextBox(
-                html_text=f"{ascii_art}\n\nVersion: {stage_ui.VERSION}",
-                relative_rect=(0, 0, 960, 220),
-                manager=manager,
-                container=top_panel,
-                object_id="#ascii_art",
-                pre_parsing_enabled=True,
-                plain_text_display_only=True,
-            )
+        title = UITextBox(
+            html_text=f"{ascii_art}\n\nVersion: {stage_ui.VERSION}",
+            relative_rect=(0, 0, 960, 220),
+            manager=manager,
+            container=top_panel,
+            object_id="#ascii_art",
+            pre_parsing_enabled=True,
+            plain_text_display_only=True,
         )
         title.disable()  # type: ignore[no-untyped-call]
 
         # side panel
-        self.track(
-            SidePanelComponent(
-                manager=manager,
-                container=bg,
-                pos=(20, 260),
-                arduino=ctx.arduino,
-                serial_port=self._serial_port,
-                camera_index=self._camera_index,
-                room_temp=ctx.state.room_temp,
-                room_humidity=ctx.state.room_humidity,
-            )
+        SidePanelComponent(
+            manager=manager,
+            container=bg,
+            pos=(20, 260),
+            arduino=ctx.arduino,
+            serial_port=self._serial_port,
+            camera_index=self._camera_index,
+            room_temp=ctx.state.room_temp,
+            room_humidity=ctx.state.room_humidity,
         )
 
         # video panel
-        self.track(
-            VideoPanelComponent(
-                manager=manager,
-                container=bg,
-                pos=(435, 260),
-                camera=ctx.camera,
-                camera_index=self._camera_index,
-            )
+        VideoPanelComponent(
+            manager=manager,
+            container=bg,
+            pos=(435, 260),
+            camera=ctx.camera,
+            camera_index=self._camera_index,
         )

@@ -57,42 +57,36 @@ class SpinBoxComponent[T](Component):
         text_w = w - (2 * self.H)
 
         # create
-        dec_button = self.track(
-            UIButton(
-                relative_rect=(x, y, self.H, self.H),
-                text="<",
-                manager=manager,
-                container=container,
-            )
+        dec_button = UIButton(
+            relative_rect=(x, y, self.H, self.H),
+            text="<",
+            manager=manager,
+            container=container,
         )
         dec_button.bind(pygame_gui.UI_BUTTON_PRESSED, self._handle_dec)
 
-        self._text_entry = self.track(
-            TextEntryLineComponent(
-                manager=manager,
-                container=container,
-                pos=(x + self.H, y),
-                w=text_w,
-                value=value,
-                parse=parse,
-                format=format,
-                valid_class_id="@spin_box_text_entry_valid",
-                invalid_class_id="@spin_box_text_entry_invalid",
-            )
+        self._text_entry = TextEntryLineComponent(
+            manager=manager,
+            container=container,
+            pos=(x + self.H, y),
+            w=text_w,
+            value=value,
+            parse=parse,
+            format=format,
+            valid_class_id="@spin_box_text_entry_valid",
+            invalid_class_id="@spin_box_text_entry_invalid",
         )
 
-        inc_button = self.track(
-            UIButton(
-                relative_rect=(
-                    x + self.H + text_w,
-                    y,
-                    self.H,
-                    self.H,
-                ),
-                text=">",
-                manager=manager,
-                container=container,
-            )
+        inc_button = UIButton(
+            relative_rect=(
+                x + self.H + text_w,
+                y,
+                self.H,
+                self.H,
+            ),
+            text=">",
+            manager=manager,
+            container=container,
         )
         inc_button.bind(pygame_gui.UI_BUTTON_PRESSED, self._handle_inc)
 

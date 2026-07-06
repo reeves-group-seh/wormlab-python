@@ -29,12 +29,10 @@ class ControlLabelComponent(Component):
         x, y = pos
 
         # create
-        self.track(
-            UILabel(
-                relative_rect=(x, y, w, self.H),
-                manager=manager,
-                container=container,
-                text=text,
-                object_id=ObjectID(class_id="@control_label"),
-            )
+        UILabel(
+            relative_rect=(x, y, w, self.H),
+            manager=manager,
+            container=container,
+            text=text,
+            object_id=ObjectID(class_id="@control_label"),
         )

@@ -61,14 +61,12 @@ class BaseTextEntryLineComponent[T](Component):
         x, y = pos
 
         # create
-        self._text_entry = self.track(
-            UITextEntryLine(
-                relative_rect=(x, y, w, self.H),
-                manager=manager,
-                container=container,
-                initial_text=self._format(value.value),
-                object_id=ObjectID(class_id=valid_class_id),
-            )
+        self._text_entry = UITextEntryLine(
+            relative_rect=(x, y, w, self.H),
+            manager=manager,
+            container=container,
+            initial_text=self._format(value.value),
+            object_id=ObjectID(class_id=valid_class_id),
         )
 
     @override

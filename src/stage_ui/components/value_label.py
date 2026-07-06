@@ -32,14 +32,12 @@ class ValueLabelComponent(Component):
         x, y = pos
 
         # create
-        self._label = self.track(
-            UILabel(
-                relative_rect=(x, y, w, self.H),
-                manager=manager,
-                container=container,
-                text=text,
-                object_id=ObjectID(class_id="@value_label"),
-            )
+        self._label = UILabel(
+            relative_rect=(x, y, w, self.H),
+            manager=manager,
+            container=container,
+            text=text,
+            object_id=ObjectID(class_id="@value_label"),
         )
 
     def set_text(self, text: str) -> None:

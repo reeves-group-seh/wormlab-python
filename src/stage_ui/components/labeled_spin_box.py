@@ -35,25 +35,22 @@ class LabeledSpinBoxComponent[T](Component):
         x, y = pos
 
         # create
-        label = self.track(
-            ControlLabelComponent(
-                manager=manager,
-                container=container,
-                pos=pos,
-                w=w,
-                text=label_text,
-            )
+        label = ControlLabelComponent(
+            manager=manager,
+            container=container,
+            pos=pos,
+            w=w,
+            text=label_text,
         )
-        self.track(
-            SpinBoxComponent(
-                manager=manager,
-                container=container,
-                pos=(x, y + label.H),
-                w=w,
-                value=value,
-                inc=inc,
-                dec=dec,
-                parse=parse,
-                format=format,
-            )
+
+        SpinBoxComponent(
+            manager=manager,
+            container=container,
+            pos=(x, y + label.H),
+            w=w,
+            value=value,
+            inc=inc,
+            dec=dec,
+            parse=parse,
+            format=format,
         )

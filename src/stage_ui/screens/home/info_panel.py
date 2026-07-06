@@ -59,75 +59,61 @@ class InfoPanelComponent(Component):
         x, y = pos
 
         # panel
-        panel = self.track(
-            UIPanel(
-                relative_rect=(x, y, self.W, self.H),
-                manager=manager,
-                container=container,
-                margins=NO_MARGINS,
-            )
+        panel = UIPanel(
+            relative_rect=(x, y, self.W, self.H),
+            manager=manager,
+            container=container,
+            margins=NO_MARGINS,
         )
 
         # top info
-        self.track(
-            StaticKVLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(5, 10),
-                w=(self.W - 10),
-                key="Data File",
-                value=data_file.name,
-            )
+        StaticKVLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(5, 10),
+            w=(self.W - 10),
+            key="Data File",
+            value=data_file.name,
         )
-        self._room_temp_label = self.track(
-            StaticKVLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(5, 35),
-                w=(self.W - 10),
-                key="Temperature",
-                value="",
-            )
+        self._room_temp_label = StaticKVLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(5, 35),
+            w=(self.W - 10),
+            key="Temperature",
+            value="",
         )
-        self._room_humidity_label = self.track(
-            StaticKVLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(5, 60),
-                w=(self.W - 10),
-                key="Humidity",
-                value="",
-            )
+        self._room_humidity_label = StaticKVLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(5, 60),
+            w=(self.W - 10),
+            key="Humidity",
+            value="",
         )
-        self._arduino_status_label = self.track(
-            StaticKVLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(5, 85),
-                w=(self.W - 10),
-                key="Status",
-                value="",
-            )
+        self._arduino_status_label = StaticKVLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(5, 85),
+            w=(self.W - 10),
+            key="Status",
+            value="",
         )
-        self._last_fire_label = self.track(
-            StaticKVLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(5, 110),
-                w=(self.W - 10),
-                key="Last Fire",
-                value="",
-            )
+        self._last_fire_label = StaticKVLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(5, 110),
+            w=(self.W - 10),
+            key="Last Fire",
+            value="",
         )
-        self._countdown_label = self.track(
-            StaticKVLabelComponent(
-                manager=manager,
-                container=panel,
-                pos=(5, 135),
-                w=(self.W - 10),
-                key="Countdown",
-                value="",
-            )
+        self._countdown_label = StaticKVLabelComponent(
+            manager=manager,
+            container=panel,
+            pos=(5, 135),
+            w=(self.W - 10),
+            key="Countdown",
+            value="",
         )
 
         # do initial renders
