@@ -71,7 +71,7 @@ class Component(ABC):
             except BaseException:
                 # ensure an exception raising component cleans up any child
                 # components it created
-                self.kill()
+                self.destroy()
                 raise
             finally:
                 # remove self from the stack
@@ -116,7 +116,7 @@ class Component(ABC):
         for component in self._components:
             component.update(dt)
 
-    def kill(self) -> None:
+    def destroy(self) -> None:
         """
         Unsubscribe from all atoms and do other cleanup. This cascades down to
         child components.
@@ -124,7 +124,7 @@ class Component(ABC):
 
         # destroy child components
         for component in self._components:
-            component.kill()
+            component.destroy()
 
         # unsubscribe
         for unsub in self._unsubs:

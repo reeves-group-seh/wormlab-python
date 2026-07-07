@@ -6,6 +6,7 @@ from enum import Enum, auto
 import pygame
 from pygame import Event, Surface
 from pygame_gui import UIManager
+from pygame_gui.core import ObjectID
 from pygame_gui.elements import UIPanel
 
 # local
@@ -20,92 +21,79 @@ class ScreenId(Enum):
 
     START = auto()
     HOME = auto()
-    TEST = auto()
 
 
 class Screen(ABC):
     # instance variables
     _ctx: AppContext
     _manager: UIManager
-    _root_component: type[Component]
-    _components: list[Component]
-
-    _bg: UIPanel  # only available after call to on_enter
+    _root: Component
 
     def __init__(self, ctx: AppContext) -> None:
+        """
+        Child classes must set `self._root` in their own init functions.
+        """
+        # set attributes
         self._ctx = ctx
         self._manager = UIManager(
             ctx.cfg.WINDOW_SIZE,
             theme_path=ctx.cfg.THEME_FILE,
         )
-        self._components = []
-
-    def track[C: Component](self, component: C) -> C:
-        """
-        Register a given component.
-        """
-        self._components.append(component)
-        return component
 
     def on_enter(self) -> None:
         """
-        Called when the screen becomes active. This builds the UI for this
-        screen.
+        Called when the screen becomes active.
         """
-        self.bg = UIPanel(
-            relative_rect=(0, 0, self._ctx.cfg.WINDOW_W, self._ctx.cfg.WINDOW_H),
-            manager=self._manager,
-            object_id="#background",
-            margins=NO_MARGINS,
-        )
+        pass
 
     def on_exit(self) -> None:
         """
-        Called when switching away from this screen. This destroys the UI.
+        Called when switching away from this screen.
         """
-
-        # clean up elements
-        self._manager.clear_and_reset()  # type: ignore[no-untyped-call]
-
-        # clean up components
-        for component in self._components:
-            component.kill()
-        self._components.clear()
+        pass
 
     def process_event(self, event: Event) -> ScreenId | None:
         """
         Process a given event generated during the render loop. By default, this
-        passes the event off to the `UIManager` and sub-components for them to
-        handle.
+        passes the event off to the `UIManager` and the root component for them
+        to handle.
         """
 
         # let ui manager handle events
         self._manager.process_events(event)
 
-        # let sub-components handle events
-        for component in self._components:
-            component.process_event(event)
+        # let root component handle events
+        self._root.process_event(event)
 
+        # don't switch
         return None
 
     def update(self, dt: float) -> None:
         """
         Update the screen after `dt` seconds since the last frame. By default
-        this updates the `UIManager` and sub-components.
+        this updates the `UIManager` and the root component.
         """
 
         # update ui manager
         self._manager.update(dt)
 
-        # update sub-components
-        for component in self._components:
-            component.update(dt)
+        # update root component
+        self._root.update(dt)
 
     def draw_ui(self, surface: Surface) -> None:
         """
-        Draw the `Screen`'s UI to the given surface (window).
+        Draw the `Screen`'s UI to the given window surface.
         """
         self._manager.draw_ui(surface)
+
+    @staticmethod
+    def bg_panel(ctx: AppContext, manager: UIManager) -> UIPanel:
+        return UIPanel(
+            relative_rect=(0, 0, ctx.cfg.WINDOW_W, ctx.cfg.WINDOW_H),
+            manager=manager,
+            margins=NO_MARGINS,
+            object_id=ObjectID(class_id="@background"),
+        )
 
     @staticmethod
     def fit_surface(surface: Surface, size: tuple[float, float]) -> Surface:

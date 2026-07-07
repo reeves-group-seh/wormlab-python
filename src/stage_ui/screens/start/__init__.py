@@ -37,20 +37,13 @@ class StartScreen(Screen):
         self._ctx.arduino.open(self._serial_port.value)
         self._ctx.camera.open(self._camera_index.value)
 
-    @override
-    def on_enter(self) -> None:
-        # create backround
-        super().on_enter()
-
-        # create
-        self.track(
-            StartScreenComponent(
-                manager=self._manager,
-                bg=self.bg,
-                ctx=self._ctx,
-                serial_port=self._serial_port,
-                camera_index=self._camera_index,
-            )
+        # build ui
+        self._root = StartScreenComponent(
+            manager=self._manager,
+            bg=Screen.bg_panel(ctx, self._manager),
+            ctx=ctx,
+            serial_port=self._serial_port,
+            camera_index=self._camera_index,
         )
 
     @override
@@ -66,11 +59,6 @@ class StartScreen(Screen):
 
 
 class StartScreenComponent(Component):
-    # instance vars
-    _ctx: AppContext
-    _serial_port: Atom[str]
-    _camera_index: Atom[int]
-
     def __init__(
         self,
         manager: UIManager,
@@ -81,11 +69,6 @@ class StartScreenComponent(Component):
     ) -> None:
         # init parent
         super().__init__()
-
-        # set values
-        self._ctx = ctx
-        self._serial_port = serial_port
-        self._camera_index = camera_index
 
         # top panel
         top_panel = UIPanel(
@@ -112,8 +95,8 @@ class StartScreenComponent(Component):
             container=bg,
             pos=(20, 260),
             arduino=ctx.arduino,
-            serial_port=self._serial_port,
-            camera_index=self._camera_index,
+            serial_port=serial_port,
+            camera_index=camera_index,
             room_temp=ctx.state.room_temp,
             room_humidity=ctx.state.room_humidity,
         )
@@ -124,5 +107,5 @@ class StartScreenComponent(Component):
             container=bg,
             pos=(435, 260),
             camera=ctx.camera,
-            camera_index=self._camera_index,
+            camera_index=camera_index,
         )

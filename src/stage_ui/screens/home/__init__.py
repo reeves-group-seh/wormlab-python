@@ -22,105 +22,100 @@ from .video_panel import VideoPanelComponent
 
 class HomeScreen(Screen):
     # instance vars
-    state: HomeState
+    _state: HomeState
 
     def __init__(self, ctx: AppContext) -> None:
         # init parent
         super().__init__(ctx)
 
         # state
-        self.state = HomeState.new(
+        self._state = HomeState.new(
             ctx.cfg,
             ctx.state,
             ctx.arduino,
         )
 
-    @override
-    def on_enter(self) -> None:
-        # create backround
-        super().on_enter()
-
-        # create
-        self.track(
-            HomeScreenComponent(
-                manager=self._manager,
-                bg=self.bg,
-                ctx=self._ctx,
-                state=self.state,
-            )
+        self._root = HomeScreenComponent(
+            manager=self._manager,
+            bg=Screen.bg_panel(ctx, self._manager),
+            ctx=self._ctx,
+            state=self._state,
         )
 
     @override
     def process_event(self, event: pygame.Event) -> ScreenId | None:
+        # process child events
+        super().process_event(event)
+
         if event.type == pygame.KEYDOWN and not self._is_typing():
             action = self._ctx.cfg.KEYMAP.get(event.key)
             match action:
                 case KeyMapAction.STEP_LEFT:
                     self._ctx.arduino.step_left(
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
+                        self._state.move_speed.value,
+                        self._state.step_duration.value,
                     )
                 case KeyMapAction.STEP_RIGHT:
                     self._ctx.arduino.step_right(
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
+                        self._state.move_speed.value,
+                        self._state.step_duration.value,
                     )
                 case KeyMapAction.STEP_UP:
                     self._ctx.arduino.step_up(
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
+                        self._state.move_speed.value,
+                        self._state.step_duration.value,
                     )
                 case KeyMapAction.STEP_DOWN:
                     self._ctx.arduino.step_down(
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
+                        self._state.move_speed.value,
+                        self._state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_LEFT:
                     self._ctx.arduino.move_left(
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
+                        self._state.move_speed.value,
+                        self._state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_RIGHT:
                     self._ctx.arduino.move_right(
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
+                        self._state.move_speed.value,
+                        self._state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_UP:
                     self._ctx.arduino.move_up(
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
+                        self._state.move_speed.value,
+                        self._state.step_duration.value,
                     )
                 case KeyMapAction.MOVE_DOWN:
                     self._ctx.arduino.move_down(
-                        self.state.move_speed.value,
-                        self.state.step_duration.value,
+                        self._state.move_speed.value,
+                        self._state.step_duration.value,
                     )
                 case KeyMapAction.FIRE:
-                    if not self.state.data_needed.value:
-                        fire = LaserFire(duration=self.state.fire_duration.value)
+                    if not self._state.data_needed.value:
+                        fire = LaserFire(duration=self._state.fire_duration.value)
                         self._ctx.arduino.fire(fire.duration)
-                        self.state.num_fires.value += 1
-                        self.state.last_fire.value = fire
-                        self.state.data_needed.value = True
+                        self._state.num_fires.value += 1
+                        self._state.last_fire.value = fire
+                        self._state.data_needed.value = True
                 case KeyMapAction.DESTROY:
-                    if not self.state.data_needed.value:
+                    if not self._state.data_needed.value:
                         fire = LaserFire(duration=self._ctx.cfg.DESTROY_FIRE_DURATION)
                         self._ctx.arduino.fire(fire.duration)
                         self._ctx.data.add_non_data_fire(fire, "Destroy Fire")
                 case KeyMapAction.GRID:
-                    if not self.state.data_needed.value:
+                    if not self._state.data_needed.value:
                         self._ctx.arduino.grid(
-                            self.state.grid_size.value,
-                            self.state.move_speed.value,
-                            self.state.step_duration.value,
-                            self.state.fire_duration.value,
+                            self._state.grid_size.value,
+                            self._state.move_speed.value,
+                            self._state.step_duration.value,
+                            self._state.fire_duration.value,
                         )
                 case KeyMapAction.SKIP_DATA:
-                    if self.state.last_fire.value and self.state.data_needed.value:
+                    if self._state.last_fire.value and self._state.data_needed.value:
                         self._ctx.data.add_non_data_fire(
-                            self.state.last_fire.value, "Non-Data Fire"
+                            self._state.last_fire.value, "Non-Data Fire"
                         )
-                        self.state.data_needed.value = False
+                        self._state.data_needed.value = False
 
         if event.type == pygame.KEYUP and not self._is_typing():
             action = self._ctx.cfg.KEYMAP.get(event.key)
@@ -134,8 +129,6 @@ class HomeScreen(Screen):
                 case KeyMapAction.MOVE_DOWN:
                     self._ctx.arduino.stop()
 
-        # process child events
-        super().process_event(event)
         return None
 
     def _is_typing(self) -> bool:

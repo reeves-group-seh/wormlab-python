@@ -11,15 +11,6 @@
       "shadow_width": "0"
     }
   },
-  "#background": {
-    "colours": {
-      "dark_bg": "#1A2024"
-    },
-    "misc": {
-      "border_width": "0",
-      "shadow_width": "0"
-    }
-  },
   "#ascii_art": {
     "font": {
       "name": "fira_code_symbols",
@@ -30,6 +21,15 @@
       "text_horiz_alignment": "center",
       "text_vert_alignment": "center",
       "border_width": "1",
+      "shadow_width": "0"
+    }
+  },
+  "@background": {
+    "colours": {
+      "dark_bg": "#1A2024"
+    },
+    "misc": {
+      "border_width": "0",
       "shadow_width": "0"
     }
   },
