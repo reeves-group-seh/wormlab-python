@@ -16,8 +16,11 @@ dependencies = [
 ]
 
 [project.scripts]
-worm-shooter = "worm_shooter.__main__:main"
+shooter = "shooter.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.11.23,<0.12"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shooter"

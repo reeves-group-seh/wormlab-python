@@ -18,7 +18,7 @@ The first run may take some extra time as packages are installed, but subsequent
 Not using uv? Once the package is installed, you can run it like any other module:
 
 ```
-python -m worm_shooter
+python -m shooter
 ```
 
 ## CLI Options
@@ -26,7 +26,7 @@ python -m worm_shooter
 There are a number of CLI flags that customize the application. To see all the options, run the module with the `--help` flag.
 
 ```
-python -m worm_shooter --help
+python -m shooter --help
 ```
 
 ...
