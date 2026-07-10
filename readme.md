@@ -1,6 +1,6 @@
-# stage-ui
+# StageUI
 
-...
+An in-house `pygame` and `pygame_gui` desktop app for controlling the lab microscope stage and laser.
 
 ## Quickstart
 
@@ -14,6 +14,22 @@ uv run stage-ui
 ```
 
 The first run may take some extra time as packages are installed, but subsequent runs should be faster.
+
+Not using uv? Once the package is installed, you can run it like any other module:
+
+```
+python -m stage_ui
+```
+
+## CLI Options
+
+There are a number of CLI flags that customize the application. To see all the options, run the module with the `--help` flag.
+
+```
+python -m stage_ui --help
+```
+
+...
 
 ## Project Philosophy
 

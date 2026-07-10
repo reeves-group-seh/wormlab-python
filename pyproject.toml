@@ -25,6 +25,7 @@ stage-ui = "stage_ui.__main__:main"
 dev = [
     "mypy>=1.19.1",
     "pandas-stubs>=2.3.3.260113",
+    "pdoc>=16.0.0",
     "ruff>=0.14.14",
     "ty>=0.0.49",
     "types-pyserial>=3.5.0.20251001",
@@ -48,4 +49,4 @@ src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "RUF", "N", "SIM"]
-ignore = ["E501", "B024", "B027", "N802", "N806", "SIM102"]
+ignore = ["E501", "B024", "B027", "RUF022", "N802", "N806", "SIM102"]
