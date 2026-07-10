@@ -8,7 +8,7 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
-from stage_ui.components import NO_MARGINS, Component, StaticKVLabelComponent
+from worm_shooter.components import NO_MARGINS, Component, StaticKVLabelComponent
 
 # relative
 from .state import HomeState

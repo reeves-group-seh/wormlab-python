@@ -11,7 +11,7 @@ from pygame_gui.core import ObjectID
 from pygame_gui.elements import UIPanel, UITextEntryLine
 
 # local
-from stage_ui.atom import Atom
+from worm_shooter.atom import Atom
 
 # relative
 from .base import Component

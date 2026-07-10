@@ -5,7 +5,7 @@ from enum import Enum
 from typing import override
 
 # local
-from stage_ui.atom import Atom
+from worm_shooter.atom import Atom
 
 
 class ArduinoAction(Enum):

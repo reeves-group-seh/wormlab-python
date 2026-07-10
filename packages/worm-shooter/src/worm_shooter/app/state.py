@@ -3,7 +3,7 @@ import dataclasses
 from dataclasses import dataclass
 
 # local
-from stage_ui.atom import Atom
+from worm_shooter.atom import Atom
 
 
 @dataclass(kw_only=True)

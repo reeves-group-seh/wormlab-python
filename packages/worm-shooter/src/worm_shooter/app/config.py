@@ -9,8 +9,8 @@ import pygame
 from pygame_gui import PackageResource
 
 # local
-import stage_ui.resources
-from stage_ui.types import FilterNumber, KeyMapAction, RadiusColor
+import worm_shooter.resources
+from worm_shooter.types import FilterNumber, KeyMapAction, RadiusColor
 
 
 @dataclass(kw_only=True)
@@ -49,7 +49,7 @@ class AppConfig:
 
     THEME_FILE: PackageResource = dataclasses.field(
         default_factory=lambda: PackageResource(
-            stage_ui.resources.__name__, "theme.json"
+            worm_shooter.resources.__name__, "theme.json"
         )
     )
     """

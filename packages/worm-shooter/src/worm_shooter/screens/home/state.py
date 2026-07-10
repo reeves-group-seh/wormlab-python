@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from typing import cast
 
 # local
-from stage_ui.app.config import AppConfig
-from stage_ui.app.state import AppState
-from stage_ui.atom import Atom
-from stage_ui.backend.arduino import ArduinoAction, ArduinoBackend
-from stage_ui.types import FilterNumber, LaserFire, RadiusColor
+from worm_shooter.app.config import AppConfig
+from worm_shooter.app.state import AppState
+from worm_shooter.atom import Atom
+from worm_shooter.backend.arduino import ArduinoAction, ArduinoBackend
+from worm_shooter.types import FilterNumber, LaserFire, RadiusColor
 
 
 @dataclass(kw_only=True)

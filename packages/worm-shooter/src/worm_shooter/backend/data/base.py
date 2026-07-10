@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 # local
-from stage_ui.types import FilterNumber, LaserFire, RadiusColor, WormResponse
+from worm_shooter.types import FilterNumber, LaserFire, RadiusColor, WormResponse
 
 
 @dataclass(kw_only=True, frozen=True)

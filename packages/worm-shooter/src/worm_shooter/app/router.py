@@ -2,8 +2,8 @@
 import pygame
 
 # local
-from stage_ui.app.context import AppContext
-from stage_ui.screens import HomeScreen, Screen, ScreenId, StartScreen
+from worm_shooter.app.context import AppContext
+from worm_shooter.screens import HomeScreen, Screen, ScreenId, StartScreen
 
 
 class AppRouter:

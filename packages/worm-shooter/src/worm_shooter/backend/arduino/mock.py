@@ -2,7 +2,7 @@
 from typing import ClassVar, override
 
 # local
-from stage_ui.atom import Atom
+from worm_shooter.atom import Atom
 
 # relative
 from .base import ArduinoAction, ArduinoBackend

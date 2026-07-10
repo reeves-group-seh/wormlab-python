@@ -6,7 +6,7 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
-from stage_ui.atom import Atom
+from worm_shooter.atom import Atom
 
 # relative
 from .base import Component

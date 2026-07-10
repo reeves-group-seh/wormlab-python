@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-worm-shooter = "stage_ui.__main__:main"
+worm-shooter = "worm_shooter.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.11.23,<0.12"]

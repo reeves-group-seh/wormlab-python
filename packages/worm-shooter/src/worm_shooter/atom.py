@@ -5,7 +5,7 @@ An `Atom` wraps a single immutable value and lets interested parties
 *subscribe* to it. Whenever the value changes, every registered callback is
 run, allowing UI components to update themselves in response to state changes
 without polling. This is the primitive behind cross-screen state (see
-`stage_ui.app.AppState`) and reactive `Component` updates.
+`worm_shooter.app.AppState`) and reactive `Component` updates.
 
 Only the value stored in an `Atom` should be treated as observable; the value
 itself must be immutable. Changes are detected with `!=`, so mutating a value

@@ -3,11 +3,11 @@ import dataclasses
 from dataclasses import dataclass
 
 # local
-from stage_ui.app.config import AppConfig
-from stage_ui.app.state import AppState
-from stage_ui.backend.arduino import ArduinoBackend
-from stage_ui.backend.camera import CameraBackend
-from stage_ui.backend.data import DataBackend
+from worm_shooter.app.config import AppConfig
+from worm_shooter.app.state import AppState
+from worm_shooter.backend.arduino import ArduinoBackend
+from worm_shooter.backend.camera import CameraBackend
+from worm_shooter.backend.data import DataBackend
 
 
 @dataclass(kw_only=True)

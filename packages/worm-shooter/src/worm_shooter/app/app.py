@@ -6,13 +6,13 @@ import sys
 import pygame
 
 # local
-import stage_ui
-from stage_ui.app.config import AppConfig
-from stage_ui.app.context import AppContext
-from stage_ui.app.router import AppRouter
-from stage_ui.backend.arduino import ArduinoBackend
-from stage_ui.backend.camera import CameraBackend
-from stage_ui.backend.data import DataBackend
+import worm_shooter
+from worm_shooter.app.config import AppConfig
+from worm_shooter.app.context import AppContext
+from worm_shooter.app.router import AppRouter
+from worm_shooter.backend.arduino import ArduinoBackend
+from worm_shooter.backend.camera import CameraBackend
+from worm_shooter.backend.data import DataBackend
 
 
 class App:
@@ -31,7 +31,7 @@ class App:
         data: DataBackend,
     ) -> None:
         pygame.init()
-        pygame.display.set_caption(stage_ui.APP_NAME)
+        pygame.display.set_caption(worm_shooter.APP_NAME)
 
         # init values
         self._ctx = AppContext(
@@ -61,7 +61,7 @@ class App:
             for event in pygame.event.get():
                 # match on types
                 if event.type == pygame.QUIT:
-                    print("StageUI: shutting down")
+                    print("Worm Shooter: shutting down")
                     self._ctx.destroy()
                     pygame.quit()
                     sys.exit(0)

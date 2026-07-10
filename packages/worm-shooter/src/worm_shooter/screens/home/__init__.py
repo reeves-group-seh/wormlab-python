@@ -7,10 +7,10 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel, UITextEntryLine
 
 # local
-from stage_ui.app.context import AppContext
-from stage_ui.components import Component
-from stage_ui.screens import Screen, ScreenId
-from stage_ui.types import KeyMapAction, LaserFire
+from worm_shooter.app.context import AppContext
+from worm_shooter.components import Component
+from worm_shooter.screens import Screen, ScreenId
+from worm_shooter.types import KeyMapAction, LaserFire
 
 # relative
 from .info_panel import InfoPanelComponent

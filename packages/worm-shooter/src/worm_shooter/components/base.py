@@ -8,7 +8,7 @@ from typing import Any, ClassVar, Self, cast
 from pygame import Event
 
 # local
-from stage_ui.atom import Atom
+from worm_shooter.atom import Atom
 
 
 class Component(ABC):

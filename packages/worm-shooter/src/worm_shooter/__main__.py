@@ -32,7 +32,7 @@ class DataBackendArg(StrEnum):
 def main() -> None:
     # create argparser
     parser = ArgumentParser(
-        prog="stage-ui",
+        prog="worm-shooter",
         description="",
     )
     parser.add_argument(
@@ -78,24 +78,28 @@ def main() -> None:
     args: Args = parser.parse_args(namespace=Args())
 
     # local imports after reading arguments
-    import stage_ui
-    from stage_ui.app.app import App
-    from stage_ui.app.config import AppConfig
-    from stage_ui.backend.arduino import (
+    import worm_shooter
+    from worm_shooter.app.app import App
+    from worm_shooter.app.config import AppConfig
+    from worm_shooter.backend.arduino import (
         ArduinoBackend,
         MockArduinoBackend,
         PySerialArduinoBackend,
     )
-    from stage_ui.backend.camera import (
+    from worm_shooter.backend.camera import (
         CameraBackend,
         CV2CameraBackend,
         MockCameraBackend,
     )
-    from stage_ui.backend.data import DataBackend, MockDataBackend, PandasDataBackend
+    from worm_shooter.backend.data import (
+        DataBackend,
+        MockDataBackend,
+        PandasDataBackend,
+    )
 
     # print startup info
-    ascii_art = (files("stage_ui.resources") / "title.txt").read_text()
-    print(f"{ascii_art}\nStageUI: starting v{stage_ui.VERSION}")
+    ascii_art = (files("worm_shooter.resources") / "title.txt").read_text()
+    print(f"{ascii_art}\nWorm Shooter: starting v{worm_shooter.VERSION}")
 
     # create config
     cfg_kwargs: dict[str, Any] = {}

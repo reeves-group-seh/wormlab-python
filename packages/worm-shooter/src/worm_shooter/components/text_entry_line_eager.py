@@ -7,7 +7,7 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
-from stage_ui.atom import Atom
+from worm_shooter.atom import Atom
 
 # relative
 from ._text_entry_line_base import BaseTextEntryLineComponent

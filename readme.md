@@ -1,4 +1,4 @@
-# StageUI
+# ...
 
 ## Layout
 
@@ -16,10 +16,11 @@ uv run worm-shooter --arduino-backend=mock --camera-backend=mock --data-backend=
 ```
 
 ```sh
-uv run ruff format       # format
-uv run ruff check        # lint
-uv run ty check          # typechecker 1
-uc run mypy -p stage_ui  # typechecker 2
+uv run ruff format           # format
+uv run ruff check            # lint
+uv run ty check              # typechecker 1
+uv run mypy -p worm_shooter  # typechecker 2
+uv run pdoc worm_shooter
 ```
 
 ```sh

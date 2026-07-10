@@ -13,7 +13,7 @@ import serial
 import serial.tools.list_ports
 
 # local
-from stage_ui.atom import Atom
+from worm_shooter.atom import Atom
 
 # relative
 from .base import ArduinoAction, ArduinoBackend

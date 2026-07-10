@@ -8,10 +8,10 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIImage, UIPanel
 
 # local
-from stage_ui.atom import Atom
-from stage_ui.backend.camera import CameraBackend
-from stage_ui.components import NO_MARGINS, Component
-from stage_ui.screens import Screen
+from worm_shooter.atom import Atom
+from worm_shooter.backend.camera import CameraBackend
+from worm_shooter.components import NO_MARGINS, Component
+from worm_shooter.screens import Screen
 
 # constants
 _BLANK_SURFACE = Surface((525, 350))

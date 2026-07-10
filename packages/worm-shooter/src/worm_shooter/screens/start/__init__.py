@@ -8,12 +8,12 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel, UITextBox
 
 # local
-import stage_ui
-from stage_ui.app.context import AppContext
-from stage_ui.atom import Atom
-from stage_ui.components import NO_MARGINS, Component
-from stage_ui.screens import Screen, ScreenId
-from stage_ui.screens.events import CT_GO_HOME
+import worm_shooter
+from worm_shooter.app.context import AppContext
+from worm_shooter.atom import Atom
+from worm_shooter.components import NO_MARGINS, Component
+from worm_shooter.screens import Screen, ScreenId
+from worm_shooter.screens.events import CT_GO_HOME
 
 # relative
 from .side_panel import SidePanelComponent
@@ -77,9 +77,9 @@ class StartScreenComponent(Component):
             margins=NO_MARGINS,
             container=bg,
         )
-        ascii_art = (files("stage_ui.resources") / "title.txt").read_text()
+        ascii_art = (files("worm_shooter.resources") / "title.txt").read_text()
         title = UITextBox(
-            html_text=f"{ascii_art}\n\nVersion: {stage_ui.VERSION}",
+            html_text=f"{ascii_art}\n\nVersion: {worm_shooter.VERSION}",
             relative_rect=(0, 0, 960, 220),
             manager=manager,
             container=top_panel,

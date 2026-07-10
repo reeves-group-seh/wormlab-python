@@ -7,8 +7,8 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIButton, UIPanel
 
 # local
-from stage_ui.backend.data import DataBackend
-from stage_ui.components import (
+from worm_shooter.backend.data import DataBackend
+from worm_shooter.components import (
     NO_MARGINS,
     Component,
     ControlLabelComponent,
@@ -16,7 +16,7 @@ from stage_ui.components import (
     LabeledCycleBoxComponent,
     TextEntryLineComponent,
 )
-from stage_ui.types import FilterNumber, RadiusColor, WormResponse
+from worm_shooter.types import FilterNumber, RadiusColor, WormResponse
 
 # relative
 from .state import HomeState

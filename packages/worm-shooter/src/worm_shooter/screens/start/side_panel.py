@@ -9,9 +9,9 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIButton, UIPanel
 
 # local
-from stage_ui.atom import Atom
-from stage_ui.backend.arduino import ArduinoBackend
-from stage_ui.components import (
+from worm_shooter.atom import Atom
+from worm_shooter.backend.arduino import ArduinoBackend
+from worm_shooter.components import (
     NO_MARGINS,
     Component,
     ControlLabelComponent,
@@ -19,7 +19,7 @@ from stage_ui.components import (
     EagerTextEntryLineComponent,
     SpinBoxComponent,
 )
-from stage_ui.screens.events import CT_GO_HOME
+from worm_shooter.screens.events import CT_GO_HOME
 
 
 class SidePanelComponent(Component):

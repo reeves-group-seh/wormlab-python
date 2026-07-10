@@ -10,8 +10,8 @@ from pygame_gui.core import ObjectID
 from pygame_gui.elements import UIPanel
 
 # local
-from stage_ui.app.context import AppContext
-from stage_ui.components import NO_MARGINS, Component
+from worm_shooter.app.context import AppContext
+from worm_shooter.components import NO_MARGINS, Component
 
 
 class ScreenId(Enum):

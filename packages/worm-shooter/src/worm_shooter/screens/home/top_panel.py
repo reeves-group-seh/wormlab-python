@@ -6,9 +6,9 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel
 
 # local
-from stage_ui.app.config import AppConfig
-from stage_ui.atom import Atom
-from stage_ui.components import (
+from worm_shooter.app.config import AppConfig
+from worm_shooter.atom import Atom
+from worm_shooter.components import (
     NO_MARGINS,
     Component,
     ControlLabelComponent,
