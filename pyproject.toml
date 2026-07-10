@@ -1,26 +1,3 @@
-[project]
-name = "stage-ui"
-description = "Desktop app for controlling lab microscope stage and laser."
-version = "2.0rc1"
-requires-python = ">=3.14"
-readme = "readme.md"
-authors = [
-    { name = "Mack Rusing", email = "mail@mackk.net" }
-]
-dependencies = [
-    "opencv-python>=4.13.0.92",
-    "pandas>=3.0.0",
-    "pygame-ce>=2.5.6",
-    "pygame-gui>=0.6.14",
-    "pyserial>=3.5",
-]
-
-[project.urls]
-"Repository" = "https://github.com/reeves-group-seh/stage-ui"
-
-[project.scripts]
-stage-ui = "stage_ui.__main__:main"
-
 [dependency-groups]
 dev = [
     "mypy>=1.19.1",
@@ -31,21 +8,27 @@ dev = [
     "types-pyserial>=3.5.0.20251001",
 ]
 
-[build-system]
-requires = ["uv_build>=0.11.23,<0.12"]
-build-backend = "uv_build"
-
 [tool]
+
+[tool.uv]
+
+[tool.uv.workspace]
+members = ["packages/*"]
 
 [tool.ty]
 rules = { all = "error" }
 
+[tool.ty.environment]
+python-version = "3.14"
+
 [tool.mypy]
-mypy_path = "src"
+python_version = "3.14"
+mypy_path = "packages/stage-ui/src"
 strict = true
 
 [tool.ruff]
-src = ["src"]
+target-version = "py314"
+src = ["packages/stage-ui/src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "RUF", "N", "SIM"]

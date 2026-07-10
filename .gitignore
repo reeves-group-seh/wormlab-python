@@ -12,7 +12,3 @@ wheels/
 # tool-generated files
 .mypy_cache/
 .ruff_cache/
-
-# old implementations
-src/stage_legacy/
-src/stage_arduino/
