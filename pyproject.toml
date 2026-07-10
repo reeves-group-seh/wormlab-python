@@ -23,12 +23,12 @@ python-version = "3.14"
 
 [tool.mypy]
 python_version = "3.14"
-mypy_path = "packages/stage-ui/src"
+mypy_path = "packages/worm-shooter/src"
 strict = true
 
 [tool.ruff]
 target-version = "py314"
-src = ["packages/stage-ui/src"]
+src = ["packages/worm-shooter/src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "RUF", "N", "SIM"]

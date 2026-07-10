@@ -1,4 +1,4 @@
-# StageUI
+# Worm Shooter
 
 An in-house `pygame` and `pygame_gui` desktop app for controlling the lab microscope stage and laser.
 
@@ -10,7 +10,7 @@ After installing, fetch the application's dependencies and run the app with the 
 
 ```
 uv sync
-uv run stage-ui
+uv run worm-shooter
 ```
 
 The first run may take some extra time as packages are installed, but subsequent runs should be faster.

@@ -12,4 +12,4 @@ uv sync || (
 )
 
 @REM run
-uv run stage-ui
+uv run worm-shooter

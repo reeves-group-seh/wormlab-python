@@ -1,10 +1,18 @@
 # StageUI
 
+## Layout
+
+- Python Workspace
+  - `axon-ui` (Axon UI): UI Framework
+  - `axon-ui-kit` (Axon UI Component Kit): UI Component Kit
+  - `worm-shooter` (Worm Shooter): Experiment App
+  - `worm-watcher` (Worm Watcher): Analysis App
+
 ## Commands
 
 ```sh
-uv run stage-ui
-uv run stage-ui --arduino-backend=mock --camera-backend=mock --data-backend=mock
+uv run worm-shooter
+uv run worm-shooter --arduino-backend=mock --camera-backend=mock --data-backend=mock
 ```
 
 ```sh
