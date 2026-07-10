@@ -13,7 +13,10 @@ dev = [
 [tool.uv]
 
 [tool.uv.workspace]
-members = ["packages/*"]
+members = [
+    "packages/axon-ui",
+    "packages/worm-shooter",
+]
 
 [tool.ty]
 rules = { all = "error" }
@@ -23,12 +26,12 @@ python-version = "3.14"
 
 [tool.mypy]
 python_version = "3.14"
-mypy_path = "packages/worm-shooter/src"
+mypy_path = "packages/worm-shooter/src:packages/axon-ui/src"
 strict = true
 
 [tool.ruff]
 target-version = "py314"
-src = ["packages/worm-shooter/src"]
+src = ["packages/worm-shooter/src", "packages/axon-ui/src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "RUF", "N", "SIM"]

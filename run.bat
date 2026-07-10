@@ -12,4 +12,4 @@ uv sync || (
 )
 
 @REM run
-uv run worm-shooter
+uv run shooter
