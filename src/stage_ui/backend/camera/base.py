@@ -6,6 +6,8 @@ import numpy as np
 
 
 class CameraBackend(ABC):
+    """"""
+
     @abstractmethod
     def open(self, index: int) -> None:
         """

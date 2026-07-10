@@ -7,7 +7,7 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIButton, UIPanel
 
 # local
-from stage_ui.backend_data import DataBackend
+from stage_ui.backend.data import DataBackend
 from stage_ui.components import (
     NO_MARGINS,
     Component,

@@ -10,7 +10,7 @@ from pygame_gui.elements import UIButton, UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.backend_arduino import ArduinoBackend
+from stage_ui.backend.arduino import ArduinoBackend
 from stage_ui.components import (
     NO_MARGINS,
     Component,

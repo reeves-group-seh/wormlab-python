@@ -7,7 +7,7 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIPanel, UITextEntryLine
 
 # local
-from stage_ui.app_context import AppContext
+from stage_ui.app.context import AppContext
 from stage_ui.components import Component
 from stage_ui.screens import Screen, ScreenId
 from stage_ui.types import KeyMapAction, LaserFire

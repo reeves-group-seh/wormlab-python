@@ -10,7 +10,7 @@ from pygame_gui.core import ObjectID
 from pygame_gui.elements import UIPanel
 
 # local
-from stage_ui.app_context import AppContext
+from stage_ui.app.context import AppContext
 from stage_ui.components import NO_MARGINS, Component
 
 

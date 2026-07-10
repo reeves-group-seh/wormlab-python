@@ -5,7 +5,10 @@ from .mock import MockCameraBackend
 
 # public api
 __all__ = [
-    "CV2CameraBackend",
+    # abc
     "CameraBackend",
+    # real
+    "CV2CameraBackend",
+    # mock
     "MockCameraBackend",
 ]

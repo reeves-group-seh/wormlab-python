@@ -3,11 +3,10 @@ from dataclasses import dataclass
 from typing import cast
 
 # local
-from stage_ui.app_config import AppConfig
-from stage_ui.app_state import AppState
+from stage_ui.app.config import AppConfig
+from stage_ui.app.state import AppState
 from stage_ui.atom import Atom
-from stage_ui.backend_arduino import ArduinoBackend
-from stage_ui.backend_arduino.base import ArduinoAction
+from stage_ui.backend.arduino import ArduinoAction, ArduinoBackend
 from stage_ui.types import FilterNumber, LaserFire, RadiusColor
 
 

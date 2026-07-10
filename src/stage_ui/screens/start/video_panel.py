@@ -9,7 +9,7 @@ from pygame_gui.elements import UIImage, UIPanel
 
 # local
 from stage_ui.atom import Atom
-from stage_ui.backend_camera import CameraBackend
+from stage_ui.backend.camera import CameraBackend
 from stage_ui.components import NO_MARGINS, Component
 from stage_ui.screens import Screen
 

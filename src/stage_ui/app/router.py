@@ -2,7 +2,7 @@
 import pygame
 
 # local
-from stage_ui.app_context import AppContext
+from stage_ui.app.context import AppContext
 from stage_ui.screens import HomeScreen, Screen, ScreenId, StartScreen
 
 

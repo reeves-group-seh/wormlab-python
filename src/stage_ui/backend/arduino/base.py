@@ -9,6 +9,8 @@ from stage_ui.atom import Atom
 
 
 class ArduinoAction(Enum):
+    """"""
+
     IDLE = enum.auto()
     MOVE_LEFT = enum.auto()
     MOVE_RIGHT = enum.auto()

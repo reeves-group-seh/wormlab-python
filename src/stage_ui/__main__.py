@@ -79,19 +79,19 @@ def main() -> None:
 
     # local imports after reading arguments
     import stage_ui
-    from stage_ui.app import App
-    from stage_ui.app_config import AppConfig
-    from stage_ui.backend_arduino import (
+    from stage_ui.app.app import App
+    from stage_ui.app.config import AppConfig
+    from stage_ui.backend.arduino import (
         ArduinoBackend,
         MockArduinoBackend,
         PySerialArduinoBackend,
     )
-    from stage_ui.backend_camera import (
+    from stage_ui.backend.camera import (
         CameraBackend,
         CV2CameraBackend,
         MockCameraBackend,
     )
-    from stage_ui.backend_data import DataBackend, MockDataBackend, PandasDataBackend
+    from stage_ui.backend.data import DataBackend, MockDataBackend, PandasDataBackend
 
     # print startup info
     ascii_art = (files("stage_ui.resources") / "title.txt").read_text()

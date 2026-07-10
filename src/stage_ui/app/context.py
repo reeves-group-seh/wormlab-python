@@ -3,11 +3,11 @@ import dataclasses
 from dataclasses import dataclass
 
 # local
-from stage_ui.app_config import AppConfig
-from stage_ui.app_state import AppState
-from stage_ui.backend_arduino import ArduinoBackend
-from stage_ui.backend_camera import CameraBackend
-from stage_ui.backend_data import DataBackend
+from stage_ui.app.config import AppConfig
+from stage_ui.app.state import AppState
+from stage_ui.backend.arduino import ArduinoBackend
+from stage_ui.backend.camera import CameraBackend
+from stage_ui.backend.data import DataBackend
 
 
 @dataclass(kw_only=True)

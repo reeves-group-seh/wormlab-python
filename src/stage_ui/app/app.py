@@ -7,12 +7,12 @@ import pygame
 
 # local
 import stage_ui
-from stage_ui.app_config import AppConfig
-from stage_ui.app_context import AppContext
-from stage_ui.app_router import AppRouter
-from stage_ui.backend_arduino import ArduinoBackend
-from stage_ui.backend_camera import CameraBackend
-from stage_ui.backend_data import DataBackend
+from stage_ui.app.config import AppConfig
+from stage_ui.app.context import AppContext
+from stage_ui.app.router import AppRouter
+from stage_ui.backend.arduino import ArduinoBackend
+from stage_ui.backend.camera import CameraBackend
+from stage_ui.backend.data import DataBackend
 
 
 class App:

@@ -9,7 +9,7 @@ from pygame_gui.elements import UIPanel, UITextBox
 
 # local
 import stage_ui
-from stage_ui.app_context import AppContext
+from stage_ui.app.context import AppContext
 from stage_ui.atom import Atom
 from stage_ui.components import NO_MARGINS, Component
 from stage_ui.screens import Screen, ScreenId
