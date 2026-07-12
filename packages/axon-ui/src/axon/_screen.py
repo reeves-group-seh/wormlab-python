@@ -3,12 +3,12 @@ from abc import ABC
 from enum import Enum
 from typing import final
 
-# pip
+# extern
 import pygame
 import pygame_gui
 
 # relative
-from .component import Component
+from ._component import Component
 
 
 class Screen[T: Enum](ABC):

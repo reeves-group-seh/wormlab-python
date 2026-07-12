@@ -1,11 +1,11 @@
 # std
 from enum import Enum
 
-# pip
+# extern
 import pygame
 
-# local
-from .screen import Screen
+# relative
+from ._screen import Screen
 
 # public api
 __all__ = [

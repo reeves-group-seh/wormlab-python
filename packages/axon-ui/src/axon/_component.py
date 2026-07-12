@@ -4,11 +4,11 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, ClassVar, Self, cast, final
 
-# pip
+# extern
 import pygame
 
 # relative
-from .atom import Atom
+from ._atom import Atom
 
 
 class Component(ABC):

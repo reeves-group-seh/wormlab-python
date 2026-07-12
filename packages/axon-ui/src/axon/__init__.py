@@ -4,10 +4,11 @@
 
 # relative
 from . import router
-from .app import App
-from .atom import Atom
-from .component import Component
-from .screen import Screen
+from ._app import App
+from ._atom import Atom
+from ._component import Component
+from ._screen import Screen
+from ._widget import Widget
 
 # public api
 __all__ = [
@@ -16,6 +17,7 @@ __all__ = [
     # types
     "Atom",
     "Component",
+    "Widget",
     "Screen",
     "App",
 ]

@@ -5,12 +5,12 @@ from abc import ABC
 from enum import Enum
 from typing import final
 
-# pip
+# extern
 import pygame
 
-# local
+# relative
+from ._screen import Screen
 from .router import Router
-from .screen import Screen
 
 
 class App[T: Enum](ABC):
