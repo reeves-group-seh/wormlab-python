@@ -2,6 +2,7 @@
 import signal
 import sys
 from abc import ABC
+from collections.abc import Callable
 from enum import Enum
 from typing import final
 
@@ -59,7 +60,7 @@ class App[T: Enum](ABC):
         self,
         app_name: str,
         window_size: tuple[int, int],
-        screens: dict[T, Screen[T]],
+        screen_factories: dict[T, Callable[[], Screen[T]]],
         initial_screen: T,
         fps: int,
     ) -> None:
@@ -76,9 +77,14 @@ class App[T: Enum](ABC):
         # pygame setup
         pygame.init()
         pygame.display.set_caption(app_name)
+        self._window = pygame.display.set_mode(window_size)
+
+        # create screens
+        screens: dict[T, Screen[T]] = {}
+        for id, factory in screen_factories.items():
+            screens[id] = factory()
 
         # init values
-        self._window = pygame.display.set_mode(window_size)
         self._router = Router(screens, initial_screen)
         self._fps = fps
         self._clock = pygame.Clock()
