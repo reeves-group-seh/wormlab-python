@@ -1,6 +1,6 @@
 # std
 from collections.abc import Callable
-from typing import override
+from typing import ClassVar, override
 
 # extern
 import pygame
@@ -13,6 +13,12 @@ import axon
 class Input[T](axon.Widget):
     """
     ...
+    """
+
+    # class variables
+    HEIGHT: ClassVar[int] = 28
+    """
+    Minimum and reccommended height for this element.
     """
 
     # instance variables

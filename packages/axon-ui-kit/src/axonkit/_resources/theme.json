@@ -123,7 +123,8 @@
   },
   "@axonkit_cycle_box_input": {
     "colours": {
-      "disabled_dark_bg": "#09090B"
+      "disabled_dark_bg": "#09090B",
+      "disabled_text": "#D4D4D8"
     }
   },
 

@@ -1,3 +1,6 @@
+# std
+from typing import ClassVar
+
 # extern
 import pygame
 import pygame_gui
@@ -12,6 +15,12 @@ from ._util import Value, as_atom
 class Label(axon.Widget):
     """
     ...
+    """
+
+    # class variables
+    HEIGHT: ClassVar[int] = 20
+    """
+    Minimum and reccommended height for this element.
     """
 
     # instance variables

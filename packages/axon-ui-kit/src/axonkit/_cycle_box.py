@@ -18,7 +18,13 @@ class CycleBox[T](axon.Widget):
     ...
     """
 
-    # class variables
+    # public class variables
+    HEIGHT: ClassVar[int] = 28
+    """
+    Minimum and reccommended height for this element.
+    """
+
+    # private class variables
     _PADDING: ClassVar[int] = 2
 
     # instance variables

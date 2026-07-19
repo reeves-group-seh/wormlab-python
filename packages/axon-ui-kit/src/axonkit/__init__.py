@@ -9,11 +9,11 @@ import importlib.metadata
 from ._background import Background
 from ._button import Button
 from ._cycle_box import CycleBox
-from ._input import Input
+from ._input import Input, InputStrict
 from ._label import Label
 from ._panel import Panel
 from ._resources import DEFAULT_THEME
-from ._spin_box import SpinBox
+from ._spin_box import SpinBox, SpinBoxStrict
 from ._text import Text
 
 # public api
@@ -24,9 +24,11 @@ __all__ = [
     "Button",
     "CycleBox",
     "Input",
+    "InputStrict",
     "Label",
     "Panel",
     "SpinBox",
+    "SpinBoxStrict",
     "Text",
     # constants
     "DEFAULT_THEME",
