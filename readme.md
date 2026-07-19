@@ -29,6 +29,7 @@ uv run ruff check       # lint
 uv run ty check         # typechecker 1
 uv run mypy -p shooter  # typechecker 2
 uv run mypy -p axon     # typechecker 2
+uv run mypy -p axonkit  # typechecker 2
 uv run pdoc shooter axon
 ```
 

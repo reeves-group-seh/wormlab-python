@@ -10,6 +10,7 @@ resolution-markers = [
 [manifest]
 members = [
     "axon-ui",
+    "axon-ui-kit",
     "worm-shooter",
 ]
 
@@ -37,6 +38,17 @@ requires-dist = [
     { name = "pygame-ce", specifier = ">=2.5.6" },
     { name = "pygame-gui", specifier = ">=0.6.14" },
 ]
+
+[[package]]
+name = "axon-ui-kit"
+version = "0.1.0"
+source = { editable = "packages/axon-ui-kit" }
+dependencies = [
+    { name = "axon-ui" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "axon-ui", editable = "packages/axon-ui" }]
 
 [[package]]
 name = "jinja2"
