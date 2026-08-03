@@ -1,12 +1,13 @@
 # relative
-from .base import Screen, ScreenId
-from .home import HomeScreen
-from .start import StartScreen
+from ._base import ScreenId
+from ._home import HomeScreen
+from ._start import StartScreen
 
 # public api
 __all__ = [
-    "HomeScreen",
-    "Screen",
+    # screen id
     "ScreenId",
+    # screens
+    "HomeScreen",
     "StartScreen",
 ]

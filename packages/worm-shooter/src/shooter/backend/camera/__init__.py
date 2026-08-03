@@ -1,7 +1,7 @@
 # relative
-from .base import CameraBackend
-from .cv2 import CV2CameraBackend
-from .mock import MockCameraBackend
+from ._base import CameraBackend
+from ._cv2 import CV2CameraBackend
+from ._mock import MockCameraBackend
 
 # public api
 __all__ = [

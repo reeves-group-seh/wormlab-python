@@ -1,17 +1,17 @@
 [project]
 name = "worm-shooter"
 description = "Desktop app for controlling lab microscope stage and laser"
-version = "2.0rc1"
+version = "2.0rc2"
 requires-python = ">=3.14"
 readme = "readme.md"
 authors = [
     { name = "Mack Rusing", email = "mail@mackk.net" }
 ]
 dependencies = [
+    "axon-ui",
+    "axon-ui-kit",
     "opencv-python>=4.13.0.92",
     "pandas>=3.0.0",
-    "pygame-ce>=2.5.6",
-    "pygame-gui>=0.6.14",
     "pyserial>=3.5",
 ]
 
@@ -28,3 +28,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-name = "shooter"
+
+[tool.uv.sources]
+axon-ui = { workspace = true }
+axon-ui-kit = { workspace = true }

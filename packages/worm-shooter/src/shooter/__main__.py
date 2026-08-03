@@ -79,8 +79,7 @@ def main() -> None:
 
     # local imports after reading arguments
     import shooter
-    from shooter.app.app import App
-    from shooter.app.config import AppConfig
+    from shooter.app import App, AppConfig
     from shooter.backend.arduino import (
         ArduinoBackend,
         MockArduinoBackend,
@@ -136,7 +135,6 @@ def main() -> None:
             data = PandasDataBackend()
         case DataBackendArg.MOCK:
             data = MockDataBackend()
-    data.open(cfg.DATA_FILE)
 
     # create & run app
     app = App(

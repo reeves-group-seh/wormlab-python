@@ -1,7 +1,7 @@
 # local
-from .base import DataBackend
-from .mock import MockDataBackend
-from .pandas import PandasDataBackend
+from ._base import DataBackend
+from ._mock import MockDataBackend
+from ._pandas import PandasDataBackend
 
 # public api
 __all__ = [

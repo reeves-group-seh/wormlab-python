@@ -1,4 +1,4 @@
-# ...
+# Wormlab
 
 ## Layout
 
@@ -24,13 +24,11 @@ uv run shooter --arduino-backend=mock --camera-backend=mock --data-backend=mock
 ```
 
 ```sh
-uv run ruff format      # format
-uv run ruff check       # lint
-uv run ty check         # typechecker 1
-uv run mypy -p shooter  # typechecker 2
-uv run mypy -p axon     # typechecker 2
-uv run mypy -p axonkit  # typechecker 2
-uv run pdoc shooter axon
+uv run ruff format                         # format
+uv run ruff check                          # lint
+uv run ty check                            # typechecker 1
+uv run mypy -p shooter -p axon -p axonkit  # typechecker 2
+uv run pdoc shooter axon axonkit           # documentation
 ```
 
 ```sh

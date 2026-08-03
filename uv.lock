@@ -438,21 +438,21 @@ wheels = [
 
 [[package]]
 name = "worm-shooter"
-version = "2.0rc1"
+version = "2.0rc2"
 source = { editable = "packages/worm-shooter" }
 dependencies = [
+    { name = "axon-ui" },
+    { name = "axon-ui-kit" },
     { name = "opencv-python" },
     { name = "pandas" },
-    { name = "pygame-ce" },
-    { name = "pygame-gui" },
     { name = "pyserial" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "axon-ui", editable = "packages/axon-ui" },
+    { name = "axon-ui-kit", editable = "packages/axon-ui-kit" },
     { name = "opencv-python", specifier = ">=4.13.0.92" },
     { name = "pandas", specifier = ">=3.0.0" },
-    { name = "pygame-ce", specifier = ">=2.5.6" },
-    { name = "pygame-gui", specifier = ">=0.6.14" },
     { name = "pyserial", specifier = ">=3.5" },
 ]
