@@ -2,11 +2,11 @@
 from typing import override
 
 # extern
-import pygame
 import pygame_gui
 
 # relative
 from ._component import Component
+from ._util import RectLike
 
 
 class Widget(Component):
@@ -39,12 +39,13 @@ class Widget(Component):
             self,
             manager: pygame_gui.UIManager,
             container: pygame_gui.core.IContainerLikeInterface | None,
-            rect: pygame.Rect,
+            rect: RectLike,
         ) -> None:
             super().__init__(manager, container, rect)
 
+            rect = as_rect(rect)
             self._dec = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(0, 0, rect.height, rect.height),
+                relative_rect=(0, 0, rect.height, rect.height),
                 text="<",
                 manager=manager,
                 container=self.element,
@@ -57,11 +58,11 @@ class Widget(Component):
     `rect` is then measured from the target's edge:
 
     ```python
-    label = Label(manager, panel, pygame.Rect(0, 0, 200, 30), text="Speed")
+    label = Label(manager, panel, (0, 0, 200, 30), text="Speed")
     spin = SpinBox(
         manager,
         panel,
-        pygame.Rect(0, 4, 200, 30),  # 4px below the label
+        (0, 4, 200, 30),  # 4px below the label
         anchors={"top_target": label.element},
     )
     ```
@@ -80,7 +81,7 @@ class Widget(Component):
         self,
         manager: pygame_gui.UIManager,
         container: pygame_gui.core.IContainerLikeInterface | None,
-        rect: pygame.Rect,
+        rect: RectLike,
         anchors: dict[str, str | pygame_gui.core.interfaces.IUIElementInterface]
         | None = None,
     ) -> None:
