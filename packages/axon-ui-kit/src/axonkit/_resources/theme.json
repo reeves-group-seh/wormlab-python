@@ -40,22 +40,21 @@
     }
   },
 
-  "@axonkit_background": {
-    "colours": {},
+  "panel": {
     "misc": {
       "shape": "rectangle",
       "border_width": "0",
       "shadow_width": "0"
     }
   },
+  "@axonkit_background": {
+    "colours": {
+      "dark_bg": "#3F3F46"
+    }
+  },
   "@axonkit_panel": {
     "colours": {
       "dark_bg": "#18181B"
-    },
-    "misc": {
-      "shape": "rectangle",
-      "border_width": "1",
-      "shadow_width": "0"
     }
   },
 
@@ -101,7 +100,7 @@
     }
   },
 
-  "text_entry_line": {
+  "#axonkit_text_entry_like": {
     "colours": {
       "dark_bg": "#09090B"
     },
@@ -114,6 +113,21 @@
       "border_width": "1",
       "shadow_width": "0",
       "padding": "4,0"
+    }
+  },
+  "text_entry_line": {
+    "prototype": "#axonkit_text_entry_like"
+  },
+  "text_entry_box": {
+    "prototype": "#axonkit_text_entry_like",
+    "misc": {
+      "link_normal_underline": "0",
+      "link_hover_underline": "0",
+      "text_horiz_alignment": "left",
+      "text_vert_alignment": "top",
+      "text_horiz_alignment_padding": "0",
+      "text_vert_alignment_padding": "0",
+      "line_spacing": "1"
     }
   },
   "@axonkit_input_invalid": {
@@ -144,6 +158,65 @@
       "text_horiz_alignment": "center",
       "text_vert_alignment": "center",
       "text_shadow_size": "0"
+    }
+  },
+
+  "#axonkit_demo_layout_bar_panel": {
+    "prototype": "@axonkit_panel",
+    "colours": {
+      "dark_bg": "#2E1065"
+    }
+  },
+  "#axonkit_demo_layout_bar_text": {
+    "font": {
+      "name": "noto_sans",
+      "size": "12"
+    },
+    "misc": {
+      "text_vert_alignment": "center"
+    }
+  },
+  "#axonkit_demo_layout_bar_text_left": {
+    "prototype": "#axonkit_demo_layout_bar_text"
+  },
+  "#axonkit_demo_layout_bar_text_right": {
+    "prototype": "#axonkit_demo_layout_bar_text",
+    "misc": {
+      "text_horiz_alignment": "right"
+    }
+  },
+  "#axonkit_demo_layout_comment": {
+    "prototype": "text_entry_box",
+    "misc": {
+      "padding": "4,3"
+    }
+  },
+  "#axonkit_demo_layout_header_panel": {
+    "prototype": "@axonkit_panel",
+    "colours": {
+      "dark_bg": "#27272A"
+    },
+    "misc": {
+      "border_width": "0",
+      "shadow_width": "0"
+    }
+  },
+  "#axonkit_demo_layout_header_txt": {
+    "prototype": "label",
+    "font": {
+      "name": "noto_sans",
+      "size": "12",
+      "bold": "1"
+    }
+  },
+  "#axonkit_demo_layout_video": {
+    "colours": {
+      "dark_bg": "#9F9FA9",
+      "normal_border": "#0000"
+    },
+    "misc": {
+      "border_width": "0",
+      "shadow_width": "0"
     }
   }
 }

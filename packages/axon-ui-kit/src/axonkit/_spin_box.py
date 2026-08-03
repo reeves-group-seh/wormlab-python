@@ -3,7 +3,6 @@ from collections.abc import Callable
 from typing import ClassVar, override
 
 # extern
-import pygame
 import pygame_gui
 
 # local
@@ -44,7 +43,7 @@ class SpinBox[T](axon.Widget):
         self,
         manager: pygame_gui.UIManager,
         container: pygame_gui.core.IContainerLikeInterface | None,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
         value: axon.Atom[T],
         inc: Callable[[T], T],
         dec: Callable[[T], T],
@@ -67,6 +66,9 @@ class SpinBox[T](axon.Widget):
         # init parent
         super().__init__(manager, container, rect, anchors)
 
+        # derive inputs
+        rect = axon.as_rect(rect)
+
         # set values
         self._value = value
         self._inc = inc
@@ -81,13 +83,11 @@ class SpinBox[T](axon.Widget):
         input_width = rect.width - ((2 * rect.height) + (2 * self._PADDING))
 
         # create (dispatches to the subclass factory)
-        self._input = self._create_input(
-            manager, pygame.Rect(0, 0, input_width, rect.height)
-        )
+        self._input = self._create_input(manager, (0, 0, input_width, rect.height))
         dec_button = Button(
             manager=manager,
             container=self.element,
-            rect=pygame.Rect(self._PADDING, 0, rect.height, rect.height),
+            rect=(self._PADDING, 0, rect.height, rect.height),
             text=dec_text,
             anchors={"left": "left", "left_target": self._input.element},
             on_click=self._dec_value,
@@ -97,7 +97,7 @@ class SpinBox[T](axon.Widget):
         Button(
             manager=manager,
             container=self.element,
-            rect=pygame.Rect(self._PADDING, 0, rect.height, rect.height),
+            rect=(self._PADDING, 0, rect.height, rect.height),
             text=inc_text,
             anchors={"left": "left", "left_target": dec_button.element},
             on_click=self._inc_value,
@@ -108,7 +108,7 @@ class SpinBox[T](axon.Widget):
     def _create_input(
         self,
         manager: pygame_gui.UIManager,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
     ) -> Input[T]:
         return Input(
             manager=manager,
@@ -142,7 +142,7 @@ class SpinBoxStrict[T](SpinBox[T | None]):
         self,
         manager: pygame_gui.UIManager,
         container: pygame_gui.core.IContainerLikeInterface | None,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
         value: axon.Atom[T | None],
         inc: Callable[[T], T],
         dec: Callable[[T], T],
@@ -190,7 +190,7 @@ class SpinBoxStrict[T](SpinBox[T | None]):
     def _create_input(
         self,
         manager: pygame_gui.UIManager,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
     ) -> Input[T | None]:
         return InputStrict(
             manager=manager,

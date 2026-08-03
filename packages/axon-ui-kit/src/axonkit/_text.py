@@ -1,5 +1,4 @@
 # extern
-import pygame
 import pygame_gui
 
 # local
@@ -22,7 +21,7 @@ class Text(axon.Widget):
         self,
         manager: pygame_gui.UIManager,
         container: pygame_gui.core.IContainerLikeInterface | None,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
         text: Value[str],
         anchors: dict[str, str | pygame_gui.core.interfaces.IUIElementInterface]
         | None = None,
@@ -37,6 +36,7 @@ class Text(axon.Widget):
         super().__init__(manager, container, rect, anchors)
 
         # derive inputs
+        rect = axon.as_rect(rect)
         object_id = pygame_gui.core.ObjectID(
             object_id=obj_id,
             class_id=class_id,
@@ -48,7 +48,7 @@ class Text(axon.Widget):
         # create
         self._text_box = pygame_gui.elements.UITextBox(
             html_text=self._text.value,
-            relative_rect=pygame.Rect(0, 0, rect.width, rect.height),
+            relative_rect=(0, 0, rect.width, rect.height),
             manager=manager,
             container=self.element,
             object_id=object_id,

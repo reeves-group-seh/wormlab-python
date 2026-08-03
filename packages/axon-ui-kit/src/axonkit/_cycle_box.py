@@ -3,7 +3,6 @@ from collections.abc import Callable
 from typing import ClassVar
 
 # extern
-import pygame
 import pygame_gui
 
 # local
@@ -37,7 +36,7 @@ class CycleBox[T](axon.Widget):
         self,
         manager: pygame_gui.UIManager,
         container: pygame_gui.core.IContainerLikeInterface | None,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
         value: axon.Atom[T],
         options: list[T],
         format: Callable[[T], str] = str,
@@ -58,6 +57,7 @@ class CycleBox[T](axon.Widget):
         super().__init__(manager, container, rect, anchors)
 
         # derive inputs
+        rect = axon.as_rect(rect)
         cycle_box_object_id = pygame_gui.core.ObjectID(
             object_id=input_obj_id,
             class_id=input_class_id,
@@ -84,7 +84,7 @@ class CycleBox[T](axon.Widget):
         prev_button = Button(
             manager=manager,
             container=self.element,
-            rect=pygame.Rect(self._PADDING, 0, rect.height, rect.height),
+            rect=(self._PADDING, 0, rect.height, rect.height),
             text=prev_text,
             anchors={"left": "left", "left_target": self._text_entry},
             on_click=self._prev,
@@ -94,7 +94,7 @@ class CycleBox[T](axon.Widget):
         Button(
             manager=manager,
             container=self.element,
-            rect=pygame.Rect(self._PADDING, 0, rect.height, rect.height),
+            rect=(self._PADDING, 0, rect.height, rect.height),
             text=next_text,
             anchors={"left": "left", "left_target": prev_button.element},
             on_click=self._next,

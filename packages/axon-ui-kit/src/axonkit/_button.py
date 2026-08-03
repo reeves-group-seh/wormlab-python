@@ -2,7 +2,6 @@
 from collections.abc import Callable
 
 # extern
-import pygame
 import pygame_gui
 
 # local
@@ -21,7 +20,7 @@ class Button(axon.Widget):
         self,
         manager: pygame_gui.UIManager,
         container: pygame_gui.core.IContainerLikeInterface | None,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
         text: str,
         on_click: Callable[[], None] | None = None,
         anchors: dict[str, str | pygame_gui.core.interfaces.IUIElementInterface]
@@ -37,13 +36,11 @@ class Button(axon.Widget):
         super().__init__(manager, container, rect, anchors)
 
         # derive inputs
+        rect = axon.as_rect(rect)
         object_id = pygame_gui.core.ObjectID(
             object_id=obj_id,
             class_id=class_id,
         )
-
-        # set values
-        ...
 
         # create
         self._button = pygame_gui.elements.UIButton(
@@ -54,9 +51,6 @@ class Button(axon.Widget):
             object_id=object_id,
         )
         self._button.bind(pygame_gui.UI_BUTTON_PRESSED, on_click)
-
-        # bind
-        ...
 
     def enable(self) -> None:
         """

@@ -35,7 +35,7 @@ class Input[T](axon.Widget):
         self,
         manager: pygame_gui.UIManager,
         container: pygame_gui.core.IContainerLikeInterface | None,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
         value: axon.Atom[T],
         parse: Callable[[str], T],
         format: Callable[[T], str] = str,
@@ -51,6 +51,9 @@ class Input[T](axon.Widget):
 
         # init parent
         super().__init__(manager, container, rect, anchors)
+
+        # derive inputs
+        rect = axon.as_rect(rect)
 
         # set values
         self._value = value
@@ -138,13 +141,13 @@ class InputStrict[T](Input[T | None]):
         self,
         manager: pygame_gui.UIManager,
         container: pygame_gui.core.IContainerLikeInterface | None,
-        rect: pygame.Rect,
+        rect: axon.RectLike,
         value: axon.Atom[T | None],
         parse: Callable[[str], T],
         format: Callable[[T], str] = str,
         anchors: dict[str, str | pygame_gui.core.interfaces.IUIElementInterface]
         | None = None,
-        valid_class_id: str | None = "@axonkit_input_valid",
+        valid_class_id: str | None = None,
         invalid_class_id: str | None = "@axonkit_input_invalid",
         obj_id: str | None = None,
     ) -> None:
