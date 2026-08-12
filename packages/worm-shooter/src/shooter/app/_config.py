@@ -176,7 +176,7 @@ class AppConfig:
 
     # fire duration
 
-    DEFAULT_FIRE_DURATION: float = 200.0
+    DEFAULT_FIRE_DURATION: float = 500.0
     """
     Default duration of laser fire commands in milliseconds.
     """
