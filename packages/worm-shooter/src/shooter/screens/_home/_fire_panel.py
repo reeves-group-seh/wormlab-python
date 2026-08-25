@@ -201,11 +201,11 @@ class FirePanel(axon.Widget):
         btn_x = lt.border_pad
         btn_w = lt.left_5_btn_w(rect.w)
         btn_dict: dict[str, Callable[[], None]] = {
-            "F": lambda: handle_submit(WormResponse.FULL),
-            "H": lambda: handle_submit(WormResponse.PARTIAL),
-            "A": lambda: handle_submit(WormResponse.ACKNOWLEDGE),
-            "P": lambda: handle_submit(WormResponse.PAUSE),
-            "N": lambda: handle_submit(WormResponse.NO_RESPONSE),
+            "FUL": lambda: handle_submit(WormResponse.FULL),
+            "PAR": lambda: handle_submit(WormResponse.PARTIAL),
+            "ACK": lambda: handle_submit(WormResponse.ACKNOWLEDGE),
+            "PAU": lambda: handle_submit(WormResponse.PAUSE),
+            "NOR": lambda: handle_submit(WormResponse.NO_RESPONSE),
         }
         response_btns: list[axonkit.Button] = []
         for k, v in btn_dict.items():
