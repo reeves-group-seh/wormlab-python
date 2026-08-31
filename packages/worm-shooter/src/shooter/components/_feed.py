@@ -14,37 +14,42 @@ from shooter.types import RadiusColor
 
 class Feed(axon.Widget):
     """
-    A live view of the frames produced by a `CameraBackend`.
+    Feed of frames produced by a `CameraBackend`.
 
     Each frame is scaled to fit the widget's rect while preserving its aspect
-    ratio, then centered, so a feed whose aspect ratio does not match the
-    widget's is letterboxed rather than stretched. The area left over around the
-    frame is filled black.
+    ratio, then centered. A feed whose aspect ratio does not match the widget's
+    is letterboxed rather than stretched. The area left over around the frame is
+    filled black.
 
     Two overlays can be drawn on top of the frame, each of which is independently
     optional:
 
-    - **The grid**, a reference grid over the frame, toggled by the `show_grid`
+    - **Grid**: A reference grid over the frame. Toggled by the `show_grid`
       atom.
-    - **The marker**, a set of color-coded rings marking where the laser fires,
-      toggled by the `show_marker` atom. It is only available when `marker_pos`
-      and `radius_color` are passed to `__init__`; clicking near a ring selects
-      its `RadiusColor`.
+    - **Marker**: Set of rings marking where the laser fires. Toggled by the
+      `show_marker` atom. The rings can be clicked to select a different radius,
+      updating the `radius_color` atom. This is only rendered when both
+      `marker_pos` and `radius_color` are provided.
 
-    Both toggles fall back to an atom the widget owns (see `show_grid` and
-    `show_marker`), so a control elsewhere in the tree can turn either overlay on
-    and off.
+    Both toggles fall back to an atom the widget owns, so a control elsewhere in
+    the tree can turn either overlay on and off.
 
-    ## The logical plane
+    ## Logical Plane
 
     `marker_pos` and the grid are in *plane* coordinates: a fixed logical space,
-    720x480 units, that maps onto the frame however the frame happens to be
-    scaled. Ring radii, by contrast, are in pixels, so they keep a constant
-    on-screen size.
+    720x480 units (this maps to the size of the video feed in pixels), that maps
+    onto the frame however the frame happens to be scaled. Ring radii, by
+    contrast, are in pixels, so they keep a constant on-screen size (this may be
+    changed later).
+
+    The cursor is reported in the same coordinates: a feed given a `hover_pos`
+    atom keeps it set to the plane position the mouse is over, and to `None`
+    whenever the mouse is off the frame.
     """
 
     # private class variables
-    _BG_COLOR: ClassVar[pygame.Color] = pygame.Color.from_hex("#09090B")
+    # _BG_COLOR: ClassVar[pygame.Color] = pygame.Color.from_hex("#09090B")
+    _BG_COLOR: ClassVar[pygame.Color] = pygame.Color.from_hex("#18181B")
     """
     Fill color of the area around the frame (the letterbox bars).
     """
@@ -113,7 +118,9 @@ class Feed(axon.Widget):
     _marker_pos: axon.Atom[tuple[int, int]] | None
     _radius_color: axon.Atom[RadiusColor] | None
     _show_marker: axon.Atom[bool]
+    _hover_pos: axon.Atom[tuple[int, int] | None] | None
     _marker_px: tuple[int, int] | None
+    _frame_rect: pygame.Rect | None
     _size: tuple[int, int]
     _frame: pygame.Surface | None
     _dirty: bool
@@ -131,6 +138,7 @@ class Feed(axon.Widget):
         marker_pos: axon.Atom[tuple[int, int]] | None = None,
         radius_color: axon.Atom[RadiusColor] | None = None,
         show_marker: axon.Atom[bool] | None = None,
+        hover_pos: axon.Atom[tuple[int, int] | None] | None = None,
         anchors: dict[str, str | pygame_gui.core.interfaces.IUIElementInterface]
         | None = None,
     ) -> None:
@@ -157,6 +165,9 @@ class Feed(axon.Widget):
             whether clicks select a ring. Defaults to a new atom, held by the
             widget and initially `True`. It has no effect unless both
             `marker_pos` and `radius_color` are given.
+        :param hover_pos: Atom set to the plane position the mouse is over, and
+            to `None` while it is off the frame. Leave it out to build a feed
+            that does not track the mouse at all.
         :param anchors: A `pygame_gui` anchors mapping controlling how the feed
             is positioned. See `pygame_gui`'s documentation on how anchors work
             for more info.
@@ -174,7 +185,9 @@ class Feed(axon.Widget):
         self._marker_pos = marker_pos
         self._radius_color = radius_color
         self._show_marker = axon.Atom(True) if show_marker is None else show_marker
+        self._hover_pos = hover_pos
         self._marker_px = None
+        self._frame_rect = None
         self._size = (rect.w, rect.h)
         self._frame = None
         self._dirty = False
@@ -224,13 +237,22 @@ class Feed(axon.Widget):
     @override
     def on_process_event(self, event: pygame.Event) -> None:
         """
-        Select the ring nearest a left click on the feed.
+        Track the mouse over the frame, and select the ring nearest a left click
+        on the feed.
 
         A click that misses every ring by more than the tolerance, or one while
         the marker is hidden, changes nothing.
 
         :param event: The `pygame` event to handle.
         """
+
+        # the mouse moved, or left the window entirely
+        if event.type == pygame.MOUSEMOTION:
+            self._track_hover(event.pos)
+            return
+        if event.type == pygame.WINDOWLEAVE:
+            self._set_hover(None)
+            return
 
         # only left clicks, and only while the marker is on screen
         if event.type != pygame.MOUSEBUTTONDOWN or event.button != 1:
@@ -275,19 +297,51 @@ class Feed(axon.Widget):
     def _invalidate(self) -> None:
         self._dirty = True
 
+    def _set_hover(self, pos: tuple[int, int] | None) -> None:
+        """
+        Publish a plane position to `hover_pos`, if the feed was given one.
+        """
+        if self._hover_pos is not None:
+            self._hover_pos.value = pos
+
+    def _track_hover(self, pos: tuple[float, float]) -> None:
+        """
+        Publish the plane position under `pos`, an absolute window position.
+        """
+
+        # nothing to report to, or nothing drawn to report a position over
+        if self._hover_pos is None:
+            return
+        if self._frame_rect is None:
+            self._set_hover(None)
+            return
+
+        # window pixels -> widget-local pixels -> the plane
+        abs_rect = self._image.get_abs_rect()
+        self._set_hover(
+            self._px_to_plane(
+                self._frame_rect,
+                (pos[0] - abs_rect.x, pos[1] - abs_rect.y),
+            )
+        )
+
     def _render(self) -> None:
         # blank canvas, what is left of it shows as the letterbox bars
         canvas = pygame.Surface(self._size)
         canvas.fill(self._BG_COLOR)
 
-        # nothing to draw on, and so nothing to click on either
+        # nothing to draw on, and so nothing to click on or hover over either
         if self._frame is None:
             self._marker_px = None
+            self._frame_rect = None
+            self._set_hover(None)
             self._image.set_image(canvas)
             return
 
-        # draw the frame, and the grid over it
+        # draw the frame, and the grid over it. the rect it landed in is kept
+        # for the mouse, which is mapped against the frame as last drawn
         frame_rect = self._blit_fitted(canvas, self._frame)
+        self._frame_rect = frame_rect
         if self._show_grid.value:
             self._draw_grid(canvas, frame_rect)
 
@@ -346,6 +400,27 @@ class Feed(axon.Widget):
         return (
             frame_rect.left + round((plane_x / self._PLANE_W) * frame_rect.width),
             frame_rect.top + round((plane_y / self._PLANE_H) * frame_rect.height),
+        )
+
+    def _px_to_plane(
+        self,
+        frame_rect: pygame.Rect,
+        pos: tuple[float, float],
+    ) -> tuple[int, int] | None:
+        """
+        Convert a pixel position within the widget to a plane position, or
+        `None` when it lands outside `frame_rect`, on the letterbox bars.
+        """
+
+        # the bars are not part of the plane, so there is no position to give
+        if not frame_rect.collidepoint(pos):
+            return None
+
+        # scale into the plane, relative to the frame's top left corner
+        x, y = pos
+        return (
+            round(((x - frame_rect.left) / frame_rect.width) * self._PLANE_W),
+            round(((y - frame_rect.top) / frame_rect.height) * self._PLANE_H),
         )
 
     def _draw_grid(self, canvas: pygame.Surface, frame_rect: pygame.Rect) -> None:

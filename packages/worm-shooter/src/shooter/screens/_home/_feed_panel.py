@@ -60,6 +60,7 @@ class FeedPanel(axon.Widget):
             camera=ctx.camera,
             marker_pos=state.marker_pos,
             radius_color=state.radius_color,
+            hover_pos=state.hover_pos,
             anchors={"top": "top", "top_target": heading.element},
         )
 

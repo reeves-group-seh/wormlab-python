@@ -1,5 +1,5 @@
 # std
-from typing import ClassVar
+from typing import ClassVar, override
 
 # extern
 import pygame
@@ -19,6 +19,7 @@ class StatusBarPanel(axon.Widget):
 
     # instance vars
     _state: HomeState
+    _left_is_stale: bool
     _left_text: axonkit.Text
     _right_text: axonkit.Text
 
@@ -35,6 +36,7 @@ class StatusBarPanel(axon.Widget):
 
         # set values
         self._state = state
+        self._left_is_stale = False
 
         # convert rect
         rect = axon.as_rect(rect)
@@ -57,7 +59,7 @@ class StatusBarPanel(axon.Widget):
             manager=manager,
             container=panel.content,
             rect=(StatusBarPanel._TEXT_PAD_X, 0, text_w, text_h),
-            text=self._left_status_text(),
+            text=self._format_left_text(),
             obj_id="#status_bar_text",
         )
 
@@ -68,17 +70,26 @@ class StatusBarPanel(axon.Widget):
             manager=manager,
             container=panel.content,
             rect=right_text_rect,
-            text=self._room_status_text(),
+            text=self._format_right_text(),
             anchors={"right": "right"},
             obj_id="#status_bar_text_right",
         )
 
         # bind
-        self.bind(state.room_temp, self._render_room_status)
-        self.bind(state.room_humidity, self._render_room_status)
-        self.bind(state.last_fire, self._render_left_status)
+        self.bind(state.room_temp, self._render_right_text)
+        self.bind(state.room_humidity, self._render_right_text)
+        self.bind(state.last_fire, self._invalidate_left_text)
+        self.bind(state.hover_pos, self._invalidate_left_text)
 
-    def _left_status_text(self) -> str:
+    @override
+    def on_update(self, dt: float) -> None:
+        # only set text once per frame
+        if self._left_is_stale:
+            self._left_text.set_text(self._format_left_text())
+            self._left_is_stale = False
+
+    def _format_left_text(self) -> str:
+        # last fire info
         last_fire = self._state.last_fire.value
         last_fire_txt = (
             "N/A"
@@ -88,16 +99,22 @@ class StatusBarPanel(axon.Widget):
                 f"(fire {self._state.num_fires.value}) {last_fire.duration} ms"
             )
         )
-        return f"<b>Last Fire</b>: {last_fire_txt}"
 
-    def _render_left_status(self) -> None:
-        self._left_text.set_text(self._left_status_text())
+        # mouse hover info
+        hover = self._state.hover_pos.value
+        hover_txt = "N/A" if hover is None else f"{hover[0]}, {hover[1]}"
 
-    def _room_status_text(self) -> str:
+        # text
+        return f"<b>Last Fire</b>: {last_fire_txt} | <b>Cursor</b>: {hover_txt}"
+
+    def _format_right_text(self) -> str:
         return (
             f"<b>Temp</b>: {self._state.room_temp.value} \u2103 | "
             f"<b>Humidity</b>: {self._state.room_humidity.value}%"
         )
 
-    def _render_room_status(self) -> None:
-        self._right_text.set_text(self._room_status_text())
+    def _invalidate_left_text(self) -> None:
+        self._left_is_stale = True
+
+    def _render_right_text(self) -> None:
+        self._right_text.set_text(self._format_right_text())
