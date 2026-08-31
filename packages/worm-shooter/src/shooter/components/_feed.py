@@ -48,7 +48,6 @@ class Feed(axon.Widget):
     """
 
     # private class variables
-    # _BG_COLOR: ClassVar[pygame.Color] = pygame.Color.from_hex("#09090B")
     _BG_COLOR: ClassVar[pygame.Color] = pygame.Color.from_hex("#18181B")
     """
     Fill color of the area around the frame (the letterbox bars).
