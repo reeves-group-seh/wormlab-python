@@ -37,6 +37,14 @@ class MockArduinoBackend(ArduinoBackend):
         self._port = None
 
     @override
+    def busy(self) -> bool:
+        match self._action:
+            case ArduinoAction.IDLE:
+                return False
+            case _:
+                return True
+
+    @override
     def action(self) -> axon.Atom[ArduinoAction]:
         return self._action
 

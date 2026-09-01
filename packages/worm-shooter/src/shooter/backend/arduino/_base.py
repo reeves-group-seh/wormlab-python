@@ -70,6 +70,12 @@ class ArduinoBackend(ABC):
         """
 
     @abstractmethod
+    def busy(self) -> bool:
+        """
+        Whether a command is currently executing.
+        """
+
+    @abstractmethod
     def action(self) -> axon.Atom[ArduinoAction]:
         """
         The action currently being executed.

@@ -90,6 +90,16 @@ class PySerialArduinoBackend(ArduinoBackend):
         self._action = _SerialActionIdle()
 
     @override
+    def busy(self) -> bool:
+        if self._worker is None:
+            return False
+        return (
+            not isinstance(self._action, _SerialActionIdle)
+            or not self._worker.queue_empty()
+            or self._worker.current_action() is not ArduinoAction.IDLE
+        )
+
+    @override
     def action(self) -> axon.Atom[ArduinoAction]:
         return self._executing_action
 
