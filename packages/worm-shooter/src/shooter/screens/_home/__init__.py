@@ -9,7 +9,13 @@ import pygame_gui
 import axon
 import axonkit
 from shooter.screens import ScreenId
-from shooter.types import KeyMapAction, LaserFire, LaserLockPhase, laser_lock
+from shooter.types import (
+    KeyMapAction,
+    LaserFire,
+    LaserLockPhase,
+    StepDirection,
+    laser_lock,
+)
 
 # relative
 from .._util import create_manager
@@ -29,6 +35,28 @@ if TYPE_CHECKING:
 
 
 __all__ = ["HomeScreen"]
+
+
+_CANCELS_CENTERING: frozenset[KeyMapAction] = frozenset(
+    {
+        KeyMapAction.STEP_LEFT,
+        KeyMapAction.STEP_RIGHT,
+        KeyMapAction.STEP_UP,
+        KeyMapAction.STEP_DOWN,
+        KeyMapAction.MOVE_LEFT,
+        KeyMapAction.MOVE_RIGHT,
+        KeyMapAction.MOVE_UP,
+        KeyMapAction.MOVE_DOWN,
+        KeyMapAction.FIRE,
+        KeyMapAction.DESTROY,
+        KeyMapAction.GRID,
+    }
+)
+"""
+Actions that take over from an in-progress centering sequence. Moving by hand
+makes the plan wrong, and firing part-way through a sequence would hit the wrong
+spot. Escape cancels too, and is handled separately as it is not in the keymap.
+"""
 
 
 class HomeScreen(axon.Screen[ScreenId]):
@@ -56,6 +84,14 @@ class HomeScreen(axon.Screen[ScreenId]):
     def on_process_event(self, event: pygame.Event) -> ScreenId | None:
         if event.type == pygame.KEYDOWN and not self._is_typing():
             action = self._ctx.cfg.KEYMAP.get(event.key)
+
+            # the user takes the stage back off an in-progress centering
+            # sequence. dropping the plan is enough to stop it: at most one of
+            # its commands is outstanding, and whatever this key does next
+            # replaces it
+            if event.key == pygame.K_ESCAPE or action in _CANCELS_CENTERING:
+                self._state.centering.value = None
+
             match action:
                 case KeyMapAction.STEP_LEFT:
                     self._ctx.arduino.step_left(
@@ -146,6 +182,43 @@ class HomeScreen(axon.Screen[ScreenId]):
                     self._ctx.arduino.stop()
 
         return None
+
+    @override
+    def on_update(self, dt: float) -> None:
+        self._drive_centering()
+
+    def _drive_centering(self) -> None:
+        """
+        Send the next command of an in-progress centering sequence.
+
+        One command is issued per idle stage, so the plan is only ever one
+        command deep and can be abandoned between any two of them.
+        """
+
+        # nothing to center
+        plan = self._state.centering.value
+        if plan is None:
+            return
+
+        # wait for the stage: a command that is pending, queued, or in flight
+        # all read as busy, so this cannot run ahead of it
+        if self._ctx.arduino.busy():
+            return
+
+        # take the next move, keeping the rest for later frames
+        direction, rest = plan.pop()
+        speed = self._state.move_speed.value
+        duration = self._state.step_duration.value
+        match direction:
+            case StepDirection.LEFT:
+                self._ctx.arduino.step_left(speed, duration)
+            case StepDirection.RIGHT:
+                self._ctx.arduino.step_right(speed, duration)
+            case StepDirection.UP:
+                self._ctx.arduino.step_up(speed, duration)
+            case StepDirection.DOWN:
+                self._ctx.arduino.step_down(speed, duration)
+        self._state.centering.value = rest
 
     def _laser_unlocked(self) -> bool:
         lock = laser_lock(

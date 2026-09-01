@@ -80,6 +80,7 @@ class StatusBarPanel(axon.Widget):
         self.bind(state.room_humidity, self._render_right_text)
         self.bind(state.last_fire, self._invalidate_left_text)
         self.bind(state.hover_pos, self._invalidate_left_text)
+        self.bind(state.centering, self._invalidate_left_text)
 
     @override
     def on_update(self, dt: float) -> None:
@@ -104,8 +105,19 @@ class StatusBarPanel(axon.Widget):
         hover = self._state.hover_pos.value
         hover_txt = "N/A" if hover is None else f"{hover[0]}, {hover[1]}"
 
+        # centering progress, shown only while a sequence is running
+        centering = self._state.centering.value
+        centering_txt = (
+            ""
+            if centering is None
+            else f" | <b>Centering</b>: {len(centering.moves)} left"
+        )
+
         # text
-        return f"<b>Last Fire</b>: {last_fire_txt} | <b>Cursor</b>: {hover_txt}"
+        return (
+            f"<b>Last Fire</b>: {last_fire_txt} | "
+            f"<b>Cursor</b>: {hover_txt}{centering_txt}"
+        )
 
     def _format_right_text(self) -> str:
         return (

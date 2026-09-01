@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, cast
 # local
 import axon
 from shooter.backend.arduino import ArduinoAction, ArduinoBackend
-from shooter.types import FilterNumber, LaserFire, RadiusColor
+from shooter.types import CenterPlan, FilterNumber, LaserFire, RadiusColor
 
 # type-check only imports
 if TYPE_CHECKING:
@@ -21,6 +21,7 @@ class HomeState:
     grid_size: axon.Atom[int]
     marker_pos: axon.Atom[tuple[int, int]]
     hover_pos: axon.Atom[tuple[int, int] | None]
+    centering: axon.Atom[CenterPlan | None]
     last_fire: axon.Atom[LaserFire | None]
     lock_fire: axon.Atom[LaserFire | None]
     data_needed: axon.Atom[bool]
@@ -56,6 +57,7 @@ class HomeState:
             grid_size=axon.Atom(cfg.DEFAULT_GRID_SIZE),
             marker_pos=axon.Atom(cfg.DEFAULT_MARKER_POS),
             hover_pos=axon.Atom(None),
+            centering=axon.Atom(None),
             last_fire=axon.Atom(None),
             lock_fire=axon.Atom(None),
             data_needed=axon.Atom(False),

@@ -1,5 +1,5 @@
 # std
-import math
+from collections.abc import Callable
 from typing import ClassVar, override
 
 # extern
@@ -26,13 +26,19 @@ class Feed(axon.Widget):
 
     - **Grid**: A reference grid over the frame. Toggled by the `show_grid`
       atom.
-    - **Marker**: Set of rings marking where the laser fires. Toggled by the
-      `show_marker` atom. The rings can be clicked to select a different radius,
-      updating the `radius_color` atom. This is only rendered when both
-      `marker_pos` and `radius_color` are provided.
+    - **Marker**: Set of rings marking where the laser fires, with the ring
+      named by `radius_color` drawn at full color and the rest dimmed. Toggled
+      by the `show_marker` atom. This is only rendered when both `marker_pos`
+      and `radius_color` are provided.
 
     Both toggles fall back to an atom the widget owns, so a control elsewhere in
     the tree can turn either overlay on and off.
+
+    ## Mouse
+
+    The feed reports the mouse in plane coordinates and takes no view on what
+    that means: `hover_pos` follows the cursor, and `on_left_click` /
+    `on_right_click` fire for clicks landing on the frame itself.
 
     ## Logical Plane
 
@@ -53,14 +59,19 @@ class Feed(axon.Widget):
     Fill color of the area around the frame (the letterbox bars).
     """
 
-    _PLANE_W: ClassVar[int] = 720
+    PLANE_W: ClassVar[int] = 720
     """
     Width of the logical plane the grid and marker are placed on.
     """
 
-    _PLANE_H: ClassVar[int] = 480
+    PLANE_H: ClassVar[int] = 480
     """
     Height of the logical plane the grid and marker are placed on.
+    """
+
+    PLANE_CENTER: ClassVar[tuple[int, int]] = (PLANE_W // 2, PLANE_H // 2)
+    """
+    The center of the logical plane, in plane coordinates.
     """
 
     _GRID_COLOR: ClassVar[pygame.Color] = pygame.Color.from_hex("#571C3D")
@@ -106,11 +117,6 @@ class Feed(axon.Widget):
     where 0.0 leaves them at full color and 1.0 makes them invisible.
     """
 
-    _RING_TOLERANCE: ClassVar[int] = 12
-    """
-    How many pixels a click may miss a ring by and still select it.
-    """
-
     # instance variables
     _camera: CameraBackend
     _show_grid: axon.Atom[bool]
@@ -118,7 +124,8 @@ class Feed(axon.Widget):
     _radius_color: axon.Atom[RadiusColor] | None
     _show_marker: axon.Atom[bool]
     _hover_pos: axon.Atom[tuple[int, int] | None] | None
-    _marker_px: tuple[int, int] | None
+    _on_left_click: Callable[[tuple[int, int]], None] | None
+    _on_right_click: Callable[[tuple[int, int]], None] | None
     _frame_rect: pygame.Rect | None
     _size: tuple[int, int]
     _frame: pygame.Surface | None
@@ -138,6 +145,8 @@ class Feed(axon.Widget):
         radius_color: axon.Atom[RadiusColor] | None = None,
         show_marker: axon.Atom[bool] | None = None,
         hover_pos: axon.Atom[tuple[int, int] | None] | None = None,
+        on_left_click: Callable[[tuple[int, int]], None] | None = None,
+        on_right_click: Callable[[tuple[int, int]], None] | None = None,
         anchors: dict[str, str | pygame_gui.core.interfaces.IUIElementInterface]
         | None = None,
     ) -> None:
@@ -158,15 +167,19 @@ class Feed(axon.Widget):
             a new atom, held by the widget and initially `True`.
         :param marker_pos: The marker's position, in plane coordinates. Leave it
             out to build a feed with no marker at all.
-        :param radius_color: The selected ring, set when a ring is clicked. Leave
-            it out to build a feed with no marker at all.
-        :param show_marker: Atom controlling whether the marker is drawn, and
-            whether clicks select a ring. Defaults to a new atom, held by the
+        :param radius_color: The ring to draw at full color, the rest being
+            dimmed. Leave it out to build a feed with no marker at all.
+        :param show_marker: Atom controlling whether the marker is drawn.
+            Defaults to a new atom, held by the
             widget and initially `True`. It has no effect unless both
             `marker_pos` and `radius_color` are given.
         :param hover_pos: Atom set to the plane position the mouse is over, and
             to `None` while it is off the frame. Leave it out to build a feed
             that does not track the mouse at all.
+        :param on_left_click: Called with the plane position of a left click on
+            the frame. Clicks on the letterbox bars are not reported.
+        :param on_right_click: Called with the plane position of a right click
+            on the frame. See `on_left_click`.
         :param anchors: A `pygame_gui` anchors mapping controlling how the feed
             is positioned. See `pygame_gui`'s documentation on how anchors work
             for more info.
@@ -185,7 +198,8 @@ class Feed(axon.Widget):
         self._radius_color = radius_color
         self._show_marker = axon.Atom(True) if show_marker is None else show_marker
         self._hover_pos = hover_pos
-        self._marker_px = None
+        self._on_left_click = on_left_click
+        self._on_right_click = on_right_click
         self._frame_rect = None
         self._size = (rect.w, rect.h)
         self._frame = None
@@ -236,11 +250,10 @@ class Feed(axon.Widget):
     @override
     def on_process_event(self, event: pygame.Event) -> None:
         """
-        Track the mouse over the frame, and select the ring nearest a left click
-        on the feed.
+        Track the mouse over the frame, and report clicks on it.
 
-        A click that misses every ring by more than the tolerance, or one while
-        the marker is hidden, changes nothing.
+        A click is reported only when it lands on the frame itself, so one on
+        the letterbox bars, or before the first frame arrives, does nothing.
 
         :param event: The `pygame` event to handle.
         """
@@ -253,26 +266,31 @@ class Feed(axon.Widget):
             self._set_hover(None)
             return
 
-        # only left clicks, and only while the marker is on screen
-        if event.type != pygame.MOUSEBUTTONDOWN or event.button != 1:
+        # only the buttons someone is listening for
+        if event.type != pygame.MOUSEBUTTONDOWN:
             return
-        if self._radius_color is None or self._marker_px is None:
+        match event.button:
+            case pygame.BUTTON_LEFT:
+                callback = self._on_left_click
+            case pygame.BUTTON_RIGHT:
+                callback = self._on_right_click
+            case _:
+                return
+        if callback is None:
             return
 
-        # ignore clicks outside of the feed
+        # ignore clicks outside of the feed, and any before a frame is drawn
         abs_rect = self._image.get_abs_rect()
-        if not abs_rect.collidepoint(event.pos):
+        if not abs_rect.collidepoint(event.pos) or self._frame_rect is None:
             return
 
-        # distance from the marker's center, in feed-local pixels
-        dx = event.pos[0] - abs_rect.x - self._marker_px[0]
-        dy = event.pos[1] - abs_rect.y - self._marker_px[1]
-        dist = math.hypot(dx, dy)
-
-        # select the closest ring, if the click landed near enough to it
-        color, _, radius = min(self._RINGS, key=lambda ring: abs(dist - ring[2]))
-        if abs(dist - radius) <= self._RING_TOLERANCE:
-            self._radius_color.value = color
+        # report the plane position clicked, if the click was on the frame
+        pos = self._px_to_plane(
+            self._frame_rect,
+            (event.pos[0] - abs_rect.x, event.pos[1] - abs_rect.y),
+        )
+        if pos is not None:
+            callback(pos)
 
     @override
     def on_update(self, dt: float) -> None:
@@ -331,7 +349,6 @@ class Feed(axon.Widget):
 
         # nothing to draw on, and so nothing to click on or hover over either
         if self._frame is None:
-            self._marker_px = None
             self._frame_rect = None
             self._set_hover(None)
             self._image.set_image(canvas)
@@ -344,16 +361,14 @@ class Feed(axon.Widget):
         if self._show_grid.value:
             self._draw_grid(canvas, frame_rect)
 
-        # draw the marker, which needs both of its atoms to be of any use. it
-        # stays clickable only where it is drawn
-        self._marker_px = None
+        # draw the marker, which needs both of its atoms to be of any use
         if (
             self._marker_pos is not None
             and self._radius_color is not None
             and self._show_marker.value
         ):
-            self._marker_px = self._plane_to_px(frame_rect, self._marker_pos.value)
-            self._draw_marker(canvas, self._marker_px, self._radius_color.value)
+            marker_px = self._plane_to_px(frame_rect, self._marker_pos.value)
+            self._draw_marker(canvas, marker_px, self._radius_color.value)
 
         # hand the canvas over to the element
         self._image.set_image(canvas)
@@ -397,8 +412,8 @@ class Feed(axon.Widget):
         """
         plane_x, plane_y = pos
         return (
-            frame_rect.left + round((plane_x / self._PLANE_W) * frame_rect.width),
-            frame_rect.top + round((plane_y / self._PLANE_H) * frame_rect.height),
+            frame_rect.left + round((plane_x / self.PLANE_W) * frame_rect.width),
+            frame_rect.top + round((plane_y / self.PLANE_H) * frame_rect.height),
         )
 
     def _px_to_plane(
@@ -418,15 +433,15 @@ class Feed(axon.Widget):
         # scale into the plane, relative to the frame's top left corner
         x, y = pos
         return (
-            round(((x - frame_rect.left) / frame_rect.width) * self._PLANE_W),
-            round(((y - frame_rect.top) / frame_rect.height) * self._PLANE_H),
+            round(((x - frame_rect.left) / frame_rect.width) * self.PLANE_W),
+            round(((y - frame_rect.top) / frame_rect.height) * self.PLANE_H),
         )
 
     def _draw_grid(self, canvas: pygame.Surface, frame_rect: pygame.Rect) -> None:
         # vertical lines, from the plane's left edge
-        for plane_x in range(0, self._PLANE_W + 1, self._GRID_STEP):
+        for plane_x in range(0, self.PLANE_W + 1, self._GRID_STEP):
             x = min(
-                frame_rect.left + round((plane_x / self._PLANE_W) * frame_rect.width),
+                frame_rect.left + round((plane_x / self.PLANE_W) * frame_rect.width),
                 frame_rect.right - 1,
             )
             pygame.draw.line(
@@ -438,9 +453,9 @@ class Feed(axon.Widget):
             )
 
         # horizontal lines, from the plane's top edge
-        for plane_y in range(0, self._PLANE_H + 1, self._GRID_STEP):
+        for plane_y in range(0, self.PLANE_H + 1, self._GRID_STEP):
             y = min(
-                frame_rect.top + round((plane_y / self._PLANE_H) * frame_rect.height),
+                frame_rect.top + round((plane_y / self.PLANE_H) * frame_rect.height),
                 frame_rect.bottom - 1,
             )
             pygame.draw.line(

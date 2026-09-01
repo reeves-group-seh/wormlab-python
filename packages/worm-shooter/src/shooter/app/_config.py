@@ -202,6 +202,34 @@ class AppConfig:
     Duration of fire command when using "destroy".
     """
 
+    # click to center
+
+    PX_PER_STEP: float = 1.0
+    """
+    Calibration constant: how far, in pixels of the video plane, the image
+    shifts for one stage step. Tune it by clicking a feature and measuring
+    where it lands relative to where it should have.
+    """
+
+    CENTER_INVERT_X: bool = False
+    """
+    Flip the x direction of click-to-center. The default assumes stepping the
+    stage left moves the image left.
+    """
+
+    CENTER_INVERT_Y: bool = False
+    """
+    Flip the y direction of click-to-center. The default assumes stepping the
+    stage up moves the image up.
+    """
+
+    MAX_CENTER_COMMANDS: int = 200
+    """
+    Refuse a click-to-center journey longer than this many commands. A guard
+    against a mis-set `PX_PER_STEP` sending the stage on a very long trip; at
+    the default move duration this is a little under half a minute of travel.
+    """
+
     # grid size
 
     DEFAULT_GRID_SIZE: int = 3

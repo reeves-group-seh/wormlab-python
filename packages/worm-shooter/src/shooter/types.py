@@ -75,6 +75,113 @@ class KeyMapAction(Enum):
     SKIP_DATA = enum.auto()
 
 
+class StepDirection(Enum):
+    """
+    Direction of a single axis-aligned stage movement.
+    """
+
+    LEFT = enum.auto()
+    RIGHT = enum.auto()
+    UP = enum.auto()
+    DOWN = enum.auto()
+
+
+@dataclass(frozen=True, kw_only=True)
+class CenterPlan:
+    """
+    The movements still to be sent to bring a clicked point to a target.
+
+    Each entry in `moves` is one stage command. Because a command's speed and
+    duration are fixed, every command covers the same distance, so a leg of the
+    journey is a whole number of them: the x leg first, then the y leg.
+
+    A plan is immutable and is consumed with `pop`, which hands back the next
+    move and whatever is left. Dropping the remainder cancels the rest of the
+    journey, which is how a keypress interrupts one.
+    """
+
+    moves: tuple[StepDirection, ...]
+
+    def pop(self) -> tuple[StepDirection, CenterPlan | None]:
+        """
+        Split off the next move.
+
+        :return: The move to send now, and the rest of the plan, or `None` when
+            this was the last one.
+        """
+        head, *tail = self.moves
+        return head, CenterPlan(moves=tuple(tail)) if tail else None
+
+
+def center_plan(
+    point: tuple[int, int],
+    *,
+    target: tuple[int, int],
+    px_per_command: float,
+    invert_x: bool,
+    invert_y: bool,
+    max_commands: int,
+) -> CenterPlan | None:
+    """
+    Build the plan that brings `point` onto `target`, both in plane
+    coordinates.
+
+    The gap is divided into whole commands, so the stage lands within half a
+    command of the target rather than exactly on it. A gap smaller than half a
+    command rounds to no movement at all.
+
+    :param point: The clicked position, in plane coordinates.
+
+    :param target: Where that position should end up, in plane coordinates.
+
+    :param px_per_command: How far, in plane units, one command moves the
+        image. This is the stage speed times the command duration times the
+        `PX_PER_STEP` calibration constant.
+
+    :param invert_x: Flip the x direction, for a stage whose left/right wiring
+        runs opposite to the default assumption that the image moves the way
+        the stage does.
+
+    :param invert_y: Flip the y direction. See `invert_x`.
+
+    :param max_commands: Refuse to plan a journey longer than this many
+        commands, guarding against a mis-set calibration constant.
+
+    :return: The plan, or `None` when the point is already close enough, the
+        journey would be too long, or a command covers no ground.
+    """
+
+    # a command that covers no ground would never arrive
+    if px_per_command <= 0.0:
+        return None
+
+    # how far the point has to travel, in plane units. y grows downwards
+    dx = target[0] - point[0]
+    dy = target[1] - point[1]
+
+    # the image moves the way the stage does, so a direction is just the sign
+    # of its gap, with the invert flags flipping an axis that is wired the
+    # other way round
+    x_dir = StepDirection.RIGHT if (dx > 0) != invert_x else StepDirection.LEFT
+    y_dir = StepDirection.DOWN if (dy > 0) != invert_y else StepDirection.UP
+
+    # every command covers the same ground, so each leg is a count of them
+    moves = ((x_dir,) * round(abs(dx) / px_per_command)) + (
+        (y_dir,) * round(abs(dy) / px_per_command)
+    )
+
+    # already there, near enough
+    if not moves:
+        return None
+
+    # far enough that the calibration constant is more likely wrong than the
+    # click, so do nothing rather than send the stage on a long trip
+    if len(moves) > max_commands:
+        return None
+
+    return CenterPlan(moves=moves)
+
+
 @dataclass(frozen=True, kw_only=True)
 class LaserFire:
     """
