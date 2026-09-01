@@ -38,7 +38,7 @@ class MockArduinoBackend(ArduinoBackend):
 
     @override
     def busy(self) -> bool:
-        match self._action:
+        match self._action.value:
             case ArduinoAction.IDLE:
                 return False
             case _:
