@@ -211,13 +211,13 @@ class AppConfig:
     where it lands relative to where it should have.
     """
 
-    CENTER_INVERT_X: bool = False
+    CENTER_INVERT_X: bool = True
     """
     Flip the x direction of click-to-center. The default assumes stepping the
     stage left moves the image left.
     """
 
-    CENTER_INVERT_Y: bool = False
+    CENTER_INVERT_Y: bool = True
     """
     Flip the y direction of click-to-center. The default assumes stepping the
     stage up moves the image up.
