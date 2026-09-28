@@ -69,6 +69,9 @@ class KeyMapAction(Enum):
     MOVE_UP = enum.auto()
     MOVE_DOWN = enum.auto()
 
+    CONTRAST_INC = enum.auto()
+    CONTRAST_DEC = enum.auto()
+
     FIRE = enum.auto()
     DESTROY = enum.auto()
     GRID = enum.auto()

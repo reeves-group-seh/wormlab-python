@@ -20,6 +20,7 @@ class HomeState:
     move_speed: axon.Atom[float]
     grid_size: axon.Atom[int]
     marker_pos: axon.Atom[tuple[int, int]]
+    contrast: axon.Atom[float]
     hover_pos: axon.Atom[tuple[int, int] | None]
     centering: axon.Atom[CenterPlan | None]
     last_fire: axon.Atom[LaserFire | None]
@@ -56,6 +57,7 @@ class HomeState:
             move_speed=axon.Atom(cfg.DEFAULT_MOVE_SPEED),
             grid_size=axon.Atom(cfg.DEFAULT_GRID_SIZE),
             marker_pos=axon.Atom(cfg.DEFAULT_MARKER_POS),
+            contrast=axon.Atom(cfg.DEFAULT_CONTRAST),
             hover_pos=axon.Atom(None),
             centering=axon.Atom(None),
             last_fire=axon.Atom(None),

@@ -168,6 +168,16 @@ class HomeScreen(axon.Screen[ScreenId]):
                         )
                         self._state.data_needed.value = False
                         self._state.lock_fire.value = None
+                case KeyMapAction.CONTRAST_DEC:
+                    self._state.contrast.value = max(
+                        self._state.contrast.value - self._ctx.cfg.CONTRAST_STEP,
+                        self._ctx.cfg.MIN_CONTRAST,
+                    )
+                case KeyMapAction.CONTRAST_INC:
+                    self._state.contrast.value = min(
+                        self._state.contrast.value + self._ctx.cfg.CONTRAST_STEP,
+                        self._ctx.cfg.MAX_CONTRAST,
+                    )
 
         if event.type == pygame.KEYUP and not self._is_typing():
             action = self._ctx.cfg.KEYMAP.get(event.key)

@@ -67,6 +67,9 @@ class AppConfig:
             pygame.K_RIGHT: KeyMapAction.MOVE_RIGHT,
             pygame.K_UP: KeyMapAction.MOVE_UP,
             pygame.K_DOWN: KeyMapAction.MOVE_DOWN,
+            # contrast
+            pygame.K_LEFTBRACKET: KeyMapAction.CONTRAST_DEC,
+            pygame.K_RIGHTBRACKET: KeyMapAction.CONTRAST_INC,
             # other
             pygame.K_f: KeyMapAction.FIRE,
             pygame.K_d: KeyMapAction.DESTROY,
@@ -245,6 +248,28 @@ class AppConfig:
     MAX_GRID_SIZE: int = 20
     """
     Maximum size of the square test grid.
+    """
+
+    # contrast
+
+    DEFAULT_CONTRAST: float = 0.0
+    """
+    Default CLAHE clip limit applied to the video feed. 0 turns enhancement off.
+    """
+
+    MIN_CONTRAST: float = 0.0
+    """
+    Minimum feed contrast (enhancement off).
+    """
+
+    MAX_CONTRAST: float = 8.0
+    """
+    Maximum feed contrast.
+    """
+
+    CONTRAST_STEP: float = 0.5
+    """
+    Value to increment and decrement feed contrast by.
     """
 
     # arduino

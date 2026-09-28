@@ -1,15 +1,16 @@
 # std
 from collections.abc import Callable
-from typing import ClassVar, override
+from typing import ClassVar, cast, override
 
 # extern
+import cv2
 import numpy as np
 import pygame
 import pygame_gui
 
 # local
 import axon
-from shooter.backend.camera import CameraBackend
+from shooter.backend.camera import CameraBackend, GrayFrame
 from shooter.types import RadiusColor
 
 
@@ -34,6 +35,18 @@ class Feed(axon.Widget):
 
     Both toggles fall back to an atom the widget owns, so a control elsewhere in
     the tree can turn either overlay on and off.
+
+    ## Contrast
+
+    A feed given a `contrast` atom boosts the contrast of each grayscale frame
+    with CLAHE (Contrast Limited Adaptive Histogram Equalization) before drawing
+    it. The frame is split into tiles, each tile's brightness range is stretched
+    using its own histogram, and neighboring tiles are blended, so a worm stands
+    out against its local background even under uneven lighting.
+
+    The atom's value is the clip limit, which caps how steeply a tile can be
+    stretched and so how much sensor noise gets amplifiedA feed built without
+    `contrast` shows frames unchanged.
 
     ## Mouse
 
@@ -118,12 +131,19 @@ class Feed(axon.Widget):
     where 0.0 leaves them at full color and 1.0 makes them invisible.
     """
 
+    _CLAHE_TILES: ClassVar[tuple[int, int]] = (8, 8)
+    """
+    The size of tiles for performing the CLAHE-based contrast boost.
+    """
+
     # instance variables
     _camera: CameraBackend
     _show_grid: axon.Atom[bool]
     _marker_pos: axon.Atom[tuple[int, int]] | None
     _radius_color: axon.Atom[RadiusColor] | None
     _show_marker: axon.Atom[bool]
+    _contrast: axon.Atom[float] | None
+    _clahe: cv2.CLAHE | None
     _hover_pos: axon.Atom[tuple[int, int] | None] | None
     _on_left_click: Callable[[tuple[int, int]], None] | None
     _on_right_click: Callable[[tuple[int, int]], None] | None
@@ -145,6 +165,7 @@ class Feed(axon.Widget):
         marker_pos: axon.Atom[tuple[int, int]] | None = None,
         radius_color: axon.Atom[RadiusColor] | None = None,
         show_marker: axon.Atom[bool] | None = None,
+        contrast: axon.Atom[float] | None = None,
         hover_pos: axon.Atom[tuple[int, int] | None] | None = None,
         on_left_click: Callable[[tuple[int, int]], None] | None = None,
         on_right_click: Callable[[tuple[int, int]], None] | None = None,
@@ -174,6 +195,9 @@ class Feed(axon.Widget):
             Defaults to a new atom, held by the
             widget and initially `True`. It has no effect unless both
             `marker_pos` and `radius_color` are given.
+        :param contrast: Atom holding the CLAHE clip limit applied to the frame,
+            where 0 or less turns enhancement off. Leave it out to show frames
+            unchanged.
         :param hover_pos: Atom set to the plane position the mouse is over, and
             to `None` while it is off the frame. Leave it out to build a feed
             that does not track the mouse at all.
@@ -198,6 +222,8 @@ class Feed(axon.Widget):
         self._marker_pos = marker_pos
         self._radius_color = radius_color
         self._show_marker = axon.Atom(True) if show_marker is None else show_marker
+        self._contrast = contrast
+        self._clahe = None
         self._hover_pos = hover_pos
         self._on_left_click = on_left_click
         self._on_right_click = on_right_click
@@ -225,6 +251,9 @@ class Feed(axon.Widget):
             self.bind(self._marker_pos, self._invalidate)
         if self._radius_color is not None:
             self.bind(self._radius_color, self._invalidate)
+        if self._contrast is not None:
+            self.bind(self._contrast, self._rebuild_clahe)
+            self._rebuild_clahe()
 
     @property
     def show_grid(self) -> axon.Atom[bool]:
@@ -304,6 +333,8 @@ class Feed(axon.Widget):
         # grab a frame, if one is available
         frame = self._camera.read_frame()
         if frame is not None:
+            if self._clahe is not None:
+                frame = cast(GrayFrame, self._clahe.apply(frame))
             rgb = np.repeat(frame[:, :, np.newaxis], 3, axis=2)
             self._frame = pygame.surfarray.make_surface(rgb)
             self._dirty = True
@@ -489,3 +520,15 @@ class Feed(axon.Widget):
                 radius,
                 self._RING_WIDTH_INNER if idx == 0 else self._RING_WIDTH,
             )
+
+    def _rebuild_clahe(self) -> None:
+        """
+        Recreate the contrast filter for the current clip limit, or drop it when
+        enhancement is off.
+        """
+        limit = 0.0 if self._contrast is None else self._contrast.value
+        self._clahe = (
+            cv2.createCLAHE(clipLimit=limit, tileGridSize=self._CLAHE_TILES)
+            if limit > 0
+            else None
+        )

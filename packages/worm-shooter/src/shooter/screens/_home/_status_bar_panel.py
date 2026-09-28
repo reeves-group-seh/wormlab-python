@@ -78,6 +78,7 @@ class StatusBarPanel(axon.Widget):
         # bind
         self.bind(state.room_temp, self._render_right_text)
         self.bind(state.room_humidity, self._render_right_text)
+        self.bind(state.contrast, self._render_right_text)
         self.bind(state.last_fire, self._invalidate_left_text)
         self.bind(state.hover_pos, self._invalidate_left_text)
         self.bind(state.centering, self._invalidate_left_text)
@@ -120,7 +121,9 @@ class StatusBarPanel(axon.Widget):
         )
 
     def _format_right_text(self) -> str:
+        contrast = self._state.contrast.value
         return (
+            f"<b>Contrast</b>: {f'{contrast:.1f}' if contrast > 0 else 'Off'} | "
             f"<b>Temp</b>: {self._state.room_temp.value} \u2103 | "
             f"<b>Humidity</b>: {self._state.room_humidity.value}%"
         )

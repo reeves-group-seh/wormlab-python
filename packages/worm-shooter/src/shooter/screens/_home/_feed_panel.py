@@ -68,6 +68,7 @@ class FeedPanel(axon.Widget):
             rect=(0, 0, panel.content_width(), lt.video_h),
             camera=ctx.camera,
             marker_pos=state.marker_pos,
+            contrast=state.contrast,
             radius_color=state.radius_color,
             hover_pos=state.hover_pos,
             on_left_click=self._center_on_plane,
