@@ -114,7 +114,7 @@ class AppConfig:
 
     # data defaults
 
-    DEFAULT_RADIUS_COLOR: RadiusColor = RadiusColor.YELLOW
+    DEFAULT_RADIUS_COLOR: RadiusColor = RadiusColor.RED
     """
     Default selected radius color.
     """
