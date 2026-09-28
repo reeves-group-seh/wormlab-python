@@ -4,6 +4,13 @@ from abc import ABC, abstractmethod
 # pip
 import numpy as np
 
+# types for clarity
+type GrayFrame = np.ndarray[tuple[int, int], np.dtype[np.uint8]]
+"""
+A single-channel 8-bit grayscale frame, indexed `[x, y]` (width first), the
+layout `pygame.surfarray` expects.
+"""
+
 
 class CameraBackend(ABC):
     """"""
@@ -22,7 +29,7 @@ class CameraBackend(ABC):
         """
 
     @abstractmethod
-    def read_frame(self) -> np.ndarray | None:
+    def read_frame(self) -> GrayFrame | None:
         """
         Read a frame from the camera, if one is available, otherwise `None`.
         """

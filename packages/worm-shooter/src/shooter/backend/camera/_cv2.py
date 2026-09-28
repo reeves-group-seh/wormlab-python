@@ -1,12 +1,11 @@
 # std
-from typing import override
+from typing import cast, override
 
 # pip
 import cv2
-import numpy as np
 
 # relative
-from ._base import CameraBackend
+from ._base import CameraBackend, GrayFrame
 
 
 class CV2CameraBackend(CameraBackend):
@@ -31,7 +30,7 @@ class CV2CameraBackend(CameraBackend):
             self._feed = None
 
     @override
-    def read_frame(self) -> np.ndarray | None:
+    def read_frame(self) -> GrayFrame | None:
         # ensure open
         if not self._feed:
             raise Exception("resource has not been opened")
@@ -43,8 +42,8 @@ class CV2CameraBackend(CameraBackend):
 
         # convert frame data before returning
         frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        return frame
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        return cast(GrayFrame, frame)
 
     @override
     def width(self) -> int:

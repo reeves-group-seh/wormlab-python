@@ -1,11 +1,11 @@
 # std
-from typing import ClassVar, override
+from typing import ClassVar, cast, override
 
 # pip
 import numpy as np
 
 # relative
-from ._base import CameraBackend
+from ._base import CameraBackend, GrayFrame
 
 
 class MockCameraBackend(CameraBackend):
@@ -37,11 +37,14 @@ class MockCameraBackend(CameraBackend):
         self._index = None
 
     @override
-    def read_frame(self) -> np.ndarray | None:
+    def read_frame(self) -> GrayFrame | None:
         if self._index is None:
             raise Exception("resource has not been opened")
 
-        return np.random.randint(0, 256, (self._WIDTH, self._HEIGHT, 3), dtype=np.uint8)
+        return cast(
+            GrayFrame,
+            np.random.randint(0, 256, (self._WIDTH, self._HEIGHT), dtype=np.uint8),
+        )
 
     @override
     def width(self) -> int:

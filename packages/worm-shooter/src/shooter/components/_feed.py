@@ -3,6 +3,7 @@ from collections.abc import Callable
 from typing import ClassVar, override
 
 # extern
+import numpy as np
 import pygame
 import pygame_gui
 
@@ -303,7 +304,8 @@ class Feed(axon.Widget):
         # grab a frame, if one is available
         frame = self._camera.read_frame()
         if frame is not None:
-            self._frame = pygame.surfarray.make_surface(frame)
+            rgb = np.repeat(frame[:, :, np.newaxis], 3, axis=2)
+            self._frame = pygame.surfarray.make_surface(rgb)
             self._dirty = True
 
         # only redraw on a new frame, or a change to one of the overlays
