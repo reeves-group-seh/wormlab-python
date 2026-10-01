@@ -75,6 +75,12 @@ class AppConfig:
             pygame.K_d: KeyMapAction.DESTROY,
             pygame.K_m: KeyMapAction.GRID,
             pygame.K_p: KeyMapAction.SKIP_DATA,
+            # behavior
+            pygame.K_1: KeyMapAction.BEHAVIOR_OMEGA,
+            pygame.K_2: KeyMapAction.BEHAVIOR_PIROUETTE,
+            pygame.K_3: KeyMapAction.BEHAVIOR_PAUSE,
+            pygame.K_4: KeyMapAction.BEHAVIOR_FORWARD,
+            pygame.K_5: KeyMapAction.BEHAVIOR_REVERSAL,
         }
     )
     """

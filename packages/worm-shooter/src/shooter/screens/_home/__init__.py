@@ -14,6 +14,7 @@ from shooter.types import (
     LaserFire,
     LaserLockPhase,
     StepDirection,
+    WormBehavior,
     laser_lock,
 )
 
@@ -177,6 +178,36 @@ class HomeScreen(axon.Screen[ScreenId]):
                     self._state.contrast.value = min(
                         self._state.contrast.value + self._ctx.cfg.CONTRAST_STEP,
                         self._ctx.cfg.MAX_CONTRAST,
+                    )
+                case KeyMapAction.BEHAVIOR_OMEGA:
+                    self._ctx.data.add_behavior(
+                        WormBehavior.OMEGA,
+                        room_temp=self._state.room_temp.value,
+                        room_humidity=self._state.room_humidity.value,
+                    )
+                case KeyMapAction.BEHAVIOR_PIROUETTE:
+                    self._ctx.data.add_behavior(
+                        WormBehavior.PIROUETTE,
+                        room_temp=self._state.room_temp.value,
+                        room_humidity=self._state.room_humidity.value,
+                    )
+                case KeyMapAction.BEHAVIOR_PAUSE:
+                    self._ctx.data.add_behavior(
+                        WormBehavior.PAUSE,
+                        room_temp=self._state.room_temp.value,
+                        room_humidity=self._state.room_humidity.value,
+                    )
+                case KeyMapAction.BEHAVIOR_FORWARD:
+                    self._ctx.data.add_behavior(
+                        WormBehavior.FORWARD,
+                        room_temp=self._state.room_temp.value,
+                        room_humidity=self._state.room_humidity.value,
+                    )
+                case KeyMapAction.BEHAVIOR_REVERSAL:
+                    self._ctx.data.add_behavior(
+                        WormBehavior.REVERSAL,
+                        room_temp=self._state.room_temp.value,
+                        room_humidity=self._state.room_humidity.value,
                     )
 
         if event.type == pygame.KEYUP and not self._is_typing():

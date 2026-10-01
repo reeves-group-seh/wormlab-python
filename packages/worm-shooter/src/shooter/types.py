@@ -77,6 +77,12 @@ class KeyMapAction(Enum):
     GRID = enum.auto()
     SKIP_DATA = enum.auto()
 
+    BEHAVIOR_OMEGA = enum.auto()
+    BEHAVIOR_PIROUETTE = enum.auto()
+    BEHAVIOR_PAUSE = enum.auto()
+    BEHAVIOR_FORWARD = enum.auto()
+    BEHAVIOR_REVERSAL = enum.auto()
+
 
 class StepDirection(Enum):
     """
