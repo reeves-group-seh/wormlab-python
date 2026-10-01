@@ -438,7 +438,7 @@ wheels = [
 
 [[package]]
 name = "worm-shooter"
-version = "2.1"
+version = "2.2"
 source = { editable = "packages/worm-shooter" }
 dependencies = [
     { name = "axon-ui" },
