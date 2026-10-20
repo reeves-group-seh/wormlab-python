@@ -8,9 +8,9 @@ This repo is a [uv](https://docs.astral.sh/uv/) workspace. Each package has a di
 
 | Package | Distribution | Import | Status | Purpose |
 | --- | --- | --- | --- | --- |
-| [Worm Shooter](packages/worm-shooter/readme.md) | `worm-shooter` | `shooter` | Active | Desktop app for controlling the stage and laser and recording worm responses |
-| [Axon UI](packages/axon-ui/readme.md) | `axon-ui` | `axon` | Active | Small reactive UI framework built on `pygame` + `pygame_gui` |
-| [Axon UI Kit](packages/axon-ui-kit/readme.md) | `axon-ui-kit` | `axonkit` | Active | Widget library (buttons, panels, inputs, etc.) built on Axon UI |
+| [Worm Shooter](packages/worm-shooter/README.md) | `worm-shooter` | `shooter` | Active | Desktop app for controlling the stage and laser and recording worm responses |
+| [Axon UI](packages/axon-ui/README.md) | `axon-ui` | `axon` | Active | Small reactive UI framework built on `pygame` + `pygame_gui` |
+| [Axon UI Kit](packages/axon-ui-kit/README.md) | `axon-ui-kit` | `axonkit` | Active | Widget library (buttons, panels, inputs, etc.) built on Axon UI |
 
 ## Requirements
 
@@ -44,7 +44,7 @@ To run without any lab hardware, swap in the mock backends:
 uv run shooter --arduino-backend=mock --camera-backend=mock --data-backend=mock
 ```
 
-See the Worm Shooter [readme](packages/worm-shooter/readme.md) for all CLI options, the keyboard controls, the experiment workflow, and the CSV data format.
+See the Worm Shooter [readme](packages/worm-shooter/README.md) for all CLI options, the keyboard controls, the experiment workflow, and the CSV data format.
 
 ## Development
 
